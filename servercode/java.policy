@@ -1,0 +1,5 @@
+grant codeBase "file:/Users/shabirmean/Desktop/COMP512-PG1/servercode" {
+    permission java.security.AllPermission;
+};
+
+
