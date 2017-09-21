@@ -1,5 +1,0 @@
-grant codeBase "file:/Users/shabirmean/Desktop/COMP512-PG1/clientsrc/" {
-    permission java.security.AllPermission;
-};
-
-
