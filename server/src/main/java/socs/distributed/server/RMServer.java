@@ -105,11 +105,14 @@ class RMServer {
                             String inComingMessage = Charset.defaultCharset().decode(buffer).toString();
                             System.out.println(inComingMessage);
                             if (inComingMessage.equals("C1")) {
+                                System.out.println("YES");
                                 try {
                                     Thread.sleep(60000);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
+                            } else {
+                                System.out.println("NO");
                             }
                             buffer.clear();
                             buffer.put((inComingMessage + " replied").getBytes());
