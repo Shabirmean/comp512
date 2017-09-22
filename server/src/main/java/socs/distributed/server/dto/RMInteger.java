@@ -2,7 +2,9 @@
 // adapted Kevin T. Manley
 // CSE 593
 // -------------------------------
-package socs.distributed.server;
+package socs.distributed.server.dto;
+
+import socs.distributed.server.dto.RMItem;
 
 import java.io.Serializable;
 

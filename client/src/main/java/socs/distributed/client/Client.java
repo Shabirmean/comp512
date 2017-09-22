@@ -5,7 +5,6 @@ import socs.distributed.resource.MsgType;
 import socs.distributed.resource.ResourceManager;
 
 import java.io.*;
-import java.net.Socket;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -84,7 +83,7 @@ public class Client {
                     System.out.println("Set Flight Price: " + arguments.elementAt(4));
 
                     try {
-                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_FLIGHT);
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_FLIGHT, arguments);
                     } catch (ClientException e) {
                         e.printStackTrace();
                     }
@@ -116,7 +115,7 @@ public class Client {
                     System.out.println("Set Price: " + arguments.elementAt(4));
 
                     try {
-                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_CARS);
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_CARS, arguments);
                     } catch (ClientException e) {
                         e.printStackTrace();
                     }
@@ -148,7 +147,7 @@ public class Client {
                     System.out.println("Set Price: " + arguments.elementAt(4));
 
                     try {
-                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_ROOMS);
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_ROOMS, arguments);
                     } catch (ClientException e) {
                         e.printStackTrace();
                     }
@@ -175,15 +174,22 @@ public class Client {
                         break;
                     }
                     System.out.println("Adding a new Customer using id:" + arguments.elementAt(1));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = rm.newCustomer(Id);
-                        System.out.println("new customer id:" + customer);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_NEW_CUSTOMER_WITHOUT_ID, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = rm.newCustomer(Id);
+//                        System.out.println("new customer id:" + customer);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 6: //delete Flight
@@ -193,18 +199,25 @@ public class Client {
                     }
                     System.out.println("Deleting a flight using id: " + arguments.elementAt(1));
                     System.out.println("Flight Number: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        flightNum = obj.getInt(arguments.elementAt(2));
-                        if (rm.deleteFlight(Id, flightNum))
-                            System.out.println("Flight Deleted");
-                        else
-                            System.out.println("Flight could not be deleted");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.DELETE_FLIGHT, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        flightNum = obj.getInt(arguments.elementAt(2));
+//                        if (rm.deleteFlight(Id, flightNum))
+//                            System.out.println("Flight Deleted");
+//                        else
+//                            System.out.println("Flight could not be deleted");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 7: //delete Car
@@ -215,19 +228,26 @@ public class Client {
                     System.out.println("Deleting the cars from a particular location  using id: " + arguments
                             .elementAt(1));
                     System.out.println("Car Location: " + arguments.elementAt(2));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
 
-                        if (rm.deleteCars(Id, location))
-                            System.out.println("Cars Deleted");
-                        else
-                            System.out.println("Cars could not be deleted");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                    try {
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.DELETE_CARS, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//
+//                        if (rm.deleteCars(Id, location))
+//                            System.out.println("Cars Deleted");
+//                        else
+//                            System.out.println("Cars could not be deleted");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 8: //delete Room
@@ -238,18 +258,25 @@ public class Client {
                     System.out.println("Deleting all rooms from a particular location  using id: " + arguments
                             .elementAt(1));
                     System.out.println("Room Location: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
-                        if (rm.deleteRooms(Id, location))
-                            System.out.println("Rooms Deleted");
-                        else
-                            System.out.println("Rooms could not be deleted");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.DELETE_ROOMS, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//                        if (rm.deleteRooms(Id, location))
+//                            System.out.println("Rooms Deleted");
+//                        else
+//                            System.out.println("Rooms could not be deleted");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 9: //delete Customer
@@ -259,18 +286,25 @@ public class Client {
                     }
                     System.out.println("Deleting a customer from the database using id: " + arguments.elementAt(1));
                     System.out.println("Customer id: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        if (rm.deleteCustomer(Id, customer))
-                            System.out.println("Customer Deleted");
-                        else
-                            System.out.println("Customer could not be deleted");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.DELETE_CUSTOMER, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        if (rm.deleteCustomer(Id, customer))
+//                            System.out.println("Customer Deleted");
+//                        else
+//                            System.out.println("Customer could not be deleted");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 10: //querying a flight
@@ -280,16 +314,23 @@ public class Client {
                     }
                     System.out.println("Querying a flight using id: " + arguments.elementAt(1));
                     System.out.println("Flight number: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        flightNum = obj.getInt(arguments.elementAt(2));
-                        int seats = rm.queryFlight(Id, flightNum);
-                        System.out.println("Number of seats available:" + seats);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_FLIGHT, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        flightNum = obj.getInt(arguments.elementAt(2));
+//                        int seats = rm.queryFlight(Id, flightNum);
+//                        System.out.println("Number of seats available:" + seats);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 11: //querying a Car Location
@@ -299,16 +340,23 @@ public class Client {
                     }
                     System.out.println("Querying a car location using id: " + arguments.elementAt(1));
                     System.out.println("Car location: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
-                        numCars = rm.queryCars(Id, location);
-                        System.out.println("number of Cars at this location:" + numCars);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_CARS, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//                        numCars = rm.queryCars(Id, location);
+//                        System.out.println("number of Cars at this location:" + numCars);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 12: //querying a Room location
@@ -318,16 +366,23 @@ public class Client {
                     }
                     System.out.println("Querying a room location using id: " + arguments.elementAt(1));
                     System.out.println("Room location: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
-                        numRooms = rm.queryRooms(Id, location);
-                        System.out.println("number of Rooms at this location:" + numRooms);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_ROOMS, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//                        numRooms = rm.queryRooms(Id, location);
+//                        System.out.println("number of Rooms at this location:" + numRooms);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 13: //querying Customer Information
@@ -337,16 +392,23 @@ public class Client {
                     }
                     System.out.println("Querying Customer information using id: " + arguments.elementAt(1));
                     System.out.println("Customer id: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        String bill = rm.queryCustomerInfo(Id, customer);
-                        System.out.println("Customer info:" + bill);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_CUSTOMER_INFO, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        String bill = rm.queryCustomerInfo(Id, customer);
+//                        System.out.println("Customer info:" + bill);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 14: //querying a flight Price
@@ -356,16 +418,23 @@ public class Client {
                     }
                     System.out.println("Querying a flight Price using id: " + arguments.elementAt(1));
                     System.out.println("Flight number: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        flightNum = obj.getInt(arguments.elementAt(2));
-                        price = rm.queryFlightPrice(Id, flightNum);
-                        System.out.println("Price of a seat:" + price);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_FLIGHT_PRICE, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        flightNum = obj.getInt(arguments.elementAt(2));
+//                        price = rm.queryFlightPrice(Id, flightNum);
+//                        System.out.println("Price of a seat:" + price);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 15: //querying a Car Price
@@ -375,16 +444,23 @@ public class Client {
                     }
                     System.out.println("Querying a car price using id: " + arguments.elementAt(1));
                     System.out.println("Car location: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
-                        price = rm.queryCarsPrice(Id, location);
-                        System.out.println("Price of a car at this location:" + price);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_CAR_PRICE, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//                        price = rm.queryCarsPrice(Id, location);
+//                        System.out.println("Price of a car at this location:" + price);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 16: //querying a Room price
@@ -394,16 +470,23 @@ public class Client {
                     }
                     System.out.println("Querying a room price using id: " + arguments.elementAt(1));
                     System.out.println("Room Location: " + arguments.elementAt(2));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        location = obj.getString(arguments.elementAt(2));
-                        price = rm.queryRoomsPrice(Id, location);
-                        System.out.println("Price of Rooms at this location:" + price);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.QUERY_ROOM_PRICE, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        location = obj.getString(arguments.elementAt(2));
+//                        price = rm.queryRoomsPrice(Id, location);
+//                        System.out.println("Price of Rooms at this location:" + price);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 17:  //reserve a flight
@@ -414,19 +497,26 @@ public class Client {
                     System.out.println("Reserving a seat on a flight using id: " + arguments.elementAt(1));
                     System.out.println("Customer id: " + arguments.elementAt(2));
                     System.out.println("Flight number: " + arguments.elementAt(3));
+
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        flightNum = obj.getInt(arguments.elementAt(3));
-                        if (rm.reserveFlight(Id, customer, flightNum))
-                            System.out.println("Flight Reserved");
-                        else
-                            System.out.println("Flight could not be reserved.");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.RESERVE_FLIGHT, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        flightNum = obj.getInt(arguments.elementAt(3));
+//                        if (rm.reserveFlight(Id, customer, flightNum))
+//                            System.out.println("Flight Reserved");
+//                        else
+//                            System.out.println("Flight could not be reserved.");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 18:  //reserve a car
@@ -439,19 +529,25 @@ public class Client {
                     System.out.println("Location: " + arguments.elementAt(3));
 
                     try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        location = obj.getString(arguments.elementAt(3));
-
-                        if (rm.reserveCar(Id, customer, location))
-                            System.out.println("Car Reserved");
-                        else
-                            System.out.println("Car could not be reserved.");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.RESERVE_CAR, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        location = obj.getString(arguments.elementAt(3));
+//
+//                        if (rm.reserveCar(Id, customer, location))
+//                            System.out.println("Car Reserved");
+//                        else
+//                            System.out.println("Car could not be reserved.");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 19:  //reserve a room
@@ -462,20 +558,27 @@ public class Client {
                     System.out.println("Reserving a room at a location using id: " + arguments.elementAt(1));
                     System.out.println("Customer id: " + arguments.elementAt(2));
                     System.out.println("Location: " + arguments.elementAt(3));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        location = obj.getString(arguments.elementAt(3));
 
-                        if (rm.reserveRoom(Id, customer, location))
-                            System.out.println("Room Reserved");
-                        else
-                            System.out.println("Room could not be reserved.");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                    try {
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.RESERVE_ROOM, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        location = obj.getString(arguments.elementAt(3));
+//
+//                        if (rm.reserveRoom(Id, customer, location))
+//                            System.out.println("Room Reserved");
+//                        else
+//                            System.out.println("Room could not be reserved.");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 case 20:  //reserve an Itinerary
@@ -490,25 +593,32 @@ public class Client {
                     System.out.println("Location for Car/Room booking:" + arguments.elementAt(arguments.size() - 3));
                     System.out.println("Car to book?:" + arguments.elementAt(arguments.size() - 2));
                     System.out.println("Room to book?:" + arguments.elementAt(arguments.size() - 1));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        int customer = obj.getInt(arguments.elementAt(2));
-                        Vector flightNumbers = new Vector();
-                        for (int i = 0; i < arguments.size() - 6; i++)
-                            flightNumbers.addElement(arguments.elementAt(3 + i));
-                        location = obj.getString(arguments.elementAt(arguments.size() - 3));
-                        Car = obj.getBoolean(arguments.elementAt(arguments.size() - 2));
-                        Room = obj.getBoolean(arguments.elementAt(arguments.size() - 1));
 
-                        if (rm.itinerary(Id, customer, flightNumbers, location, Car, Room))
-                            System.out.println("Itinerary Reserved");
-                        else
-                            System.out.println("Itinerary could not be reserved.");
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+                    try {
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.RESERVE_ITINERARY, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        int customer = obj.getInt(arguments.elementAt(2));
+//                        Vector flightNumbers = new Vector();
+//                        for (int i = 0; i < arguments.size() - 6; i++)
+//                            flightNumbers.addElement(arguments.elementAt(3 + i));
+//                        location = obj.getString(arguments.elementAt(arguments.size() - 3));
+//                        Car = obj.getBoolean(arguments.elementAt(arguments.size() - 2));
+//                        Room = obj.getBoolean(arguments.elementAt(arguments.size() - 1));
+//
+//                        if (rm.itinerary(Id, customer, flightNumbers, location, Car, Room))
+//                            System.out.println("Itinerary Reserved");
+//                        else
+//                            System.out.println("Itinerary could not be reserved.");
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
+
                     break;
 
                 case 21:  //quit the src.java.client
@@ -527,16 +637,22 @@ public class Client {
                     }
                     System.out.println("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " +
                             arguments.elementAt(2));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        Cid = obj.getInt(arguments.elementAt(2));
-                        boolean customer = rm.newCustomer(Id, Cid);
-                        System.out.println("new customer id:" + Cid);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
+
+                try {
+                        CLIENT_REQUEST_HANDLER.sendRequestToMiddleware(MsgType.ADD_NEW_CUSTOMER_WITH_ID, arguments);
+                    } catch (ClientException e) {
                         e.printStackTrace();
                     }
+//                    try {
+//                        Id = obj.getInt(arguments.elementAt(1));
+//                        Cid = obj.getInt(arguments.elementAt(2));
+//                        boolean customer = rm.newCustomer(Id, Cid);
+//                        System.out.println("new customer id:" + Cid);
+//                    } catch (Exception e) {
+//                        System.out.println("EXCEPTION:");
+//                        System.out.println(e.getMessage());
+//                        e.printStackTrace();
+//                    }
                     break;
 
                 default:

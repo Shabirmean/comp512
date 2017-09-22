@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Vector;
 
 class ClientRequestHandler {
     private final Log log = LogFactory.getLog(ClientRequestHandler.class);
@@ -23,13 +24,14 @@ class ClientRequestHandler {
         this.middlewarePort = middlewarePort;
     }
 
-    void sendRequestToMiddleware(MsgType msgType) throws ClientException {
-        Socket clientSocket = null;
+    void sendRequestToMiddleware(MsgType msgType, Vector arguments) throws ClientException {
+        Socket clientSocket;
         ObjectOutputStream socketWriter = null;
         ObjectInputStream socketReader = null;
         RequestMessage clientReqMsg = new RequestMessage();
         clientReqMsg.setMsgType(msgType);
         clientReqMsg.setMessage("Just a HELLO for type: " + msgType.getMsgCode());
+        clientReqMsg.setMethodArguments(arguments);
 
         try {
             clientSocket = new Socket(middlewareIP, middlewarePort);

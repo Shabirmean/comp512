@@ -20,13 +20,15 @@ public enum MsgType implements Serializable {
     QUERY_ROOMS(11),
     QUERY_CUSTOMER_INFO(12),
     QUERY_FLIGHT_PRICE(13),
-    QUERY_CARS_PRICE(14),
-    QUERY_ROOMS_PRICE(15),
+    QUERY_CAR_PRICE(14),
+    QUERY_ROOM_PRICE(15),
 
     RESERVE_FLIGHT(16),
     RESERVE_CAR(17),
     RESERVE_ROOM(18),
     RESERVE_ITINERARY(19);
+
+    private static final long serialVersionUID = 7526472295622776149L;
 
     private final int msgCode;
 
