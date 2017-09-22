@@ -4,14 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import socs.distributed.middleware.util.Configuration;
 import socs.distributed.middleware.util.MiddlewareConstants;
-import socs.distributed.middleware.util.MiddlewareUtils;
-import socs.distributed.resource.MsgType;
-import socs.distributed.resource.RequestMessage;
-import socs.distributed.resource.ResponseMessage;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -46,7 +40,7 @@ public class MiddlewareServer {
             // for every incoming request, create a new socket and assign it to a new thread in the pool.
             while (true) {
                 Socket clientSocket = middlewareSocket.accept();
-                clientProcessingPool.submit(new ClientRequest(clientSocket));
+                clientProcessingPool.submit(new MiddlewareClientRequest(clientSocket));
             }
         } catch (IOException e) {
             log.error("Unable to process client request");

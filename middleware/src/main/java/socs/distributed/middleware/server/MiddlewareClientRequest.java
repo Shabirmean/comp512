@@ -22,12 +22,12 @@ import java.nio.charset.Charset;
  * whose run method is called by the parent class upon receiving a new incoming request. Consists of separate
  * methods to handle different types of incoming requests.
  */
-public class ClientRequest implements Runnable{
-    private final Log log = LogFactory.getLog(ClientRequest.class);
+public class MiddlewareClientRequest implements Runnable{
+    private final Log log = LogFactory.getLog(MiddlewareClientRequest.class);
     // the unique socket allocated for this new request instance via which future communications happen.
     private final Socket clientSocket;
 
-    ClientRequest(Socket clientSocket) {
+    MiddlewareClientRequest(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
@@ -58,11 +58,11 @@ public class ClientRequest implements Runnable{
             switch (requestMsgType) {
                 case ADD_FLIGHT:
                     System.out.println("ADD_FLIGHT :" + requestMsgFromClient.getMessage());
-                    contactResourceManager("C1");
+                    responseToClient.setMessage(contactResourceManager("C1"));
                     break;
                 case ADD_CARS:
                     System.out.println("ADD_CARS :" + requestMsgFromClient.getMessage());
-                    contactResourceManager("C2");
+                    responseToClient.setMessage(contactResourceManager("C2"));
                     break;
                 case ADD_ROOMS:
                     System.out.println("ADD_ROOMS :" + requestMsgFromClient.getMessage());
@@ -137,9 +137,10 @@ public class ClientRequest implements Runnable{
 
 
     @SuppressWarnings({"StatementWithEmptyBody", "InfiniteLoopStatement"})
-    private void contactResourceManager(String testString) throws IOException {
+    private String contactResourceManager(String testString) throws IOException {
         int port = 22000;
         SocketChannel channel = SocketChannel.open();
+        StringBuilder message = new StringBuilder();
 
         // we open this channel in non blocking mode
         channel.configureBlocking(false);
@@ -152,7 +153,7 @@ public class ClientRequest implements Runnable{
             // see if any message has been received
             ByteBuffer bufferA = ByteBuffer.allocate(20);
             int count = 0;
-            StringBuilder message = new StringBuilder();
+//            StringBuilder message = new StringBuilder();
             while ((count = channel.read(bufferA)) > 0) {
                 // flip the buffer to start reading
                 bufferA.flip();
@@ -166,7 +167,8 @@ public class ClientRequest implements Runnable{
                 while (buffer.hasRemaining()) {
                     channel.write(Charset.defaultCharset().encode(buffer));
                 }
-                message = new StringBuilder();
+                return message;
+//                message = new StringBuilder();
             }
         }
     }

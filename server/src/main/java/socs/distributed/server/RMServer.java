@@ -112,6 +112,8 @@ class RMServer {
                                 }
                             }
                             buffer.clear();
+                            buffer.put((inComingMessage + " replied").getBytes());
+                            clientChannel.write(buffer);
                         }
                         if (bytesRead < 0) {
                             // the key is automatically invalidated once the channel is closed
