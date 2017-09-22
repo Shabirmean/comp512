@@ -167,7 +167,7 @@ public class MiddlewareClientRequest implements Runnable{
                 while (buffer.hasRemaining()) {
                     channel.write(Charset.defaultCharset().encode(buffer));
                 }
-                return message;
+                return message.toString();
 //                message = new StringBuilder();
             }
         }
