@@ -55,6 +55,7 @@ public class MiddlewareServer {
     }
 
     private void initializeResourceManagers(Configuration middlewareConfigs) {
+        resourceManagers = new HashMap<>();
         String flightsRM_IP = middlewareConfigs.getString(MiddlewareConstants.FLIGHTS_MANAGER_IP);
         short flightsRM_Port = middlewareConfigs.getShort(MiddlewareConstants.FLIGHTS_MANAGER_PORT);
         String carsRM_IP = middlewareConfigs.getString(MiddlewareConstants.CARS_MANAGER_IP);

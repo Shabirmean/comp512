@@ -9,7 +9,7 @@ public class ResourceManager {
     ResourceManager(RM_Type type, String rmIP, short rmPort) {
         this.type = type;
         this.rmIP = rmIP;
-        this.rmPort =rmPort;
+        this.rmPort = rmPort;
     }
 
     public RM_Type getType() {
@@ -36,7 +36,7 @@ public class ResourceManager {
         this.rmPort = rmPort;
     }
 
-    public enum RM_Type{
+    public enum RM_Type {
         FLIGHTS("FLIGHT"),
         CARS("CARS"),
         ROOMS("ROOMS");
