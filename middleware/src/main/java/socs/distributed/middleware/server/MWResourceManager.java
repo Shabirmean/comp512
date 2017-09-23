@@ -1,12 +1,12 @@
 package socs.distributed.middleware.server;
 
 
-public class ResourceManager {
+public class MWResourceManager {
     private RM_Type type;
     private String rmIP;
     private short rmPort;
 
-    ResourceManager(RM_Type type, String rmIP, short rmPort) {
+    MWResourceManager(RM_Type type, String rmIP, short rmPort) {
         this.type = type;
         this.rmIP = rmIP;
         this.rmPort = rmPort;

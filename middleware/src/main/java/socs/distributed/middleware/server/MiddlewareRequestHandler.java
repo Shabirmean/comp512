@@ -2,6 +2,7 @@ package socs.distributed.middleware.server;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import socs.distributed.middleware.exception.MiddlewareException;
 import socs.distributed.middleware.util.MiddlewareUtils;
 import socs.distributed.resource.MsgType;
 import socs.distributed.resource.RequestMessage;
@@ -22,12 +23,13 @@ import java.nio.charset.Charset;
  * whose run method is called by the parent class upon receiving a new incoming request. Consists of separate
  * methods to handle different types of incoming requests.
  */
-public class MiddlewareClientRequest implements Runnable{
-    private final Log log = LogFactory.getLog(MiddlewareClientRequest.class);
+@SuppressWarnings("Duplicates")
+public class MiddlewareRequestHandler implements Runnable{
+    private final Log log = LogFactory.getLog(MiddlewareRequestHandler.class);
     // the unique socket allocated for this new request instance via which future communications happen.
     private final Socket clientSocket;
 
-    MiddlewareClientRequest(Socket clientSocket) {
+    MiddlewareRequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
@@ -58,11 +60,11 @@ public class MiddlewareClientRequest implements Runnable{
             switch (requestMsgType) {
                 case ADD_FLIGHT:
                     System.out.println("ADD_FLIGHT :" + requestMsgFromClient.getMessage());
-                    responseToClient.setMessage(contactResourceManager("C1"));
+                    responseToClient.setMessage(contactResourceManager(requestMsgFromClient));
                     break;
                 case ADD_CARS:
                     System.out.println("ADD_CARS :" + requestMsgFromClient.getMessage());
-                    responseToClient.setMessage(contactResourceManager("C2"));
+                    responseToClient.setMessage(contactResourceManager(requestMsgFromClient));
                     break;
                 case ADD_ROOMS:
                     System.out.println("ADD_ROOMS :" + requestMsgFromClient.getMessage());
@@ -128,6 +130,8 @@ public class MiddlewareClientRequest implements Runnable{
             log.error("An IO error occurred whilst trying to READ [SOSPFPacket] object from socket stream.", e);
         } catch (ClassNotFoundException e) {
             log.error("An object type other than [SOSPFPacket] was recieved over the socket connection", e);
+        } catch (MiddlewareException e) {
+            e.printStackTrace();
         } finally {
             MiddlewareUtils.releaseSocket(clientSocket);
             MiddlewareUtils.releaseWriter(socketWriter);
@@ -137,40 +141,42 @@ public class MiddlewareClientRequest implements Runnable{
 
 
     @SuppressWarnings({"StatementWithEmptyBody", "InfiniteLoopStatement"})
-    private String contactResourceManager(String testString) throws IOException {
-        int port = 22000;
-        SocketChannel channel = SocketChannel.open();
-        StringBuilder message = new StringBuilder();
+    private String contactResourceManager(RequestMessage requestMsgFromClient) throws
+            MiddlewareException {
+        String responseString = "NOTHING";
+        Socket clientSocket;
+        ObjectOutputStream socketWriter = null;
+        ObjectInputStream socketReader = null;
 
-        // we open this channel in non blocking mode
-        channel.configureBlocking(false);
-        channel.connect(new InetSocketAddress("cs-27.cs.mcgill.ca", port));
-
-        while (!channel.finishConnect()) {
-            // System.out.println("still connecting");
+        try {
+            clientSocket = new Socket("cs-27.cs.mcgill.ca", 22000);
+        } catch (IOException e) {
+            String errMsg = "An error occurred whilst trying to establish Socket connection to " +
+                    "MIDDLEWARE [" + "cs-27.cs.mcgill.ca" + "] at PORT [" + 22000 + "]";
+            log.error(errMsg);
+            throw new MiddlewareException(errMsg, e);
         }
-        while (true) {
-            // see if any message has been received
-            ByteBuffer bufferA = ByteBuffer.allocate(20);
-            int count = 0;
-//            StringBuilder message = new StringBuilder();
-            while ((count = channel.read(bufferA)) > 0) {
-                // flip the buffer to start reading
-                bufferA.flip();
-                message.append(Charset.defaultCharset().decode(bufferA));
-            }
 
-            if (message.length() > 0) {
-                System.out.println(message);
-                // write some data into the channel
-                CharBuffer buffer = CharBuffer.wrap(testString);
-                while (buffer.hasRemaining()) {
-                    channel.write(Charset.defaultCharset().encode(buffer));
-                }
-                return message.toString();
-//                message = new StringBuilder();
-            }
+        try {
+            socketWriter = new ObjectOutputStream(clientSocket.getOutputStream());
+            socketReader = new ObjectInputStream(clientSocket.getInputStream());
+            socketWriter.writeObject(requestMsgFromClient);
+            ResponseMessage responseFromRMServer = (ResponseMessage) socketReader.readObject();
+            responseString = responseFromRMServer.getMessage();
+
+            log.info("RM Server responded with: " + responseFromRMServer);
+        } catch (IOException e) {
+            System.out.println("An error occurred whilst trying to READ/WRITE from socket to middleware server");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Object type received over the socket connection was not [ResponseMessage]");
+            e.printStackTrace();
+        } finally {
+            MiddlewareUtils.releaseSocket(clientSocket);
+            MiddlewareUtils.releaseWriter(socketWriter);
+            MiddlewareUtils.releaseReader(socketReader);
         }
+        return responseString;
     }
 
 }
