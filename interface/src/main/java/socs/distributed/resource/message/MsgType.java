@@ -1,31 +1,31 @@
-package socs.distributed.resource;
+package socs.distributed.resource.message;
 
 
 import java.io.Serializable;
 
 public enum MsgType implements Serializable {
     ADD_FLIGHT(0),
+    DELETE_FLIGHT(5),
+    QUERY_FLIGHT(9),
+    QUERY_FLIGHT_PRICE(13),
+    RESERVE_FLIGHT(16),
+
     ADD_CARS(1),
+    DELETE_CARS(6),
+    QUERY_CARS(10),
+    QUERY_CAR_PRICE(14),
+    RESERVE_CAR(17),
+
     ADD_ROOMS(2),
+    DELETE_ROOMS(7),
+    QUERY_ROOMS(11),
+    QUERY_ROOM_PRICE(15),
+    RESERVE_ROOM(18),
+
     ADD_NEW_CUSTOMER_WITHOUT_ID(3),
     ADD_NEW_CUSTOMER_WITH_ID(4),
-
-    DELETE_FLIGHT(5),
-    DELETE_CARS(6),
-    DELETE_ROOMS(7),
     DELETE_CUSTOMER(8),
-
-    QUERY_FLIGHT(9),
-    QUERY_CARS(10),
-    QUERY_ROOMS(11),
     QUERY_CUSTOMER_INFO(12),
-    QUERY_FLIGHT_PRICE(13),
-    QUERY_CAR_PRICE(14),
-    QUERY_ROOM_PRICE(15),
-
-    RESERVE_FLIGHT(16),
-    RESERVE_CAR(17),
-    RESERVE_ROOM(18),
     RESERVE_ITINERARY(19);
 
     private static final long serialVersionUID = 7526472295622776149L;
@@ -38,5 +38,10 @@ public enum MsgType implements Serializable {
 
     public int getMsgCode() {
         return this.msgCode;
+    }
+
+    public class MessageStatus{
+        public static final int RM_SERVER_FAIL_STATUS = 0;
+        public static final int RM_SERVER_SUCCESS_STATUS = 1;
     }
 }

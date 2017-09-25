@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import socs.distributed.client.exception.ClientException;
 import socs.distributed.client.util.ClientUtils;
-import socs.distributed.resource.MsgType;
-import socs.distributed.resource.RequestMessage;
-import socs.distributed.resource.ResponseMessage;
+import socs.distributed.resource.message.MsgType;
+import socs.distributed.resource.message.RequestMessage;
+import socs.distributed.resource.message.ResponseMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

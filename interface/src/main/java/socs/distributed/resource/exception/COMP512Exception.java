@@ -1,4 +1,4 @@
-package socs.distributed.resource;
+package socs.distributed.resource.exception;
 
 import java.io.Serializable;
 

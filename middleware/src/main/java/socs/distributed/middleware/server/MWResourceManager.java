@@ -1,7 +1,8 @@
 package socs.distributed.middleware.server;
 
+import socs.distributed.resource.message.MsgType;
 
-public class MWResourceManager {
+class MWResourceManager {
     private RM_Type type;
     private String rmIP;
     private short rmPort;
@@ -12,38 +13,29 @@ public class MWResourceManager {
         this.rmPort = rmPort;
     }
 
-    public RM_Type getType() {
+    RM_Type getType() {
         return type;
     }
 
-    public void setType(RM_Type type) {
-        this.type = type;
-    }
-
-    public String getRmIP() {
+    String getRmIP() {
         return rmIP;
     }
 
-    public void setRmIP(String rmIP) {
-        this.rmIP = rmIP;
-    }
-
-    public short getRmPort() {
+    short getRmPort() {
         return rmPort;
-    }
-
-    public void setRmPort(short rmPort) {
-        this.rmPort = rmPort;
     }
 
     public enum RM_Type {
         FLIGHTS("FLIGHT"),
         CARS("CARS"),
-        ROOMS("ROOMS");
+        ROOMS("ROOMS"),
+        CUSTOMERS("CUSTOMERS"),
+        ITINERARY("CUSTOMERS"),
+        NOT_RECOGNIZED("NOT_RECOGNIZED");
 
         private final String text;
 
-        private RM_Type(final String text) {
+        RM_Type(final String text) {
             this.text = text;
         }
 
@@ -51,5 +43,24 @@ public class MWResourceManager {
         public String toString() {
             return text;
         }
+    }
+
+    static RM_Type getRMCorrespondingToRequest(MsgType msgType) {
+        if (msgType == MsgType.ADD_FLIGHT || msgType == MsgType.DELETE_FLIGHT || msgType == MsgType.QUERY_FLIGHT ||
+                msgType == MsgType.QUERY_FLIGHT_PRICE || msgType == MsgType.RESERVE_FLIGHT) {
+            return RM_Type.FLIGHTS;
+        } else if (msgType == MsgType.ADD_CARS || msgType == MsgType.DELETE_CARS || msgType == MsgType.QUERY_CARS ||
+                msgType == MsgType.QUERY_CAR_PRICE || msgType == MsgType.RESERVE_CAR) {
+            return RM_Type.CARS;
+        } else if (msgType == MsgType.ADD_ROOMS || msgType == MsgType.DELETE_ROOMS || msgType == MsgType.QUERY_ROOMS ||
+                msgType == MsgType.QUERY_ROOM_PRICE || msgType == MsgType.RESERVE_ROOM) {
+            return RM_Type.ROOMS;
+        } else if (msgType == MsgType.ADD_NEW_CUSTOMER_WITHOUT_ID || msgType == MsgType.ADD_NEW_CUSTOMER_WITH_ID ||
+                msgType == MsgType.DELETE_CUSTOMER || msgType == MsgType.QUERY_CUSTOMER_INFO) {
+            return RM_Type.CUSTOMERS;
+        } else if (msgType == MsgType.RESERVE_ITINERARY) {
+            return RM_Type.ITINERARY;
+        }
+        return RM_Type.NOT_RECOGNIZED;
     }
 }

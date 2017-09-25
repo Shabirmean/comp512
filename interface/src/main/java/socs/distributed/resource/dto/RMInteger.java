@@ -2,14 +2,12 @@
 // adapted Kevin T. Manley
 // CSE 593
 // -------------------------------
-package socs.distributed.server.dto;
-
-import socs.distributed.server.dto.RMItem;
+package socs.distributed.resource.dto;
 
 import java.io.Serializable;
 
 // A simple Integer wrapper
-public class RMInteger extends RMItem implements Serializable
+public class RMInteger implements Serializable
 {
 		protected int m_value;
 
