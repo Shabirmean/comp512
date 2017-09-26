@@ -20,8 +20,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Vector;
 
-import static socs.distributed.resource.message.MsgType.RESERVE_ITINERARY;
-
 
 /**
  * An class which holds all the methods related to handling a new incoming request. Implements "Runnable"

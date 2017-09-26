@@ -4,7 +4,6 @@ import socs.distributed.resource.dto.RMConcurrentHashMap;
 import socs.distributed.resource.dto.RMItem;
 import socs.distributed.resource.dto.ReservableItem;
 import socs.distributed.resource.entity.Car;
-import socs.distributed.resource.entity.Customer;
 import socs.distributed.resource.entity.Flight;
 import socs.distributed.resource.entity.Hotel;
 import socs.distributed.resource.util.Trace;

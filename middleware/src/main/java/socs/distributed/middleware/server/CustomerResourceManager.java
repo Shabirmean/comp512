@@ -2,10 +2,7 @@ package socs.distributed.middleware.server;
 
 
 import socs.distributed.resource.dto.*;
-import socs.distributed.resource.entity.Car;
 import socs.distributed.resource.entity.Customer;
-import socs.distributed.resource.entity.Flight;
-import socs.distributed.resource.entity.Hotel;
 import socs.distributed.resource.util.Trace;
 
 import java.util.Calendar;
