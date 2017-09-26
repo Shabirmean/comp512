@@ -30,7 +30,7 @@ class MWResourceManager {
         CARS("CARS"),
         ROOMS("ROOMS"),
         CUSTOMERS("CUSTOMERS"),
-        ITINERARY("CUSTOMERS"),
+        ITINERARY("ITINERARY"),
         NOT_RECOGNIZED("NOT_RECOGNIZED");
 
         private final String text;

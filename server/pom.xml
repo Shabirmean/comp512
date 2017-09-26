@@ -16,7 +16,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>socs.distributed.server.ResourceManagerImpl</mainClass>
+                            <mainClass>socs.distributed.server.RMServer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -71,4 +71,8 @@ public class MiddlewareServer {
                 msgType == MsgType.DELETE_CUSTOMER || msgType == MsgType.QUERY_CUSTOMER_INFO ||
                 msgType == MsgType.RESERVE_ITINERARY);
     }
+
+    static boolean isReserveRequest(MsgType msgType) {
+        return (msgType == MsgType.RESERVE_FLIGHT || msgType == MsgType.RESERVE_CAR || msgType == MsgType.RESERVE_ROOM);
+    }
 }

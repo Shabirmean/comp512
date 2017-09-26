@@ -2,66 +2,33 @@ package socs.distributed.middleware.server;
 
 
 import socs.distributed.resource.dto.*;
+import socs.distributed.resource.entity.Car;
 import socs.distributed.resource.entity.Customer;
+import socs.distributed.resource.entity.Flight;
+import socs.distributed.resource.entity.Hotel;
 import socs.distributed.resource.util.Trace;
 
-import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Vector;
 
 @SuppressWarnings("ALL")
 public class CustomerResourceManager {
-    private static final RMConcurrentHashMap RM_ITEMS_MAP = new RMConcurrentHashMap();
+    private static final RMConcurrentHashMap CUSTOMER_RM_ITEMS_MAP = new RMConcurrentHashMap();
 
     // Reads a data item
     private RMItem readData(int id, String key) {
-        return (RMItem) RM_ITEMS_MAP.get(key);
+        return (RMItem) CUSTOMER_RM_ITEMS_MAP.get(key);
     }
 
     // Writes a data item
     private void writeData(int id, String key, RMItem value) {
-        RM_ITEMS_MAP.put(key, value);
+        CUSTOMER_RM_ITEMS_MAP.put(key, value);
     }
 
     // Remove the item out of storage
     private RMItem removeData(int id, String key) {
-        return (RMItem) RM_ITEMS_MAP.remove(key);
-    }
-
-
-    // reserve an item
-    protected boolean reserveItem(int id, int customerID, String key, String location) {
-        Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
-        // Read customer object if it exists (and read lock it)
-        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
-        if (cust == null) {
-            Trace.warn("RM::reserveCar( " + id + ", " + customerID + ", " + key + ", " + location + ")  " +
-                    "failed--customer doesn't exist");
-            return false;
-        }
-
-        // check if the item is available
-        ReservableItem item = (ReservableItem) readData(id, key);
-        if (item == null) {
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--item " +
-                    "doesn't exist");
-            return false;
-        } else if (item.getCount() == 0) {
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--No " +
-                    "more items");
-            return false;
-        } else {
-            cust.reserve(key, location, item.getPrice());
-            writeData(id, cust.getKey(), cust);
-
-            // decrease the number of available items in the storage
-            item.setCount(item.getCount() - 1);
-            item.setReserved(item.getReserved() + 1);
-
-            Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
-            return true;
-        }
+        return (RMItem) CUSTOMER_RM_ITEMS_MAP.remove(key);
     }
 
     // customer functions
@@ -128,7 +95,7 @@ public class CustomerResourceManager {
 
 
     // Returns data structure containing customer reservation info. Returns null if the
-    //  customer doesn't exist. Returns empty RMHashtable if customer exists but has no
+    //  customer doesn't exist. Returns empty RMConcurrentHashMap if customer exists but has no
     //  reservations.
     public RMConcurrentHashMap getCustomerReservations(int id, int customerID) {
         Trace.info("RM::getCustomerReservations(" + id + ", " + customerID + ") called");
@@ -157,9 +124,42 @@ public class CustomerResourceManager {
         } // if
     }
 
+
+//    // Adds car reservation to this customer.
+//    boolean reserveCar(int id, int customerID, String location) {
+//        return reserveItem(id, customerID, Car.getKey(location), location);
+//    }
+//
+//    // Adds room reservation to this customer.
+//    boolean reserveRoom(int id, int customerID, String location) {
+//        return reserveItem(id, customerID, Hotel.getKey(location), location);
+//    }
+//
+//    // Adds flight reservation to this customer.
+//    boolean reserveFlight(int id, int customerID, int flightNum) {
+//        return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+//    }
+
     // Reserve an itinerary
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) {
         return false;
     }
 
+    public Customer isValidCustomer(int id, int customerId) {
+        Trace.info("RM::reserveItem( " + id + ", customer=" + customerId + " ) called");
+        // Read customer object if it exists (and read lock it)
+        Customer customer = (Customer) readData(id, Customer.getKey(customerId));
+        if (customer == null) {
+            Trace.warn("RM::ReserveItem( " + id + ", " + customerId + ") failed--customer doesn't exist");
+            return null;
+        }
+        return customer;
+    }
+
+    // reserve an item
+    protected boolean reserveItem(int id, Customer customer) {
+        writeData(id, customer.getKey(), customer);
+        Trace.info("RM::ReserveItem(" + id + ", Customer Key: " + customer.getKey() + ") succeeded");
+        return true;
+    }
 }

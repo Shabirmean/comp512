@@ -10,14 +10,14 @@ public class RMConcurrentHashMap extends ConcurrentHashMap {
 
     public String toString()
     {
-        String s = "--- BEGIN RMHashtable ---\n";
+        String s = "--- BEGIN RMConcurrentHashMap ---\n";
         Object key = null;
         for (Enumeration e = keys(); e.hasMoreElements(); ) {
             key = e.nextElement();
             String value = (String)get( key );
             s = s + "[KEY='"+key+"']" + value + "\n";
         }
-        s = s + "--- END RMHashtable ---";
+        s = s + "--- END RMConcurrentHashMap ---";
         return s;
     }
 

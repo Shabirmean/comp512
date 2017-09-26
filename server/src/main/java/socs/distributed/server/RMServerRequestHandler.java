@@ -3,6 +3,7 @@ package socs.distributed.server;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import socs.distributed.resource.dto.ReservableItem;
 import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
@@ -30,6 +31,7 @@ public class RMServerRequestHandler implements Runnable {
      * Overridden "run" method from Runnable that initiates new-request handling procedures. Sets up the socket
      * reader and writer objects and invokes appropriate method according to the incoming message type.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         ResponseMessage responseToMW = new ResponseMessage();
@@ -64,7 +66,7 @@ public class RMServerRequestHandler implements Runnable {
                         int flightSeats = this.getInt(msgArgs.elementAt(3));
                         int flightPrice = this.getInt(msgArgs.elementAt(4));
 
-                        if (RMServer.resourceManager.addFlight(id, flightNum, flightSeats, flightPrice)) {
+                        if (RMServer.RM_SERVER_MANAGER.addFlight(id, flightNum, flightSeats, flightPrice)) {
                             log.info("Flight added");
                             responseToMW.setMessage("A new flight was successfully added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -84,7 +86,7 @@ public class RMServerRequestHandler implements Runnable {
                         int numCars = this.getInt(msgArgs.elementAt(3));
                         int carPrice = this.getInt(msgArgs.elementAt(4));
 
-                        if (RMServer.resourceManager.addCars(id, carLocation, numCars, carPrice)) {
+                        if (RMServer.RM_SERVER_MANAGER.addCars(id, carLocation, numCars, carPrice)) {
                             log.info("Cars added");
                             responseToMW.setMessage("A new car was successfully added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -104,7 +106,7 @@ public class RMServerRequestHandler implements Runnable {
                         int numRooms = this.getInt(msgArgs.elementAt(3));
                         int hotelPrice = this.getInt(msgArgs.elementAt(4));
 
-                        if (RMServer.resourceManager.addRooms(id, roomLocation, numRooms, hotelPrice)) {
+                        if (RMServer.RM_SERVER_MANAGER.addRooms(id, roomLocation, numRooms, hotelPrice)) {
                             log.info("Rooms added");
                             responseToMW.setMessage("A new room was successfully added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -122,7 +124,7 @@ public class RMServerRequestHandler implements Runnable {
                         id = this.getInt(msgArgs.elementAt(1));
                         int flightNum = this.getInt(msgArgs.elementAt(2));
 
-                        if (RMServer.resourceManager.deleteFlight(id, flightNum)) {
+                        if (RMServer.RM_SERVER_MANAGER.deleteFlight(id, flightNum)) {
                             log.info("Flight Deleted");
                             responseToMW.setMessage("Flight was successfully deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -140,7 +142,7 @@ public class RMServerRequestHandler implements Runnable {
                         id = this.getInt(msgArgs.elementAt(1));
                         String carLocation = this.getString(msgArgs.elementAt(2));
 
-                        if (RMServer.resourceManager.deleteCars(id, carLocation)) {
+                        if (RMServer.RM_SERVER_MANAGER.deleteCars(id, carLocation)) {
                             log.info("Car Deleted");
                             responseToMW.setMessage("Car was successfully deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -157,7 +159,7 @@ public class RMServerRequestHandler implements Runnable {
                     case DELETE_ROOMS: {
                         id = this.getInt(msgArgs.elementAt(1));
                         String roomLocation = this.getString(msgArgs.elementAt(2));
-                        if (RMServer.resourceManager.deleteRooms(id, roomLocation)) {
+                        if (RMServer.RM_SERVER_MANAGER.deleteRooms(id, roomLocation)) {
                             log.info("Room Deleted");
                             responseToMW.setMessage("Room was successfully deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
@@ -174,7 +176,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_FLIGHT: {
                         id = this.getInt(msgArgs.elementAt(1));
                         int flightNum = this.getInt(msgArgs.elementAt(2));
-                        int seats = RMServer.resourceManager.queryFlight(id, flightNum);
+                        int seats = RMServer.RM_SERVER_MANAGER.queryFlight(id, flightNum);
 
                         log.info("Number of seats available:" + seats);
                         responseToMW.setMessage("Number of seats available:" + seats);
@@ -185,7 +187,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_CARS: {
                         id = this.getInt(msgArgs.elementAt(1));
                         String carLocation = this.getString(msgArgs.elementAt(2));
-                        int numCars = RMServer.resourceManager.queryCars(id, carLocation);
+                        int numCars = RMServer.RM_SERVER_MANAGER.queryCars(id, carLocation);
 
                         log.info("Number of Cars at this location:" + numCars);
                         responseToMW.setMessage("number of Cars at this location:" + numCars);
@@ -196,7 +198,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_ROOMS: {
                         id = this.getInt(msgArgs.elementAt(1));
                         String roomLocation = this.getString(msgArgs.elementAt(2));
-                        int numRooms = RMServer.resourceManager.queryRooms(id, roomLocation);
+                        int numRooms = RMServer.RM_SERVER_MANAGER.queryRooms(id, roomLocation);
 
                         log.info("Number of Rooms at this location:" + numRooms);
                         responseToMW.setMessage("Number of Rooms at this location:" + numRooms);
@@ -207,7 +209,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_FLIGHT_PRICE: {
                         id = this.getInt(msgArgs.elementAt(1));
                         int flightNum = this.getInt(msgArgs.elementAt(2));
-                        int flightPrice = RMServer.resourceManager.queryFlightPrice(id, flightNum);
+                        int flightPrice = RMServer.RM_SERVER_MANAGER.queryFlightPrice(id, flightNum);
 
                         log.info("Price of a seat:" + flightPrice);
                         responseToMW.setMessage("Price of a seat:" + flightPrice);
@@ -218,7 +220,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_CAR_PRICE: {
                         id = this.getInt(msgArgs.elementAt(1));
                         String carLocation = this.getString(msgArgs.elementAt(2));
-                        int carPrice = RMServer.resourceManager.queryCarsPrice(id, carLocation);
+                        int carPrice = RMServer.RM_SERVER_MANAGER.queryCarsPrice(id, carLocation);
 
                         log.info("Price of a car at this location:" + carPrice);
                         responseToMW.setMessage("Price of a car at this location:" + carPrice);
@@ -229,7 +231,7 @@ public class RMServerRequestHandler implements Runnable {
                     case QUERY_ROOM_PRICE: {
                         id = this.getInt(msgArgs.elementAt(1));
                         String roomLocation = this.getString(msgArgs.elementAt(2));
-                        int hotelPrice = RMServer.resourceManager.queryRoomsPrice(id, roomLocation);
+                        int hotelPrice = RMServer.RM_SERVER_MANAGER.queryRoomsPrice(id, roomLocation);
 
                         log.info("Price of Rooms at this location:" + hotelPrice);
                         responseToMW.setMessage("Price of Rooms at this location:" + hotelPrice);
@@ -242,8 +244,12 @@ public class RMServerRequestHandler implements Runnable {
                         int customer = this.getInt(msgArgs.elementAt(2));
                         int flightNum = this.getInt(msgArgs.elementAt(3));
 
-                        if (RMServer.resourceManager.reserveFlight(id, customer, flightNum)) {
+                        ReservableItem item = RMServer.RM_SERVER_MANAGER.reserveFlight(id, customer, flightNum);
+                        if (item != null) {
                             log.info("Flight Reserved");
+                            Vector<ReservableItem> itemVector = new Vector<>();
+                            itemVector.add(item);
+                            responseToMW.setItems(itemVector);
                             responseToMW.setMessage("Flight was successfully reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
@@ -261,8 +267,12 @@ public class RMServerRequestHandler implements Runnable {
                         int customer = this.getInt(msgArgs.elementAt(2));
                         String carLocation = this.getString(msgArgs.elementAt(3));
 
-                        if (RMServer.resourceManager.reserveCar(id, customer, carLocation)) {
+                        ReservableItem item = RMServer.RM_SERVER_MANAGER.reserveCar(id, customer, carLocation);
+                        if (item != null) {
                             log.info("Car Reserved");
+                            Vector<ReservableItem> itemVector = new Vector<>();
+                            itemVector.add(item);
+                            responseToMW.setItems(itemVector);
                             responseToMW.setMessage("Car was successfully reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
@@ -280,8 +290,12 @@ public class RMServerRequestHandler implements Runnable {
                         int customer = this.getInt(msgArgs.elementAt(2));
                         String roomLocation = this.getString(msgArgs.elementAt(3));
 
-                        if (RMServer.resourceManager.reserveRoom(id, customer, roomLocation)) {
+                        ReservableItem item = RMServer.RM_SERVER_MANAGER.reserveRoom(id, customer, roomLocation);
+                        if (item != null) {
                             log.info("Room Reserved");
+                            Vector<ReservableItem> itemVector = new Vector<>();
+                            itemVector.add(item);
+                            responseToMW.setItems(itemVector);
                             responseToMW.setMessage("Room was successfully reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
@@ -293,9 +307,77 @@ public class RMServerRequestHandler implements Runnable {
                         }
                         break;
                     }
+
+                    case RESERVE_ITINERARY: {
+                        id = this.getInt(msgArgs.elementAt(1));
+                        int customer = this.getInt(msgArgs.elementAt(2));
+
+                        switch (RMServer.rmServerRole.toUpperCase()) {
+                            case RMServerConstants.RM_FLIGHT_SERVER:
+                                Vector flightNumbers = new Vector();
+                                for (int i = 0; i < msgArgs.size() - 6; i++) {
+                                    flightNumbers.addElement(msgArgs.elementAt(3 + i));
+                                }
+                                Vector<ReservableItem> reservedFlights =
+                                        RMServer.RM_SERVER_MANAGER.reserveFlights(id, customer, flightNumbers);
+
+                                if (reservedFlights.size() != 0) {
+                                    responseToMW.setItems(reservedFlights);
+                                    responseToMW.setMessage("Flights were successfully reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                                } else {
+                                    log.info("Flights could not be reserved");
+                                    COMP512Exception exception = new COMP512Exception("Flights could not be reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                                    responseToMW.setException(exception);
+                                    responseToMW.setMessage("Flights could not be reserved");
+                                }
+                                break;
+
+                            case RMServerConstants.RM_CAR_SERVER:
+                                String carLocation = this.getString(msgArgs.elementAt(msgArgs.size() - 3));
+                                ReservableItem carItem = RMServer.RM_SERVER_MANAGER.reserveCar(id, customer, carLocation);
+
+                                if (carItem != null) {
+                                    log.info("Car Reserved");
+                                    Vector<ReservableItem> itemVector = new Vector<>();
+                                    itemVector.add(carItem);
+                                    responseToMW.setItems(itemVector);
+                                    responseToMW.setMessage("Car was successfully reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                                } else {
+                                    log.info("Car could not be reserved");
+                                    COMP512Exception exception = new COMP512Exception("Car could not be reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                                    responseToMW.setException(exception);
+                                    responseToMW.setMessage("Car could not be reserved");
+                                }
+                                break;
+
+                            case RMServerConstants.RM_HOTEL_SERVER:
+                                String hotelLocation = this.getString(msgArgs.elementAt(msgArgs.size() - 3));
+                                ReservableItem hotelItem =
+                                        RMServer.RM_SERVER_MANAGER.reserveRoom(id, customer, hotelLocation);
+
+                                if (hotelItem != null) {
+                                    log.info("Hotel Reserved");
+                                    Vector<ReservableItem> itemVector = new Vector<>();
+                                    itemVector.add(hotelItem);
+                                    responseToMW.setItems(itemVector);
+                                    responseToMW.setMessage("Hotel was successfully reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                                } else {
+                                    log.info("Hotel could not be reserved");
+                                    COMP512Exception exception = new COMP512Exception("Hotel could not be reserved");
+                                    responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                                    responseToMW.setException(exception);
+                                    responseToMW.setMessage("Hotel could not be reserved");
+                                }
+                                break;
+                        }
+                    }
                 }
             }
-
             socketWriter.writeObject(responseToMW);
         } catch (IOException e) {
             log.error("An IO error occurred whilst trying to READ [RequestMessage] object from socket stream.", e);

@@ -4,6 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import socs.distributed.middleware.exception.MiddlewareException;
 import socs.distributed.middleware.util.MiddlewareUtils;
+import socs.distributed.resource.dto.ReservableItem;
+import socs.distributed.resource.entity.Car;
+import socs.distributed.resource.entity.Customer;
+import socs.distributed.resource.entity.Flight;
+import socs.distributed.resource.entity.Hotel;
 import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
@@ -14,6 +19,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Vector;
+
+import static socs.distributed.resource.message.MsgType.RESERVE_ITINERARY;
 
 
 /**
@@ -125,27 +132,117 @@ public class MiddlewareRequestHandler implements Runnable {
                         boolean bookCars = this.getBoolean(msgArgs.elementAt(msgArgs.size() - 2));
                         boolean bookRooms = this.getBoolean(msgArgs.elementAt(msgArgs.size() - 1));
 
-                        if (MiddlewareServer.internalResourceManager.
-                                itinerary(id, customerId, flightNumbers, location, bookCars, bookRooms)) {
-                            log.info("Itinerary Reserved");
-                            responseToClient.setMessage("Itinerary Reserved");
-                            responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
-                        } else {
-                            log.info("Itinerary could not be reserved.");
-                            COMP512Exception exception = new COMP512Exception("Itinerary could not be reserved.");
+                        Customer customer = MiddlewareServer.internalResourceManager.isValidCustomer(id, customerId);
+                        if (customer == null) {
+                            log.info("Could not reserve itinerary for " +
+                                    "[ID: " + id + ", CustomerID: " + customerId + "]");
+                            COMP512Exception exception =
+                                    new COMP512Exception("Itinerary reserve request failed. Customer does not exist.");
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
                             responseToClient.setException(exception);
-                            responseToClient.setMessage("Itinerary could not be reserved.");
+                            responseToClient.setMessage("Itinerary reserve request failed. Customer does not exist.");
+                        } else {
+                            MWResourceManager mwResourceManager =
+                                    MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.FLIGHTS);
+
+                            ResponseMessage respFromRM =
+                                    contactResourceManager(mwResourceManager, requestMsgFromClient);
+                            Vector<ReservableItem> reservableItems = respFromRM.getItems();
+                            for (ReservableItem item : reservableItems) {
+                                int flightNo = Integer.parseInt(item.getLocation());
+                                customer.reserve(Flight.getKey(flightNo), String.valueOf(flightNo), item.getPrice());
+                            }
+
+                            if (bookCars) {
+                                mwResourceManager =
+                                        MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
+                                respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+                                ReservableItem carItem = respFromRM.getItems().get(0);
+                                customer.reserve(Car.getKey(location), location, carItem.getPrice());
+                            }
+
+                            if (bookRooms) {
+                                mwResourceManager =
+                                        MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
+                                respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+                                ReservableItem roomItem = respFromRM.getItems().get(0);
+                                customer.reserve(Hotel.getKey(location), location, roomItem.getPrice());
+                            }
+
+                            if (MiddlewareServer.internalResourceManager.reserveItem(id, customer)) {
+                                log.info("Itinerary Reservation Successful");
+                                responseToClient.setMessage("Itinerary Reservation was successfully completed");
+                                responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                            } else {
+                                log.info("Itinerary Reservation Failed");
+                                COMP512Exception exception =
+                                        new COMP512Exception("Itinerary Reservation could not be completed");
+                                responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                                responseToClient.setException(exception);
+                                responseToClient.setMessage("Itinerary Reservation could not be completed");
+                            }
                         }
                         break;
                 }
+
             } else {
                 MWResourceManager.RM_Type rmTypeOfRequest =
                         MWResourceManager.getRMCorrespondingToRequest(requestMsgType);
-                MWResourceManager mwResourceManager = MiddlewareServer.externalResourceManagers.get(rmTypeOfRequest);
-                responseToClient = contactResourceManager(mwResourceManager, requestMsgFromClient);
-                socketWriter.writeObject(responseToClient);
+                MWResourceManager mwResourceManager =
+                        MiddlewareServer.externalResourceManagers.get(rmTypeOfRequest);
+
+                if (MiddlewareServer.isReserveRequest(requestMsgType)) {
+                    id = this.getInt(msgArgs.elementAt(1));
+                    customerId = this.getInt(msgArgs.elementAt(2));
+                    String locationOrFlNo = this.getString(msgArgs.elementAt(3));
+
+                    Customer customer = MiddlewareServer.internalResourceManager.isValidCustomer(id, customerId);
+                    if (customer == null) {
+                        log.info("Could not execute reserve for [ID: " + id + ", CustomerID: " + customerId + "]");
+                        COMP512Exception exception =
+                                new COMP512Exception("Reservation request failed. Customer does not exist.");
+                        responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                        responseToClient.setException(exception);
+                        responseToClient.setMessage("Reservation request failed. Customer does not exist.");
+
+                    } else {
+                        ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+                        ReservableItem reservableItem = respFromRM.getItems().elementAt(0);
+
+                        switch (requestMsgType) {
+                            case RESERVE_FLIGHT:
+                                customer.reserve(Flight.getKey(Integer.parseInt(locationOrFlNo)),
+                                        String.valueOf(locationOrFlNo), reservableItem.getPrice());
+                                break;
+
+                            case RESERVE_CAR:
+                                customer.reserve(Car.getKey(locationOrFlNo), locationOrFlNo, reservableItem.getPrice());
+                                break;
+
+                            case RESERVE_ROOM:
+                                customer.reserve(
+                                        Hotel.getKey(locationOrFlNo), locationOrFlNo, reservableItem.getPrice());
+                                break;
+                        }
+
+                        if (MiddlewareServer.internalResourceManager.reserveItem(id, customer)) {
+                            log.info("Reservation Successful");
+                            responseToClient.setMessage("Reservation was successfully completed");
+                            responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                        } else {
+                            log.info("Reservation Failed");
+                            COMP512Exception exception = new COMP512Exception("Reservation could not be completed");
+                            responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                            responseToClient.setException(exception);
+                            responseToClient.setMessage("Reservation could not be completed");
+                        }
+                    }
+                } else {
+                    responseToClient = contactResourceManager(mwResourceManager, requestMsgFromClient);
+                }
             }
+
+            socketWriter.writeObject(responseToClient);
 
         } catch (IOException e) {
             log.error("An IO error occurred whilst trying to READ [SOSPFPacket] object from socket stream.", e);
