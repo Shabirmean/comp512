@@ -1,5 +1,6 @@
 package socs.distributed.client;
 
+import org.apache.log4j.Logger;
 import socs.distributed.client.exception.ClientException;
 import socs.distributed.resource.message.MsgType;
 
@@ -11,6 +12,8 @@ import java.util.Vector;
 
 
 public class Client {
+    private static final Logger log = Logger.getLogger(Client.class);
+    
     public static void main(String args[]) {
         Client obj = new Client();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -26,20 +29,20 @@ public class Client {
             middlewarePort = Short.parseShort(args[1]);
         }
         if (args.length > 2) {
-            System.out.println("Usage: java src.java.client [MiddlewareHost [MiddlewarePort]]");
+            log.info("Usage: java src.java.client [MiddlewareHost [MiddlewarePort]]");
             System.exit(1);
         }
 
         ClientRequestHandler clientRequestHandler = new ClientRequestHandler(middlewareIP, middlewarePort);
-        System.out.println("\n\n\tClient Interface connecting to " + middlewareIP + ":" + middlewarePort);
-        System.out.println("Type \"help\" for list of supported commands");
+        log.info("\n\n\tClient Interface connecting to " + middlewareIP + ":" + middlewarePort);
+        log.info("Type \"help\" for list of supported commands");
         while (true) {
             System.out.print("\n>");
             try {
                 //read the next command
                 command = stdin.readLine();
             } catch (IOException io) {
-                System.out.println("Unable to read from standard in");
+                log.info("Unable to read from standard in");
                 System.exit(1);
             }
             //remove heading and trailing white space
@@ -54,7 +57,7 @@ public class Client {
                     else if (arguments.size() == 2)  //command was "help <commandname>"
                         obj.listSpecific((String) arguments.elementAt(1));
                     else  //wrong use of help command
-                        System.out.println("Improper use of help command. Type help or help, <commandname>");
+                        log.info("Improper use of help command. Type help or help, <commandname>");
                     break;
 
                 case 2:  //new flight
@@ -62,10 +65,10 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Flight using id: " + arguments.elementAt(1));
-                    System.out.println("Flight number: " + arguments.elementAt(2));
-                    System.out.println("Add Flight Seats: " + arguments.elementAt(3));
-                    System.out.println("Set Flight Price: " + arguments.elementAt(4));
+                    log.info("Adding a new Flight using id: " + arguments.elementAt(1));
+                    log.info("Flight number: " + arguments.elementAt(2));
+                    log.info("Add Flight Seats: " + arguments.elementAt(3));
+                    log.info("Set Flight Price: " + arguments.elementAt(4));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_FLIGHT, arguments);
@@ -79,10 +82,10 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Car using id: " + arguments.elementAt(1));
-                    System.out.println("Car Location: " + arguments.elementAt(2));
-                    System.out.println("Add Number of Cars: " + arguments.elementAt(3));
-                    System.out.println("Set Price: " + arguments.elementAt(4));
+                    log.info("Adding a new Car using id: " + arguments.elementAt(1));
+                    log.info("Car Location: " + arguments.elementAt(2));
+                    log.info("Add Number of Cars: " + arguments.elementAt(3));
+                    log.info("Set Price: " + arguments.elementAt(4));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_CARS, arguments);
@@ -97,10 +100,10 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Room using id: " + arguments.elementAt(1));
-                    System.out.println("Room Location: " + arguments.elementAt(2));
-                    System.out.println("Add Number of Rooms: " + arguments.elementAt(3));
-                    System.out.println("Set Price: " + arguments.elementAt(4));
+                    log.info("Adding a new Room using id: " + arguments.elementAt(1));
+                    log.info("Room Location: " + arguments.elementAt(2));
+                    log.info("Add Number of Rooms: " + arguments.elementAt(3));
+                    log.info("Set Price: " + arguments.elementAt(4));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_ROOMS, arguments);
@@ -114,7 +117,7 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Customer using id:" + arguments.elementAt(1));
+                    log.info("Adding a new Customer using id:" + arguments.elementAt(1));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_NEW_CUSTOMER_WITHOUT_ID, arguments);
@@ -128,8 +131,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Deleting a flight using id: " + arguments.elementAt(1));
-                    System.out.println("Flight Number: " + arguments.elementAt(2));
+                    log.info("Deleting a flight using id: " + arguments.elementAt(1));
+                    log.info("Flight Number: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_FLIGHT, arguments);
@@ -143,9 +146,9 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Deleting the cars from a particular location  using id: " + arguments
+                    log.info("Deleting the cars from a particular location  using id: " + arguments
                             .elementAt(1));
-                    System.out.println("Car Location: " + arguments.elementAt(2));
+                    log.info("Car Location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_CARS, arguments);
@@ -159,9 +162,9 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Deleting all rooms from a particular location  using id: " + arguments
+                    log.info("Deleting all rooms from a particular location  using id: " + arguments
                             .elementAt(1));
-                    System.out.println("Room Location: " + arguments.elementAt(2));
+                    log.info("Room Location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_ROOMS, arguments);
@@ -175,8 +178,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Deleting a customer from the database using id: " + arguments.elementAt(1));
-                    System.out.println("Customer id: " + arguments.elementAt(2));
+                    log.info("Deleting a customer from the database using id: " + arguments.elementAt(1));
+                    log.info("Customer id: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_CUSTOMER, arguments);
@@ -190,8 +193,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a flight using id: " + arguments.elementAt(1));
-                    System.out.println("Flight number: " + arguments.elementAt(2));
+                    log.info("Querying a flight using id: " + arguments.elementAt(1));
+                    log.info("Flight number: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_FLIGHT, arguments);
@@ -205,8 +208,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a car location using id: " + arguments.elementAt(1));
-                    System.out.println("Car location: " + arguments.elementAt(2));
+                    log.info("Querying a car location using id: " + arguments.elementAt(1));
+                    log.info("Car location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CARS, arguments);
@@ -220,8 +223,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a room location using id: " + arguments.elementAt(1));
-                    System.out.println("Room location: " + arguments.elementAt(2));
+                    log.info("Querying a room location using id: " + arguments.elementAt(1));
+                    log.info("Room location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_ROOMS, arguments);
@@ -235,8 +238,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying Customer information using id: " + arguments.elementAt(1));
-                    System.out.println("Customer id: " + arguments.elementAt(2));
+                    log.info("Querying Customer information using id: " + arguments.elementAt(1));
+                    log.info("Customer id: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CUSTOMER_INFO, arguments);
@@ -250,8 +253,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a flight Price using id: " + arguments.elementAt(1));
-                    System.out.println("Flight number: " + arguments.elementAt(2));
+                    log.info("Querying a flight Price using id: " + arguments.elementAt(1));
+                    log.info("Flight number: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_FLIGHT_PRICE, arguments);
@@ -265,8 +268,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a car price using id: " + arguments.elementAt(1));
-                    System.out.println("Car location: " + arguments.elementAt(2));
+                    log.info("Querying a car price using id: " + arguments.elementAt(1));
+                    log.info("Car location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CAR_PRICE, arguments);
@@ -280,8 +283,8 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Querying a room price using id: " + arguments.elementAt(1));
-                    System.out.println("Room Location: " + arguments.elementAt(2));
+                    log.info("Querying a room price using id: " + arguments.elementAt(1));
+                    log.info("Room Location: " + arguments.elementAt(2));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_ROOM_PRICE, arguments);
@@ -295,9 +298,9 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Reserving a seat on a flight using id: " + arguments.elementAt(1));
-                    System.out.println("Customer id: " + arguments.elementAt(2));
-                    System.out.println("Flight number: " + arguments.elementAt(3));
+                    log.info("Reserving a seat on a flight using id: " + arguments.elementAt(1));
+                    log.info("Customer id: " + arguments.elementAt(2));
+                    log.info("Flight number: " + arguments.elementAt(3));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_FLIGHT, arguments);
@@ -311,9 +314,9 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Reserving a car at a location using id: " + arguments.elementAt(1));
-                    System.out.println("Customer id: " + arguments.elementAt(2));
-                    System.out.println("Location: " + arguments.elementAt(3));
+                    log.info("Reserving a car at a location using id: " + arguments.elementAt(1));
+                    log.info("Customer id: " + arguments.elementAt(2));
+                    log.info("Location: " + arguments.elementAt(3));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_CAR, arguments);
@@ -327,9 +330,9 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Reserving a room at a location using id: " + arguments.elementAt(1));
-                    System.out.println("Customer id: " + arguments.elementAt(2));
-                    System.out.println("Location: " + arguments.elementAt(3));
+                    log.info("Reserving a room at a location using id: " + arguments.elementAt(1));
+                    log.info("Customer id: " + arguments.elementAt(2));
+                    log.info("Location: " + arguments.elementAt(3));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_ROOM, arguments);
@@ -343,13 +346,13 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Reserving an Itinerary using id:" + arguments.elementAt(1));
-                    System.out.println("Customer id:" + arguments.elementAt(2));
+                    log.info("Reserving an Itinerary using id:" + arguments.elementAt(1));
+                    log.info("Customer id:" + arguments.elementAt(2));
                     for (int i = 0; i < arguments.size() - 6; i++)
-                        System.out.println("Flight number" + arguments.elementAt(3 + i));
-                    System.out.println("Location for Car/Room booking:" + arguments.elementAt(arguments.size() - 3));
-                    System.out.println("Car to book?:" + arguments.elementAt(arguments.size() - 2));
-                    System.out.println("Room to book?:" + arguments.elementAt(arguments.size() - 1));
+                        log.info("Flight number" + arguments.elementAt(3 + i));
+                    log.info("Location for Car/Room booking:" + arguments.elementAt(arguments.size() - 3));
+                    log.info("Car to book?:" + arguments.elementAt(arguments.size() - 2));
+                    log.info("Room to book?:" + arguments.elementAt(arguments.size() - 1));
 
                     try {
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_ITINERARY, arguments);
@@ -363,7 +366,7 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Quitting src.java.client.");
+                    log.info("Quitting src.java.client.");
                     System.exit(1);
 
 
@@ -372,7 +375,7 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " +
+                    log.info("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " +
                             arguments.elementAt(2));
 
                     try {
@@ -383,7 +386,7 @@ public class Client {
                     break;
 
                 default:
-                    System.out.println("The interface does not support this command.");
+                    log.info("The interface does not support this command.");
                     break;
             }//end of switch
         }//end of while(true)
@@ -453,16 +456,16 @@ public class Client {
     }
 
     private void listCommands() {
-        System.out.println("\nWelcome to the src.java.client interface provided to test your project.");
-        System.out.println("Commands accepted by the interface are:");
-        System.out.println("help");
-        System.out.println("newflight\nnewcar\nnewroom\nnewcustomer\nnewcusomterid\ndeleteflight\ndeletecar" +
+        log.info("\nWelcome to the src.java.client interface provided to test your project.");
+        log.info("Commands accepted by the interface are:");
+        log.info("help");
+        log.info("newflight\nnewcar\nnewroom\nnewcustomer\nnewcusomterid\ndeleteflight\ndeletecar" +
                 "\ndeleteroom");
-        System.out.println("deletecustomer\nqueryflight\nquerycar\nqueryroom\nquerycustomer");
-        System.out.println("queryflightprice\nquerycarprice\nqueryroomprice");
-        System.out.println("reserveflight\nreservecar\nreserveroom\nitinerary");
-        System.out.println("nquit");
-        System.out.println("\ntype help, <commandname> for detailed info(NOTE the use of comma).");
+        log.info("deletecustomer\nqueryflight\nquerycar\nqueryroom\nquerycustomer");
+        log.info("queryflightprice\nquerycarprice\nqueryroomprice");
+        log.info("reserveflight\nreservecar\nreserveroom\nitinerary");
+        log.info("nquit");
+        log.info("\ntype help, <commandname> for detailed info(NOTE the use of comma).");
     }
 
 
@@ -470,191 +473,191 @@ public class Client {
         System.out.print("Help on: ");
         switch (findChoice(command)) {
             case 1:
-                System.out.println("Help");
-                System.out.println("\nTyping help on the prompt gives a list of all the commands available.");
-                System.out.println("Typing help, <commandname> gives details on how to use the particular command.");
+                log.info("Help");
+                log.info("\nTyping help on the prompt gives a list of all the commands available.");
+                log.info("Typing help, <commandname> gives details on how to use the particular command.");
                 break;
 
             case 2:  //new flight
-                System.out.println("Adding a new Flight.");
-                System.out.println("Purpose:");
-                System.out.println("\tAdd information about a new flight.");
-                System.out.println("\nUsage:");
-                System.out.println("\tnewflight,<id>,<flightnumber>,<flightSeats>,<flightprice>");
+                log.info("Adding a new Flight.");
+                log.info("Purpose:");
+                log.info("\tAdd information about a new flight.");
+                log.info("\nUsage:");
+                log.info("\tnewflight,<id>,<flightnumber>,<flightSeats>,<flightprice>");
                 break;
 
             case 3:  //new Car
-                System.out.println("Adding a new Car.");
-                System.out.println("Purpose:");
-                System.out.println("\tAdd information about a new car location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tnewcar,<id>,<location>,<numberofcars>,<pricepercar>");
+                log.info("Adding a new Car.");
+                log.info("Purpose:");
+                log.info("\tAdd information about a new car location.");
+                log.info("\nUsage:");
+                log.info("\tnewcar,<id>,<location>,<numberofcars>,<pricepercar>");
                 break;
 
             case 4:  //new Room
-                System.out.println("Adding a new Room.");
-                System.out.println("Purpose:");
-                System.out.println("\tAdd information about a new room location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tnewroom,<id>,<location>,<numberofrooms>,<priceperroom>");
+                log.info("Adding a new Room.");
+                log.info("Purpose:");
+                log.info("\tAdd information about a new room location.");
+                log.info("\nUsage:");
+                log.info("\tnewroom,<id>,<location>,<numberofrooms>,<priceperroom>");
                 break;
 
             case 5:  //new Customer
-                System.out.println("Adding a new Customer.");
-                System.out.println("Purpose:");
-                System.out.println("\tGet the system to provide a new customer id. (same as adding a new customer)");
-                System.out.println("\nUsage:");
-                System.out.println("\tnewcustomer,<id>");
+                log.info("Adding a new Customer.");
+                log.info("Purpose:");
+                log.info("\tGet the system to provide a new customer id. (same as adding a new customer)");
+                log.info("\nUsage:");
+                log.info("\tnewcustomer,<id>");
                 break;
 
 
             case 6: //delete Flight
-                System.out.println("Deleting a flight");
-                System.out.println("Purpose:");
-                System.out.println("\tDelete a flight's information.");
-                System.out.println("\nUsage:");
-                System.out.println("\tdeleteflight,<id>,<flightnumber>");
+                log.info("Deleting a flight");
+                log.info("Purpose:");
+                log.info("\tDelete a flight's information.");
+                log.info("\nUsage:");
+                log.info("\tdeleteflight,<id>,<flightnumber>");
                 break;
 
             case 7: //delete Car
-                System.out.println("Deleting a Car");
-                System.out.println("Purpose:");
-                System.out.println("\tDelete all cars from a location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tdeletecar,<id>,<location>,<numCars>");
+                log.info("Deleting a Car");
+                log.info("Purpose:");
+                log.info("\tDelete all cars from a location.");
+                log.info("\nUsage:");
+                log.info("\tdeletecar,<id>,<location>,<numCars>");
                 break;
 
             case 8: //delete Room
-                System.out.println("Deleting a Room");
-                System.out.println("\nPurpose:");
-                System.out.println("\tDelete all rooms from a location.");
-                System.out.println("Usage:");
-                System.out.println("\tdeleteroom,<id>,<location>,<numRooms>");
+                log.info("Deleting a Room");
+                log.info("\nPurpose:");
+                log.info("\tDelete all rooms from a location.");
+                log.info("Usage:");
+                log.info("\tdeleteroom,<id>,<location>,<numRooms>");
                 break;
 
             case 9: //delete Customer
-                System.out.println("Deleting a Customer");
-                System.out.println("Purpose:");
-                System.out.println("\tRemove a customer from the database.");
-                System.out.println("\nUsage:");
-                System.out.println("\tdeletecustomer,<id>,<customerid>");
+                log.info("Deleting a Customer");
+                log.info("Purpose:");
+                log.info("\tRemove a customer from the database.");
+                log.info("\nUsage:");
+                log.info("\tdeletecustomer,<id>,<customerid>");
                 break;
 
             case 10: //querying a flight
-                System.out.println("Querying flight.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain Seat information about a certain flight.");
-                System.out.println("\nUsage:");
-                System.out.println("\tqueryflight,<id>,<flightnumber>");
+                log.info("Querying flight.");
+                log.info("Purpose:");
+                log.info("\tObtain Seat information about a certain flight.");
+                log.info("\nUsage:");
+                log.info("\tqueryflight,<id>,<flightnumber>");
                 break;
 
             case 11: //querying a Car Location
-                System.out.println("Querying a Car location.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain number of cars at a certain car location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tquerycar,<id>,<location>");
+                log.info("Querying a Car location.");
+                log.info("Purpose:");
+                log.info("\tObtain number of cars at a certain car location.");
+                log.info("\nUsage:");
+                log.info("\tquerycar,<id>,<location>");
                 break;
 
             case 12: //querying a Room location
-                System.out.println("Querying a Room Location.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain number of rooms at a certain room location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tqueryroom,<id>,<location>");
+                log.info("Querying a Room Location.");
+                log.info("Purpose:");
+                log.info("\tObtain number of rooms at a certain room location.");
+                log.info("\nUsage:");
+                log.info("\tqueryroom,<id>,<location>");
                 break;
 
             case 13: //querying Customer Information
-                System.out.println("Querying Customer Information.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain information about a customer.");
-                System.out.println("\nUsage:");
-                System.out.println("\tquerycustomer,<id>,<customerid>");
+                log.info("Querying Customer Information.");
+                log.info("Purpose:");
+                log.info("\tObtain information about a customer.");
+                log.info("\nUsage:");
+                log.info("\tquerycustomer,<id>,<customerid>");
                 break;
 
             case 14: //querying a flight for price
-                System.out.println("Querying flight.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain price information about a certain flight.");
-                System.out.println("\nUsage:");
-                System.out.println("\tqueryflightprice,<id>,<flightnumber>");
+                log.info("Querying flight.");
+                log.info("Purpose:");
+                log.info("\tObtain price information about a certain flight.");
+                log.info("\nUsage:");
+                log.info("\tqueryflightprice,<id>,<flightnumber>");
                 break;
 
             case 15: //querying a Car Location for price
-                System.out.println("Querying a Car location.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain price information about a certain car location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tquerycarprice,<id>,<location>");
+                log.info("Querying a Car location.");
+                log.info("Purpose:");
+                log.info("\tObtain price information about a certain car location.");
+                log.info("\nUsage:");
+                log.info("\tquerycarprice,<id>,<location>");
                 break;
 
             case 16: //querying a Room location for price
-                System.out.println("Querying a Room Location.");
-                System.out.println("Purpose:");
-                System.out.println("\tObtain price information about a certain room location.");
-                System.out.println("\nUsage:");
-                System.out.println("\tqueryroomprice,<id>,<location>");
+                log.info("Querying a Room Location.");
+                log.info("Purpose:");
+                log.info("\tObtain price information about a certain room location.");
+                log.info("\nUsage:");
+                log.info("\tqueryroomprice,<id>,<location>");
                 break;
 
             case 17:  //reserve a flight
-                System.out.println("Reserving a flight.");
-                System.out.println("Purpose:");
-                System.out.println("\tReserve a flight for a customer.");
-                System.out.println("\nUsage:");
-                System.out.println("\treserveflight,<id>,<customerid>,<flightnumber>");
+                log.info("Reserving a flight.");
+                log.info("Purpose:");
+                log.info("\tReserve a flight for a customer.");
+                log.info("\nUsage:");
+                log.info("\treserveflight,<id>,<customerid>,<flightnumber>");
                 break;
 
             case 18:  //reserve a car
-                System.out.println("Reserving a Car.");
-                System.out.println("Purpose:");
-                System.out.println("\tReserve a given number of cars for a customer at a particular location.");
-                System.out.println("\nUsage:");
-                System.out.println("\treservecar,<id>,<customerid>,<location>,<nummberofCars>");
+                log.info("Reserving a Car.");
+                log.info("Purpose:");
+                log.info("\tReserve a given number of cars for a customer at a particular location.");
+                log.info("\nUsage:");
+                log.info("\treservecar,<id>,<customerid>,<location>,<nummberofCars>");
                 break;
 
             case 19:  //reserve a room
-                System.out.println("Reserving a Room.");
-                System.out.println("Purpose:");
-                System.out.println("\tReserve a given number of rooms for a customer at a particular location.");
-                System.out.println("\nUsage:");
-                System.out.println("\treserveroom,<id>,<customerid>,<location>,<nummberofRooms>");
+                log.info("Reserving a Room.");
+                log.info("Purpose:");
+                log.info("\tReserve a given number of rooms for a customer at a particular location.");
+                log.info("\nUsage:");
+                log.info("\treserveroom,<id>,<customerid>,<location>,<nummberofRooms>");
                 break;
 
             case 20:  //reserve an Itinerary
-                System.out.println("Reserving an Itinerary.");
-                System.out.println("Purpose:");
-                System.out.println("\tBook one or more flights.Also book zero or more cars/rooms at a location.");
-                System.out.println("\nUsage:");
-                System.out.println("\titinerary,<id>,<customerid>,<flightnumber1>....<flightnumberN>," +
+                log.info("Reserving an Itinerary.");
+                log.info("Purpose:");
+                log.info("\tBook one or more flights.Also book zero or more cars/rooms at a location.");
+                log.info("\nUsage:");
+                log.info("\titinerary,<id>,<customerid>,<flightnumber1>....<flightnumberN>," +
                         "<LocationToBookCarsOrRooms>,<NumberOfCars>,<NumberOfRoom>");
                 break;
 
 
             case 21:  //quit the src.java.client
-                System.out.println("Quitting src.java.client.");
-                System.out.println("Purpose:");
-                System.out.println("\tExit the src.java.client application.");
-                System.out.println("\nUsage:");
-                System.out.println("\tquit");
+                log.info("Quitting src.java.client.");
+                log.info("Purpose:");
+                log.info("\tExit the src.java.client application.");
+                log.info("\nUsage:");
+                log.info("\tquit");
                 break;
 
             case 22:  //new customer with id
-                System.out.println("Create new customer providing an id");
-                System.out.println("Purpose:");
-                System.out.println("\tCreates a new customer with the id provided");
-                System.out.println("\nUsage:");
-                System.out.println("\tnewcustomerid, <id>, <customerid>");
+                log.info("Create new customer providing an id");
+                log.info("Purpose:");
+                log.info("\tCreates a new customer with the id provided");
+                log.info("\nUsage:");
+                log.info("\tnewcustomerid, <id>, <customerid>");
                 break;
 
             default:
-                System.out.println(command);
-                System.out.println("The interface does not support this command.");
+                log.info(command);
+                log.info("The interface does not support this command.");
                 break;
         }
     }
 
     private void wrongNumber() {
-        System.out.println("The number of arguments provided in this command are wrong.");
-        System.out.println("Type help, <commandname> to check usage of this command.");
+        log.info("The number of arguments provided in this command are wrong.");
+        log.info("Type help, <commandname> to check usage of this command.");
     }
 }

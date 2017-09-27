@@ -1,8 +1,6 @@
 package socs.distributed.server;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import socs.distributed.resource.dto.ReservableItem;
 import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
@@ -19,7 +17,7 @@ import java.util.Vector;
 
 @SuppressWarnings("Duplicates")
 public class RMServerRequestHandler implements Runnable {
-    private final Log log = LogFactory.getLog(RMServerRequestHandler.class);
+    private static final Logger log = Logger.getLogger(RMServerRequestHandler.class);
     // the unique socket allocated for this new request instance via which future communications happen.
     private final Socket middlewareClientSocket;
 

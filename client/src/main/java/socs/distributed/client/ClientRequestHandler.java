@@ -1,7 +1,6 @@
 package socs.distributed.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import socs.distributed.client.exception.ClientException;
 import socs.distributed.client.util.ClientUtils;
 import socs.distributed.resource.message.MsgType;
@@ -15,7 +14,7 @@ import java.net.Socket;
 import java.util.Vector;
 
 class ClientRequestHandler {
-    private final Log log = LogFactory.getLog(ClientRequestHandler.class);
+    private static final Logger log = Logger.getLogger(ClientRequestHandler.class);
     private String middlewareIP;
     private short middlewarePort;
 

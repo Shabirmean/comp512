@@ -1,14 +1,12 @@
 package socs.distributed.server.util;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.Socket;
 
 public class RMServerUtils {
-    private static final Log log = LogFactory.getLog(RMServerUtils.class);
+    private static final Logger log = Logger.getLogger(RMServerUtils.class);
 
     public static void releaseSocket(Socket socket) {
         if (socket != null) {

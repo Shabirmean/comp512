@@ -1,8 +1,6 @@
 package socs.distributed.server;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.server.util.Configuration;
 import socs.distributed.server.util.RMServerConstants;
@@ -15,7 +13,7 @@ import java.util.concurrent.Executors;
 
 @SuppressWarnings("InfiniteLoopStatement")
 class RMServer {
-    private static final Log log = LogFactory.getLog(RMServer.class);
+    private static final Logger log = Logger.getLogger(RMServer.class);
     // executor service with a thread pool to assign each incoming request to.
     private static final ExecutorService clientProcessingPool = Executors.newCachedThreadPool();
     static final RMServerManager RM_SERVER_MANAGER = new RMServerManager();
