@@ -1,7 +1,6 @@
 package socs.distributed.middleware.server;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import socs.distributed.middleware.util.Configuration;
 import socs.distributed.middleware.util.MiddlewareConstants;
 import socs.distributed.resource.message.MsgType;
@@ -14,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MiddlewareServer {
-    private final Log log = LogFactory.getLog(MiddlewareServer.class);
+    private static final Logger log = Logger.getLogger(MiddlewareRequestHandler.class);
 
     private short middlewarePort;
     static final CustomerResourceManager internalResourceManager = new CustomerResourceManager();

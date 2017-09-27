@@ -31,7 +31,7 @@ public class Client {
         }
 
         ClientRequestHandler clientRequestHandler = new ClientRequestHandler(middlewareIP, middlewarePort);
-        System.out.println("\n\n\tClient Interface");
+        System.out.println("\n\n\tClient Interface connecting to " + middlewareIP + ":" + middlewarePort);
         System.out.println("Type \"help\" for list of supported commands");
         while (true) {
             System.out.print("\n>");

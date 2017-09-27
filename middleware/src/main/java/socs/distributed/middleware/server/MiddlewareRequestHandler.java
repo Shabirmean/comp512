@@ -1,7 +1,6 @@
 package socs.distributed.middleware.server;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import socs.distributed.middleware.exception.MiddlewareException;
 import socs.distributed.middleware.util.MiddlewareUtils;
 import socs.distributed.resource.dto.ReservableItem;
@@ -28,7 +27,7 @@ import java.util.Vector;
  */
 @SuppressWarnings("Duplicates")
 public class MiddlewareRequestHandler implements Runnable {
-    private final Log log = LogFactory.getLog(MiddlewareRequestHandler.class);
+    private static final Logger log = Logger.getLogger(MiddlewareRequestHandler.class);
     // the unique socket allocated for this new request instance via which future communications happen.
     private final Socket clientSocket;
     private String clientHostName;
@@ -72,7 +71,7 @@ public class MiddlewareRequestHandler implements Runnable {
                         customerId = MiddlewareServer.internalResourceManager.newCustomer(id);
 
                         log.info("New customer added with ID:" + customerId);
-                        responseToClient.setMessage("A new flight was successfully added");
+                        responseToClient.setMessage("A new customer was successfully added");
                         responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         break;
 
