@@ -10,25 +10,21 @@ import socs.distributed.resource.util.Trace;
 
 import java.util.Vector;
 
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "unchecked"})
 class RMServerManager {
     private static final RMConcurrentHashMap RM_ITEMS_MAP = new RMConcurrentHashMap();
-
     // Reads a data item
     private RMItem readData(int id, String key) {
         return (RMItem) RM_ITEMS_MAP.get(key);
     }
-
     // Writes a data item
     private void writeData(int id, String key, RMItem value) {
         RM_ITEMS_MAP.put(key, value);
     }
-
     // Remove the item out of storage
     private RMItem removeData(int id, String key) {
         return (RMItem) RM_ITEMS_MAP.remove(key);
     }
-
 
     // deletes the entire item
     private boolean deleteItem(int id, String key) {
@@ -94,9 +90,7 @@ class RMServerManager {
             return item;
         }
     }
-
-//    ========
-
+    //    ========
     // Create a new flight, or add seats to existing flight
     //  NOTE: if flightPrice <= 0 and the flight already exists, it maintains its current price
     boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
@@ -121,11 +115,9 @@ class RMServerManager {
         return (true);
     }
 
-
     boolean deleteFlight(int id, int flightNum) {
         return deleteItem(id, Flight.getKey(flightNum));
     }
-
 
     // Create a new room location or add rooms to an existing location
     //  NOTE: if price <= 0 and the room location already exists, it maintains its current price
@@ -154,7 +146,6 @@ class RMServerManager {
     // Delete rooms from a location
     boolean deleteRooms(int id, String location) {
         return deleteItem(id, Hotel.getKey(location));
-
     }
 
     // Create a new car location or add cars to an existing location
@@ -181,48 +172,40 @@ class RMServerManager {
         return (true);
     }
 
-
     // Delete cars from a location
     boolean deleteCars(int id, String location) {
         return deleteItem(id, Car.getKey(location));
     }
-
 
     // Returns the number of empty seats on this flight
     int queryFlight(int id, int flightNum) {
         return queryNum(id, Flight.getKey(flightNum));
     }
 
-
     // Returns price of this flight
     int queryFlightPrice(int id, int flightNum) {
         return queryPrice(id, Flight.getKey(flightNum));
     }
-
 
     // Returns the number of rooms available at a location
     int queryRooms(int id, String location) {
         return queryNum(id, Hotel.getKey(location));
     }
 
-
     // Returns room price at this location
     int queryRoomsPrice(int id, String location) {
         return queryPrice(id, Hotel.getKey(location));
     }
-
 
     // Returns the number of cars available at a location
     int queryCars(int id, String location) {
         return queryNum(id, Car.getKey(location));
     }
 
-
     // Returns price of cars at this location
     int queryCarsPrice(int id, String location) {
         return queryPrice(id, Car.getKey(location));
     }
-
 
     /*
     // Frees flight reservation record. Flight reservation records help us make sure we
@@ -242,12 +225,10 @@ class RMServerManager {
     }
     */
 
-
     // Adds car reservation to this customer.
     ReservableItem reserveCar(int id, int customerID, String location) {
         return reserveItem(id, customerID, Car.getKey(location), location);
     }
-
 
     // Adds room reservation to this customer.
     ReservableItem reserveRoom(int id, int customerID, String location) {
