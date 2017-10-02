@@ -25,7 +25,7 @@ done
 if [ "$project" = "i" ]; then
   	cd interface
   	mvn package
-  	mvn install:install-file -Dfile=/home/2016/sabdul23/Desktop/COMP512/comp512/interface/target/interface-1.0-SNAPSHOT.jar -DgroupId=comp512-ShaJian -DartifactId=interface -Dversion=1.0-SNAPSHOT -Dpackaging=jar
+  	mvn install:install-file -Dfile=/home/2016/sabdul23/Desktop/COMP512/comp512/tcp_impl/interface/target/interface-1.0-SNAPSHOT.jar -DgroupId=comp512-ShaJian -DartifactId=interface -Dversion=1.0-SNAPSHOT -Dpackaging=jar
 fi
 
 if [ "$project" = "s" ]; then
