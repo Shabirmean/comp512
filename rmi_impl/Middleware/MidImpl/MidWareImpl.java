@@ -27,6 +27,9 @@ public class MidWareImpl implements MidWare
     public static void main(String args[]) {
         // Figure out where server is running
         String server = "localhost";
+        String carserver = "";
+        String flightserver = "";
+        String hotelserver = "";
         int port = 1099;
         int carport = 1100;
         int hotelport = 1101;
@@ -35,11 +38,20 @@ public class MidWareImpl implements MidWare
         if (args.length == 1) {
             server = server + ":" + args[0];
             port = Integer.parseInt(args[0]);
-        } else if (args.length != 0 &&  args.length != 1) {
-            System.err.println ("Wrong usage");
-            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
-            System.exit(1);
+        } 
+        else if (args.length == 4) {
+            server = server + ":" + args[0];
+            port = Integer.parseInt(args[0]);
+            carserver = args[1];
+            hotelserver = args[2];
+            flightserver = args[3];
         }
+
+        // else if (args.length != 0 &&  args.length != 1) {
+        //     System.err.println ("Wrong usage");
+        //     System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
+        //     System.exit(1);
+        // }
 
         try {
             // create a new Server object
@@ -55,7 +67,7 @@ public class MidWareImpl implements MidWare
 
 			server = "localhost";
 
-			Registry carregistry = LocateRegistry.getRegistry(server, carport);
+			Registry carregistry = LocateRegistry.getRegistry(carserver, carport);
             cm = (ResourceManager) carregistry.lookup("GroupOneResourceManager");
             if(cm!=null)
             {
@@ -67,7 +79,7 @@ public class MidWareImpl implements MidWare
                 System.out.println("Unsuccessful");
             }
 
-            Registry hotelregistry = LocateRegistry.getRegistry(server, hotelport);
+            Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
             hm = (ResourceManager) hotelregistry.lookup("GroupOneResourceManager");
             if(hm!=null)
             {
@@ -79,7 +91,7 @@ public class MidWareImpl implements MidWare
                 System.out.println("Unsuccessful");
             }
 
-            Registry flightregistry = LocateRegistry.getRegistry(server, flightport);
+            Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
             fm = (ResourceManager) flightregistry.lookup("GroupOneResourceManager");
             if(fm!=null)
             {
@@ -90,17 +102,6 @@ public class MidWareImpl implements MidWare
             {
                 System.out.println("Unsuccessful");
             }
-
-            /*			
-            if (cm.addCars(3,"4",5,6)) {
-                System.out.println("CAAAARRRRRS!");
-            }
-            else System.out.println("NOOOOCARRRR:(");
-
-            if (fm.addFlight(3,4,5,6)) System.out.println("FLIGGGHHHTTS");
-            else System.out.println("NOFLIGHT");
-            */
-			
 
 
         } catch (Exception e) {
@@ -225,24 +226,7 @@ public class MidWareImpl implements MidWare
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
         throws RemoteException
     {
-        // Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called" );
-        // Flight curObj = (Flight) readData( id, Flight.getKey(flightNum) );
-        // if ( curObj == null ) {
-        //     // doesn't exist...add it
-        //     Flight newObj = new Flight( flightNum, flightSeats, flightPrice );
-        //     writeData( id, newObj.getKey(), newObj );
-        //     Trace.info("RM::addFlight(" + id + ") created new flight " + flightNum + ", seats=" +
-        //             flightSeats + ", price=$" + flightPrice );
-        // } else {
-        //     // add seats to existing flight and update the price...
-        //     curObj.setCount( curObj.getCount() + flightSeats );
-        //     if ( flightPrice > 0 ) {
-        //         curObj.setPrice( flightPrice );
-        //     } // if
-        //     writeData( id, curObj.getKey(), curObj );
-        //     Trace.info("RM::addFlight(" + id + ") modified existing flight " + flightNum + ", seats=" + curObj.getCount() + ", price=$" + flightPrice );
-        // } // else
-        // return(true);
+        Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called" );
         if (fm.addFlight(id, flightNum, flightSeats, flightPrice)) return true;
         else return false;
     }
@@ -254,7 +238,6 @@ public class MidWareImpl implements MidWare
     {
         if (fm.deleteFlight(id, flightNum)) return true;
         else return false;
-        // return deleteItem(id, Flight.getKey(flightNum));
     }
 
 
@@ -264,23 +247,7 @@ public class MidWareImpl implements MidWare
     public boolean addRooms(int id, String location, int count, int price)
         throws RemoteException
     {
-        // Trace.info("RM::addRooms(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
-        // Hotel curObj = (Hotel) readData( id, Hotel.getKey(location) );
-        // if ( curObj == null ) {
-        //     // doesn't exist...add it
-        //     Hotel newObj = new Hotel( location, count, price );
-        //     writeData( id, newObj.getKey(), newObj );
-        //     Trace.info("RM::addRooms(" + id + ") created new room location " + location + ", count=" + count + ", price=$" + price );
-        // } else {
-        //     // add count to existing object and update price...
-        //     curObj.setCount( curObj.getCount() + count );
-        //     if ( price > 0 ) {
-        //         curObj.setPrice( price );
-        //     } // if
-        //     writeData( id, curObj.getKey(), curObj );
-        //     Trace.info("RM::addRooms(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
-        // } // else
-        // return(true);
+        Trace.info("RM::addRooms(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
         if (hm.addRooms(id, location, count, price)) return true;
         else return false;
     }
@@ -299,21 +266,6 @@ public class MidWareImpl implements MidWare
         throws RemoteException
     {
         // Trace.info("RM::addCars(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
-        // Car curObj = (Car) readData( id, Car.getKey(location) );
-        // if ( curObj == null ) {
-        //     // car location doesn't exist...add it
-        //     Car newObj = new Car( location, count, price );
-        //     writeData( id, newObj.getKey(), newObj );
-        //     Trace.info("RM::addCars(" + id + ") created new location " + location + ", count=" + count + ", price=$" + price );
-        // } else {
-        //     // add count to existing car location and update price...
-        //     curObj.setCount( curObj.getCount() + count );
-        //     if ( price > 0 ) {
-        //         curObj.setPrice( price );
-        //     } // if
-        //     writeData( id, curObj.getKey(), curObj );
-        //     Trace.info("RM::addCars(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
-        // } // else
         if (cm.addCars(id, location, count, price)) return true;
         else return false;
     }
@@ -411,22 +363,11 @@ public class MidWareImpl implements MidWare
     public String queryCustomerInfo(int id, int customerID)
         throws RemoteException
     {
-        Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" );
-        // Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
-        // if ( cust == null ) {
-        //     Trace.warn("RM::queryCustomerInfo(" + id + ", " + customerID + ") failed--customer doesn't exist" );
-        //     return "";   // NOTE: don't change this--WC counts on this value indicating a customer does not exist...
-        // } else {
-        //         String s = cust.printBill();
-        //         Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows..." );
-        //         System.out.println( s );
-        //         return s;
-        // } // if
+        Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" ); 
         String fbill = fm.queryCustomerInfo(id, customerID);
         String hbill = hm.queryCustomerInfo(id, customerID);
         String cbill = cm.queryCustomerInfo(id, customerID);
-        return fbill + " " + hbill + " " + cbill;
-
+        return " Bill for customer " + customerID + ":\n" + fbill + hbill + cbill;
     }
 
     // customer functions
@@ -436,12 +377,6 @@ public class MidWareImpl implements MidWare
         throws RemoteException
     {
         Trace.info("INFO: RM::newCustomer(" + id + ") called" );
-        // Generate a globally unique ID for the new customer
-        // int cid = Integer.parseInt( String.valueOf(id) +
-        //                         String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND)) +
-        //                         String.valueOf( Math.round( Math.random() * 100 + 1 )));
-        // Customer cust = new Customer( cid );
-        // writeData( id, cust.getKey(), cust );
         int cid = cm.newCustomer(id);
         hm.newCustomer(id, cid);
         fm.newCustomer(id, cid);
@@ -458,16 +393,6 @@ public class MidWareImpl implements MidWare
         hm.newCustomer(id, customerID);
         fm.newCustomer(id, customerID);
         return true;
-        // Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
-        // if ( cust == null ) {
-        //     cust = new Customer(customerID);
-        //     writeData( id, cust.getKey(), cust );
-        //     Trace.info("INFO: RM::newCustomer(" + id + ", " + customerID + ") created a new customer" );
-        //     return true;
-        // } else {
-        //     Trace.info("INFO: RM::newCustomer(" + id + ", " + customerID + ") failed--customer already exists");
-        //     return false;
-        // } // else
     }
 
 
@@ -479,29 +404,6 @@ public class MidWareImpl implements MidWare
         cm.deleteCustomer(id, customerID);
         hm.deleteCustomer(id, customerID);
         fm.deleteCustomer(id, customerID);
-        // Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
-        // if ( cust == null ) {
-        //     Trace.warn("RM::deleteCustomer(" + id + ", " + customerID + ") failed--customer doesn't exist" );
-        //     return false;
-        // } else {            
-        //     // Increase the reserved numbers of all reservable items which the customer reserved. 
-        //     RMHashtable reservationHT = cust.getReservations();
-        //     for (Enumeration e = reservationHT.keys(); e.hasMoreElements();) {        
-        //         String reservedkey = (String) (e.nextElement());
-        //         ReservedItem reserveditem = cust.getReservedItem(reservedkey);
-        //         Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times"  );
-        //         ReservableItem item  = (ReservableItem) readData(id, reserveditem.getKey());
-        //         Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") has reserved " + reserveditem.getKey() + "which is reserved" +  item.getReserved() +  " times and is still available " + item.getCount() + " times"  );
-        //         item.setReserved(item.getReserved()-reserveditem.getCount());
-        //         item.setCount(item.getCount()+reserveditem.getCount());
-        //     }
-            
-        //     // remove the customer from the storage
-        //     removeData(id, cust.getKey());
-            
-        //     Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") succeeded" );
-        //     return true;
-        // } // if
         return true;
     }
 

@@ -262,7 +262,7 @@ class RMServerManager {
     Vector<ReservableItem> reserveFlights(int id, int customerID, Vector flightNums) {
         Vector<ReservableItem> reservedFlights = new Vector<>();
         for (Object obj: flightNums) {
-            int flightNum = (int) obj;
+            int flightNum = Integer.parseInt((String) obj);
             ReservableItem item = reserveFlight(id, customerID, flightNum);
             if (item != null) {
                 reservedFlights.add(item);
@@ -290,7 +290,7 @@ class RMServerManager {
     boolean unReserveFlights(int id, int customerID, Vector flightNums) {
         boolean unReserveStatus = false;
         for (Object obj: flightNums) {
-            int flightNum = (int) obj;
+            int flightNum = Integer.parseInt((String) obj);
             unReserveStatus = unReserveFlight(id, customerID, flightNum);
         }
         return unReserveStatus;
