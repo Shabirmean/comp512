@@ -50,13 +50,18 @@ class ClientRequestHandler {
 
             socketWriter.writeObject(clientReqMsg);
             ResponseMessage responseFromMiddleware = (ResponseMessage) socketReader.readObject();
-            System.out.println(responseFromMiddleware.getMessage());
+
+            if (responseFromMiddleware.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
+                log.error(responseFromMiddleware.getMessage());
+                responseFromMiddleware.getException().printStackTrace();
+            }
+            log.info("\n***************" + responseFromMiddleware.getMessage());
 
         } catch (IOException e) {
-            System.out.println("An error occurred whilst trying to READ/WRITE from socket to middleware server");
+            log.error("An error occurred whilst trying to READ/WRITE from socket to middleware server");
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            System.out.println("Object type received over the socket connection was not [ResponseMessage]");
+            log.error("Object type received over the socket connection was not [ResponseMessage]");
             e.printStackTrace();
         } finally {
             ClientUtils.releaseSocket(clientSocket);
