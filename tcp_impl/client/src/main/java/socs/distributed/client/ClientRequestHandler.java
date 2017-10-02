@@ -52,7 +52,7 @@ class ClientRequestHandler {
             socketWriter.writeObject(clientReqMsg);
             ResponseMessage responseFromMiddleware = (ResponseMessage) socketReader.readObject();
 
-            log.info("***************" + responseFromMiddleware.getMessage());
+            log.info("***" + responseFromMiddleware.getMessage() + "***");
             if (responseFromMiddleware.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
                 COMP512Exception requestErr = responseFromMiddleware.getException();
                 if (requestErr != null) {
