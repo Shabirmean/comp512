@@ -51,7 +51,7 @@ public class Client {
             log.info("============================================================");
         }
 
-        if (clientId.equals("cs-23")) {
+        if (clientId.equals("cs-22")) {
             log.info("===========================================================");
             log.info("This client would sleep at the RESOURCE-MANAGER for 10 secs");
             log.info("===========================================================");

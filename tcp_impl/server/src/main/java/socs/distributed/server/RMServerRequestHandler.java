@@ -51,7 +51,7 @@ public class RMServerRequestHandler implements Runnable {
             String clientId = requestMsgFromMW.getClientID();
 
             // TODO:: Remove this debugging stuff
-            if (clientId.equals("cs-23")) {
+            if (clientId.equals("cs-22")) {
                 Thread.sleep(10000);
             }
 
