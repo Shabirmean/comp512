@@ -65,7 +65,7 @@ public class MiddlewareRequestHandler implements Runnable {
 
             // TODO:: Remove this debugging stuff
             if (clientId.equals("cs-25")) {
-                Thread.sleep(10000);
+                Thread.sleep(25000);
             }
 
             MsgType requestMsgType = requestMsgFromClient.getMsgType();
