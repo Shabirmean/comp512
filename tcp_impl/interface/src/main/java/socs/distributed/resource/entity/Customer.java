@@ -5,6 +5,7 @@
 package socs.distributed.resource.entity;
 
 
+import org.apache.log4j.Logger;
 import socs.distributed.resource.dto.RMConcurrentHashMap;
 import socs.distributed.resource.dto.RMItem;
 import socs.distributed.resource.dto.ReservedItem;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 import java.util.Enumeration;
 
 public class Customer extends RMItem implements Serializable {
+    private static final Logger log = Logger.getLogger(Customer.class);
     private int m_nID;
     private RMConcurrentHashMap m_Reservations;
 
@@ -39,6 +41,17 @@ public class Customer extends RMItem implements Serializable {
             reservedItem.setCount(reservedItem.getCount() + 1);
             // NOTE: latest price overrides existing price
             reservedItem.setPrice(price);
+        } // else
+        m_Reservations.put(reservedItem.getKey(), reservedItem);
+    }
+
+
+    public void unReserve(String key) {
+        ReservedItem reservedItem = getReservedItem(key);
+        if (reservedItem == null) {
+            log.error("No reservation with key [" + key + "] exists for customer [" + m_nID + "]");
+        } else {
+            reservedItem.setCount(reservedItem.getCount() - 1);
         } // else
         m_Reservations.put(reservedItem.getKey(), reservedItem);
     }
