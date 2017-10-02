@@ -381,6 +381,7 @@ public class RMServerRequestHandler implements Runnable {
                                 }
                                 break;
                         }
+                        break;
                     }
 
                     case UNRESERVE_ITINERARY: {
