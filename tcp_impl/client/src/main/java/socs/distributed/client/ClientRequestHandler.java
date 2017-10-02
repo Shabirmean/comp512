@@ -52,14 +52,14 @@ class ClientRequestHandler {
             socketWriter.writeObject(clientReqMsg);
             ResponseMessage responseFromMiddleware = (ResponseMessage) socketReader.readObject();
 
+            log.info("***************" + responseFromMiddleware.getMessage());
             if (responseFromMiddleware.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
-                log.error(responseFromMiddleware.getMessage());
                 COMP512Exception requestErr = responseFromMiddleware.getException();
                 if (requestErr != null) {
                     requestErr.getMessage();
                 }
             }
-            log.info("\n***************" + responseFromMiddleware.getMessage());
+
 
         } catch (IOException e) {
             log.error("An error occurred whilst trying to READ/WRITE from socket to middleware server");
