@@ -233,8 +233,8 @@ public class MiddlewareRequestHandler implements Runnable {
                     } else {
                         ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
                         if (respFromRM.getStatus() == 0) {
-                            //TODO:: Rollback Flight booking
-                            System.out.println("Need to Roll back......");
+                            //TODO:: Need to handle exception cases.
+                            log.warn("Reserve request did not pass. The resource-manger replied FAILURE.");
                         } else {
                             ReservableItem reservableItem = respFromRM.getItems().elementAt(0);
                             switch (requestMsgType) {
