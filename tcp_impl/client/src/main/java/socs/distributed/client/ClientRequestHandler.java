@@ -3,6 +3,7 @@ package socs.distributed.client;
 import org.apache.log4j.Logger;
 import socs.distributed.client.exception.ClientException;
 import socs.distributed.client.util.ClientUtils;
+import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
 import socs.distributed.resource.message.ResponseMessage;
@@ -53,7 +54,10 @@ class ClientRequestHandler {
 
             if (responseFromMiddleware.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
                 log.error(responseFromMiddleware.getMessage());
-                responseFromMiddleware.getException().printStackTrace();
+                COMP512Exception requestErr = responseFromMiddleware.getException();
+                if (requestErr != null) {
+                    requestErr.printStackTrace();
+                }
             }
             log.info("\n***************" + responseFromMiddleware.getMessage());
 
