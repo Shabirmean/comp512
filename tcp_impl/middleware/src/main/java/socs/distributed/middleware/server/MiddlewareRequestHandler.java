@@ -102,7 +102,7 @@ public class MiddlewareRequestHandler implements Runnable {
                     case DELETE_CUSTOMER:
                         id = this.getInt(msgArgs.elementAt(1));
                         customerId = this.getInt(msgArgs.elementAt(2));
-                        if (MiddlewareServer.internalResourceManager.newCustomer(id, customerId)) {
+                        if (MiddlewareServer.internalResourceManager.deleteCustomer(id, customerId)) {
                             log.info("Customer deleted. ID:" + customerId);
                             responseToClient.setMessage("Customer deleted. ID:" + customerId);
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
