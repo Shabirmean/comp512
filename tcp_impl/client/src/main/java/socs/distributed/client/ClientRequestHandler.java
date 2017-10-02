@@ -56,7 +56,7 @@ class ClientRequestHandler {
                 log.error(responseFromMiddleware.getMessage());
                 COMP512Exception requestErr = responseFromMiddleware.getException();
                 if (requestErr != null) {
-                    requestErr.printStackTrace();
+                    requestErr.getMessage();
                 }
             }
             log.info("\n***************" + responseFromMiddleware.getMessage());

@@ -47,13 +47,13 @@ public class Client {
         // TODO:: Remove this debugging stuff
         if (clientId.equals("cs-25")) {
             log.info("============================================================");
-            log.info("This client would sleep at the MIDDLEWARE SERVER for 10 secs");
+            log.info("This client would sleep at the MIDDLEWARE SERVER for 25 secs");
             log.info("============================================================");
         }
 
         if (clientId.equals("cs-22")) {
             log.info("===========================================================");
-            log.info("This client would sleep at the RESOURCE-MANAGER for 10 secs");
+            log.info("This client would sleep at the RESOURCE-MANAGER for 25 secs");
             log.info("===========================================================");
         }
 
@@ -70,346 +70,248 @@ public class Client {
             command = command.trim();
             arguments = obj.parse(command);
 
-            //decide which of the commands this was
-            switch (obj.findChoice((String) arguments.elementAt(0))) {
-                case 1: //help section
-                    if (arguments.size() == 1)   //command was "help"
-                        obj.listCommands();
-                    else if (arguments.size() == 2)  //command was "help <commandname>"
-                        obj.listSpecific((String) arguments.elementAt(1));
-                    else  //wrong use of help command
-                        log.info("Improper use of help command. Type help or help, <commandname>");
-                    break;
-
-                case 2:  //new flight
-                    if (arguments.size() != 5) {
-                        obj.wrongNumber();
+            try {
+                //decide which of the commands this was
+                switch (obj.findChoice((String) arguments.elementAt(0))) {
+                    case 1: //help section
+                        if (arguments.size() == 1)   //command was "help"
+                            obj.listCommands();
+                        else if (arguments.size() == 2)  //command was "help <commandname>"
+                            obj.listSpecific((String) arguments.elementAt(1));
+                        else  //wrong use of help command
+                            log.info("Improper use of help command. Type help or help, <commandname>");
                         break;
-                    }
-                    log.info("Adding a new Flight using id: " + arguments.elementAt(1));
-                    log.info("Flight number: " + arguments.elementAt(2));
-                    log.info("Add Flight Seats: " + arguments.elementAt(3));
-                    log.info("Set Flight Price: " + arguments.elementAt(4));
 
-                    try {
+                    case 2:  //new flight
+                        if (arguments.size() != 5) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Adding a new Flight using id: " + arguments.elementAt(1));
+                        log.info("Flight number: " + arguments.elementAt(2));
+                        log.info("Add Flight Seats: " + arguments.elementAt(3));
+                        log.info("Set Flight Price: " + arguments.elementAt(4));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_FLIGHT, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 3:  //new Car
-                    if (arguments.size() != 5) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Adding a new Car using id: " + arguments.elementAt(1));
-                    log.info("Car Location: " + arguments.elementAt(2));
-                    log.info("Add Number of Cars: " + arguments.elementAt(3));
-                    log.info("Set Price: " + arguments.elementAt(4));
 
-                    try {
+                    case 3:  //new Car
+                        if (arguments.size() != 5) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Adding a new Car using id: " + arguments.elementAt(1));
+                        log.info("Car Location: " + arguments.elementAt(2));
+                        log.info("Add Number of Cars: " + arguments.elementAt(3));
+                        log.info("Set Price: " + arguments.elementAt(4));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_CARS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-
-                case 4:  //new Room
-                    if (arguments.size() != 5) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Adding a new Room using id: " + arguments.elementAt(1));
-                    log.info("Room Location: " + arguments.elementAt(2));
-                    log.info("Add Number of Rooms: " + arguments.elementAt(3));
-                    log.info("Set Price: " + arguments.elementAt(4));
 
-                    try {
+                    case 4:  //new Room
+                        if (arguments.size() != 5) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Adding a new Room using id: " + arguments.elementAt(1));
+                        log.info("Room Location: " + arguments.elementAt(2));
+                        log.info("Add Number of Rooms: " + arguments.elementAt(3));
+                        log.info("Set Price: " + arguments.elementAt(4));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_ROOMS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 5:  //new Customer
-                    if (arguments.size() != 2) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Adding a new Customer using id:" + arguments.elementAt(1));
 
-                    try {
+                    case 5:  //new Customer
+                        if (arguments.size() != 2) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Adding a new Customer using id:" + arguments.elementAt(1));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_NEW_CUSTOMER_WITHOUT_ID, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 6: //delete Flight
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Deleting a flight using id: " + arguments.elementAt(1));
-                    log.info("Flight Number: " + arguments.elementAt(2));
 
-                    try {
+                    case 6: //delete Flight
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Deleting a flight using id: " + arguments.elementAt(1));
+                        log.info("Flight Number: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_FLIGHT, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 7: //delete Car
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Deleting the cars from a particular location  using id: " + arguments
-                            .elementAt(1));
-                    log.info("Car Location: " + arguments.elementAt(2));
 
-                    try {
+                    case 7: //delete Car
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Deleting the cars from a particular location  using id: " + arguments.elementAt(1));
+                        log.info("Car Location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_CARS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 8: //delete Room
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Deleting all rooms from a particular location  using id: " + arguments
-                            .elementAt(1));
-                    log.info("Room Location: " + arguments.elementAt(2));
 
-                    try {
+                    case 8: //delete Room
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Deleting all rooms from a particular location  using id: " + arguments.elementAt(1));
+                        log.info("Room Location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_ROOMS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 9: //delete Customer
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Deleting a customer from the database using id: " + arguments.elementAt(1));
-                    log.info("Customer id: " + arguments.elementAt(2));
 
-                    try {
+                    case 9: //delete Customer
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Deleting a customer from the database using id: " + arguments.elementAt(1));
+                        log.info("Customer id: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.DELETE_CUSTOMER, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 10: //querying a flight
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a flight using id: " + arguments.elementAt(1));
-                    log.info("Flight number: " + arguments.elementAt(2));
 
-                    try {
+                    case 10: //querying a flight
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a flight using id: " + arguments.elementAt(1));
+                        log.info("Flight number: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_FLIGHT, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 11: //querying a Car Location
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a car location using id: " + arguments.elementAt(1));
-                    log.info("Car location: " + arguments.elementAt(2));
 
-                    try {
+                    case 11: //querying a Car Location
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a car location using id: " + arguments.elementAt(1));
+                        log.info("Car location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CARS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 12: //querying a Room location
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a room location using id: " + arguments.elementAt(1));
-                    log.info("Room location: " + arguments.elementAt(2));
 
-                    try {
+                    case 12: //querying a Room location
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a room location using id: " + arguments.elementAt(1));
+                        log.info("Room location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_ROOMS, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 13: //querying Customer Information
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying Customer information using id: " + arguments.elementAt(1));
-                    log.info("Customer id: " + arguments.elementAt(2));
 
-                    try {
+                    case 13: //querying Customer Information
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying Customer information using id: " + arguments.elementAt(1));
+                        log.info("Customer id: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CUSTOMER_INFO, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 14: //querying a flight Price
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a flight Price using id: " + arguments.elementAt(1));
-                    log.info("Flight number: " + arguments.elementAt(2));
 
-                    try {
+                    case 14: //querying a flight Price
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a flight Price using id: " + arguments.elementAt(1));
+                        log.info("Flight number: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_FLIGHT_PRICE, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 15: //querying a Car Price
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a car price using id: " + arguments.elementAt(1));
-                    log.info("Car location: " + arguments.elementAt(2));
 
-                    try {
+                    case 15: //querying a Car Price
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a car price using id: " + arguments.elementAt(1));
+                        log.info("Car location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_CAR_PRICE, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 16: //querying a Room price
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Querying a room price using id: " + arguments.elementAt(1));
-                    log.info("Room Location: " + arguments.elementAt(2));
 
-                    try {
+                    case 16: //querying a Room price
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Querying a room price using id: " + arguments.elementAt(1));
+                        log.info("Room Location: " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.QUERY_ROOM_PRICE, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 17:  //reserve a flight
-                    if (arguments.size() != 4) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Reserving a seat on a flight using id: " + arguments.elementAt(1));
-                    log.info("Customer id: " + arguments.elementAt(2));
-                    log.info("Flight number: " + arguments.elementAt(3));
 
-                    try {
+                    case 17:  //reserve a flight
+                        if (arguments.size() != 4) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Reserving a seat on a flight using id: " + arguments.elementAt(1));
+                        log.info("Customer id: " + arguments.elementAt(2));
+                        log.info("Flight number: " + arguments.elementAt(3));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_FLIGHT, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 18:  //reserve a car
-                    if (arguments.size() != 4) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Reserving a car at a location using id: " + arguments.elementAt(1));
-                    log.info("Customer id: " + arguments.elementAt(2));
-                    log.info("Location: " + arguments.elementAt(3));
 
-                    try {
+                    case 18:  //reserve a car
+                        if (arguments.size() != 4) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Reserving a car at a location using id: " + arguments.elementAt(1));
+                        log.info("Customer id: " + arguments.elementAt(2));
+                        log.info("Location: " + arguments.elementAt(3));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_CAR, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 19:  //reserve a room
-                    if (arguments.size() != 4) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Reserving a room at a location using id: " + arguments.elementAt(1));
-                    log.info("Customer id: " + arguments.elementAt(2));
-                    log.info("Location: " + arguments.elementAt(3));
 
-                    try {
+                    case 19:  //reserve a room
+                        if (arguments.size() != 4) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Reserving a room at a location using id: " + arguments.elementAt(1));
+                        log.info("Customer id: " + arguments.elementAt(2));
+                        log.info("Location: " + arguments.elementAt(3));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_ROOM, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 20:  //reserve an Itinerary
-                    if (arguments.size() < 7) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Reserving an Itinerary using id:" + arguments.elementAt(1));
-                    log.info("Customer id:" + arguments.elementAt(2));
-                    for (int i = 0; i < arguments.size() - 6; i++)
-                        log.info("Flight number" + arguments.elementAt(3 + i));
-                    log.info("Location for Car/Room booking:" + arguments.elementAt(arguments.size() - 3));
-                    log.info("Car to book?:" + arguments.elementAt(arguments.size() - 2));
-                    log.info("Room to book?:" + arguments.elementAt(arguments.size() - 1));
 
-                    try {
+                    case 20:  //reserve an Itinerary
+                        if (arguments.size() < 7) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Reserving an Itinerary using id:" + arguments.elementAt(1));
+                        log.info("Customer id:" + arguments.elementAt(2));
+                        for (int i = 0; i < arguments.size() - 6; i++)
+                            log.info("Flight number" + arguments.elementAt(3 + i));
+                        log.info("Location for Car/Room booking:" + arguments.elementAt(arguments.size() - 3));
+                        log.info("Car to book?:" + arguments.elementAt(arguments.size() - 2));
+                        log.info("Room to book?:" + arguments.elementAt(arguments.size() - 1));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.RESERVE_ITINERARY, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
-                case 21:  //quit the src.java.client
-                    if (arguments.size() != 1) {
-                        obj.wrongNumber();
                         break;
-                    }
-                    log.info("Quitting src.java.client.");
-                    System.exit(1);
+
+                    case 21:  //quit the src.java.client
+                        if (arguments.size() != 1) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Quitting src.java.client.");
+                        System.exit(1);
 
 
-                case 22:  //new Customer given id
-                    if (arguments.size() != 3) {
-                        obj.wrongNumber();
-                        break;
-                    }
-                    log.info("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " +
-                            arguments.elementAt(2));
-
-                    try {
+                    case 22:  //new Customer given id
+                        if (arguments.size() != 3) {
+                            obj.wrongNumber();
+                            break;
+                        }
+                        log.info("Adding a new Customer using id:" +
+                                arguments.elementAt(1) + " and cid " + arguments.elementAt(2));
                         clientRequestHandler.sendRequestToMiddleware(MsgType.ADD_NEW_CUSTOMER_WITH_ID, arguments);
-                    } catch (ClientException e) {
-                        e.printStackTrace();
-                    }
-                    break;
+                        break;
 
-                default:
-                    log.info("The interface does not support this command.");
-                    break;
-            }//end of switch
+                    default:
+                        log.info("The interface does not support this command.");
+                        break;
+                }//end of switch
+
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }
         }//end of while(true)
     }
 
