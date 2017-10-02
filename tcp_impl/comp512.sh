@@ -101,6 +101,7 @@ if [ "$project" = "c" ]; then
 
 	read -p "Middleware IP: " middlewareIP
 	read -p "Middleware Port: " port
+    clientId=`hostname`
 
 	if [ -z "$middlewareIP" ]; then
     		middlewareIP="cs-26.cs.mcgill.ca"
@@ -110,5 +111,5 @@ if [ "$project" = "c" ]; then
     		port="22000"
 	fi
 
-	java -jar target/client-1.0-SNAPSHOT-jar-with-dependencies.jar $middlewareIP $port
+	java -jar target/client-1.0-SNAPSHOT-jar-with-dependencies.jar $middlewareIP $port $clientId
 fi

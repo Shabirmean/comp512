@@ -60,6 +60,13 @@ public class MiddlewareRequestHandler implements Runnable {
 
         try {
             RequestMessage requestMsgFromClient = (RequestMessage) socketReader.readObject();
+            String clientId = requestMsgFromClient.getClientID();
+
+            // TODO:: Remove this debugging stuff
+            if (clientId.equals("cs-25")) {
+                Thread.sleep(10000);
+            }
+
             MsgType requestMsgType = requestMsgFromClient.getMsgType();
             Vector msgArgs = requestMsgFromClient.getMethodArguments();
 

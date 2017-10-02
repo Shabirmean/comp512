@@ -15,10 +15,12 @@ import java.util.Vector;
 
 class ClientRequestHandler {
     private static final Logger log = Logger.getLogger(ClientRequestHandler.class);
+    private String clientID;
     private String middlewareIP;
     private short middlewarePort;
 
-    ClientRequestHandler(String middlewareIP, short middlewarePort) {
+    ClientRequestHandler(String clientID, String middlewareIP, short middlewarePort) {
+        this.clientID = clientID;
         this.middlewareIP = middlewareIP;
         this.middlewarePort = middlewarePort;
     }
@@ -28,8 +30,9 @@ class ClientRequestHandler {
         ObjectOutputStream socketWriter = null;
         ObjectInputStream socketReader = null;
         RequestMessage clientReqMsg = new RequestMessage();
+        clientReqMsg.setClientID(this.clientID);
         clientReqMsg.setMsgType(msgType);
-        clientReqMsg.setMessage("Just a HELLO for type: " + msgType.getMsgCode());
+        clientReqMsg.setMessage("A message of type: " + msgType.getMsgCode() + " from client [" + clientID + "]");
         clientReqMsg.setMethodArguments(arguments);
 
         try {

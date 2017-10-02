@@ -13,29 +13,50 @@ import java.util.Vector;
 
 public class Client {
     private static final Logger log = Logger.getLogger(Client.class);
-    
+
     public static void main(String args[]) {
         Client obj = new Client();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         String command = "";
         Vector arguments;
 
+        String clientId = "";
         String middlewareIP = "localhost";
         short middlewarePort = 1099;
+
         if (args.length > 0) {
             middlewareIP = args[0];
         }
         if (args.length > 1) {
             middlewarePort = Short.parseShort(args[1]);
         }
+
         if (args.length > 2) {
+            clientId = args[2];
+        }
+
+        if (args.length > 3) {
             log.info("Usage: java src.java.client [MiddlewareHost [MiddlewarePort]]");
             System.exit(1);
         }
 
-        ClientRequestHandler clientRequestHandler = new ClientRequestHandler(middlewareIP, middlewarePort);
-        log.info("\n\n\tClient Interface connecting to " + middlewareIP + ":" + middlewarePort);
+        ClientRequestHandler clientRequestHandler = new ClientRequestHandler(clientId, middlewareIP, middlewarePort);
+        log.info("\n\n\tClient [" + clientId + "] Interface connecting to " + middlewareIP + ":" + middlewarePort);
         log.info("Type \"help\" for list of supported commands");
+
+        // TODO:: Remove this debugging stuff
+        if (clientId.equals("cs-25")) {
+            log.info("============================================================");
+            log.info("This client would sleep at the MIDDLEWARE SERVER for 10 secs");
+            log.info("============================================================");
+        }
+
+        if (clientId.equals("cs-23")) {
+            log.info("===========================================================");
+            log.info("This client would sleep at the RESOURCE-MANAGER for 10 secs");
+            log.info("===========================================================");
+        }
+
         while (true) {
             System.out.print("\n>");
             try {

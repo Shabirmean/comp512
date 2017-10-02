@@ -48,6 +48,13 @@ public class RMServerRequestHandler implements Runnable {
         //TODO Reservation handling
         try {
             RequestMessage requestMsgFromMW = (RequestMessage) socketReader.readObject();
+            String clientId = requestMsgFromMW.getClientID();
+
+            // TODO:: Remove this debugging stuff
+            if (clientId.equals("cs-23")) {
+                Thread.sleep(10000);
+            }
+
             MsgType requestMsgType = requestMsgFromMW.getMsgType();
             Vector msgArgs = requestMsgFromMW.getMethodArguments();
 
