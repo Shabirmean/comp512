@@ -13,6 +13,7 @@ import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
 import socs.distributed.resource.message.ResponseMessage;
 
+import javax.xml.ws.Response;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -153,13 +154,17 @@ public class MiddlewareRequestHandler implements Runnable {
                                 customer.reserve(Flight.getKey(flightNo), String.valueOf(flightNo), item.getPrice());
                             }
 
+                            // TODO:: Need to be in a try-catch block to handle exceptions and rollback...
                             if (bookCars) {
                                 mwResourceManager =
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
 
-                                if (respFromRM.getStatus() == 0) {
-                                    //TODO:: Rollback Flight booking
+                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
+                                    // rollback flight booking if car-booking failed
+                                    log.warn("Itinerary Reservation failed when trying to make [Car] booking");
+                                    responseToClient = rollBackReservation(
+                                            requestMsgFromClient, MWResourceManager.RM_Type.FLIGHTS);
                                     break;
                                 }
                                 ReservableItem carItem = respFromRM.getItems().get(0);
@@ -171,8 +176,11 @@ public class MiddlewareRequestHandler implements Runnable {
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
 
-                                if (respFromRM.getStatus() == 0) {
-                                    //TODO:: Rollback Flight & Car booking
+                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
+                                    // rollback car booking if hotel-booking failed
+                                    log.warn("Itinerary Reservation failed when trying to make [Hotel] booking");
+                                    responseToClient = rollBackReservation(requestMsgFromClient,
+                                            MWResourceManager.RM_Type.FLIGHTS, MWResourceManager.RM_Type.CARS);
                                     break;
                                 }
                                 ReservableItem roomItem = respFromRM.getItems().get(0);
@@ -330,6 +338,28 @@ public class MiddlewareRequestHandler implements Runnable {
         return responseFromRMServer;
     }
 
+    private ResponseMessage rollBackReservation(RequestMessage requestMsgFromClient,
+                                                MWResourceManager.RM_Type... rollbackRM) throws MiddlewareException {
+        for (MWResourceManager.RM_Type rmType : rollbackRM) {
+            MWResourceManager mwResourceManager = MiddlewareServer.externalResourceManagers.get(rmType);
+            requestMsgFromClient.setMsgType(MsgType.UNRESERVE_ITINERARY);
+            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+
+            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
+                log.warn("Rollback of [" + rmType.toString() + "] booking was 'SUCCESSFUL'.");
+            } else {
+                log.warn("Rollback of [" + rmType.toString() + "] booking 'FAILED'.");
+            }
+        }
+
+        COMP512Exception exception =
+                new COMP512Exception("Itinerary Reservation could not be completed");
+        ResponseMessage responseToClient = new ResponseMessage();
+        responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+        responseToClient.setException(exception);
+        responseToClient.setMessage("Itinerary Reservation could not be completed");
+        return responseToClient;
+    }
 
     private int getInt(Object temp) throws Exception {
         return new Integer((String) temp);

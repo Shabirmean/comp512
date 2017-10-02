@@ -62,15 +62,20 @@ class RMServer {
         if (rmServerRole.toUpperCase().equals(RMServerConstants.RM_FLIGHT_SERVER)) {
             return (msgType == MsgType.ADD_FLIGHT || msgType == MsgType.DELETE_FLIGHT ||
                     msgType == MsgType.QUERY_FLIGHT || msgType == MsgType.QUERY_FLIGHT_PRICE ||
-                    msgType == MsgType.RESERVE_FLIGHT || msgType == MsgType.RESERVE_ITINERARY);
+                    msgType == MsgType.RESERVE_FLIGHT || msgType == MsgType.RESERVE_ITINERARY ||
+                    msgType == MsgType.UNRESERVE_ITINERARY);
+
         } else if (rmServerRole.toUpperCase().equals(RMServerConstants.RM_CAR_SERVER)) {
             return (msgType == MsgType.ADD_CARS || msgType == MsgType.DELETE_CARS ||
                     msgType == MsgType.QUERY_CARS || msgType == MsgType.QUERY_CAR_PRICE ||
-                    msgType == MsgType.RESERVE_CAR || msgType == MsgType.RESERVE_ITINERARY);
+                    msgType == MsgType.RESERVE_CAR || msgType == MsgType.RESERVE_ITINERARY ||
+                    msgType == MsgType.UNRESERVE_ITINERARY);
+
         } else if (rmServerRole.toUpperCase().equals(RMServerConstants.RM_HOTEL_SERVER)) {
             return (msgType == MsgType.ADD_ROOMS || msgType == MsgType.DELETE_ROOMS ||
                     msgType == MsgType.QUERY_ROOMS || msgType == MsgType.QUERY_ROOM_PRICE ||
-                    msgType == MsgType.RESERVE_ROOM || msgType == MsgType.RESERVE_ITINERARY);
+                    msgType == MsgType.RESERVE_ROOM || msgType == MsgType.RESERVE_ITINERARY ||
+                    msgType == MsgType.UNRESERVE_ITINERARY);
         }
         return false;
     }

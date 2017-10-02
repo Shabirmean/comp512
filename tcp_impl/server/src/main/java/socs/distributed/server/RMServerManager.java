@@ -90,6 +90,25 @@ class RMServerManager {
             return item;
         }
     }
+
+
+    // reserve an item
+    private boolean unReserveItem(int id, int customerID, String key, String location) {
+        // check if the item is available
+        ReservableItem item = (ReservableItem) readData(id, key);
+        if (item == null) {
+            Trace.warn("RM::UnReserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") " +
+                    "failed--item doesn't exist");
+            return false;
+        } else {
+            item.setCount(item.getCount() + 1);
+            item.setReserved(item.getReserved() - 1);
+            Trace.info("RM::UnReserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
+            return true;
+        }
+    }
+
+
     //    ========
     // Create a new flight, or add seats to existing flight
     //  NOTE: if flightPrice <= 0 and the flight already exists, it maintains its current price
@@ -250,5 +269,30 @@ class RMServerManager {
             }
         }
         return reservedFlights;
+    }
+
+
+    // removes car reservation to this customer.
+    boolean unReserveCar(int id, int customerID, String location) {
+        return unReserveItem(id, customerID, Car.getKey(location), location);
+    }
+
+    // removes room reservation to this customer.
+    boolean unReserveRoom(int id, int customerID, String location) {
+        return unReserveItem(id, customerID, Hotel.getKey(location), location);
+    }
+
+    // removes flight reservation to this customer.
+    private boolean unReserveFlight(int id, int customerID, int flightNum) {
+        return unReserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+    }
+
+    boolean unReserveFlights(int id, int customerID, Vector flightNums) {
+        boolean unReserveStatus = false;
+        for (Object obj: flightNums) {
+            int flightNum = (int) obj;
+            unReserveStatus = unReserveFlight(id, customerID, flightNum);
+        }
+        return unReserveStatus;
     }
 }

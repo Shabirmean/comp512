@@ -382,6 +382,42 @@ public class RMServerRequestHandler implements Runnable {
                                 break;
                         }
                     }
+
+                    case UNRESERVE_ITINERARY: {
+                        boolean unResStatus = false;
+                        id = this.getInt(msgArgs.elementAt(1));
+                        int customer = this.getInt(msgArgs.elementAt(2));
+
+                        switch (RMServer.rmServerRole.toUpperCase()) {
+                            case RMServerConstants.RM_FLIGHT_SERVER:
+                                Vector flightNumbers = new Vector();
+                                for (int i = 0; i < msgArgs.size() - 6; i++) {
+                                    flightNumbers.addElement(msgArgs.elementAt(3 + i));
+                                }
+                                unResStatus = RMServer.RM_SERVER_MANAGER.unReserveFlights(id, customer, flightNumbers);
+                                break;
+
+                            case RMServerConstants.RM_CAR_SERVER:
+                                String carLocation = this.getString(msgArgs.elementAt(msgArgs.size() - 3));
+                                unResStatus = RMServer.RM_SERVER_MANAGER.unReserveCar(id, customer, carLocation);
+                                break;
+
+                            //TODO:: Need to verify whether there will be a Hotel booking ROllback.
+                        }
+
+                        if (unResStatus) {
+                            responseToMW.setMessage("UN-reserve request carried out successfully");
+                            responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                        } else {
+                            log.info("UN-reserve [ROLLBACK] call failed");
+                            COMP512Exception exception = new COMP512Exception("UN-reserve [ROLLBACK] call failed at " +
+                                    "- [" + RMServer.rmServerRole.toUpperCase() + "-RManager].");
+                            responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                            responseToMW.setException(exception);
+                            responseToMW.setMessage("UN-reserve [ROLLBACK] call failed at " +
+                                    "- [" + RMServer.rmServerRole.toUpperCase() + "-RManager].");
+                        }
+                    }
                 }
             }
             socketWriter.writeObject(responseToMW);
