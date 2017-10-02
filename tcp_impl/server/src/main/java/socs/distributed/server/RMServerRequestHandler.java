@@ -45,6 +45,7 @@ public class RMServerRequestHandler implements Runnable {
             return;
         }
 
+        //TODO Reservation handling
         try {
             RequestMessage requestMsgFromMW = (RequestMessage) socketReader.readObject();
             MsgType requestMsgType = requestMsgFromMW.getMsgType();

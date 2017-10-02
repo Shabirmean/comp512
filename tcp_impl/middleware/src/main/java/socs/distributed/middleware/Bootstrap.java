@@ -1,11 +1,10 @@
 package socs.distributed.middleware;
 
 import org.apache.log4j.Logger;
-import socs.distributed.middleware.server.MiddlewareRequestHandler;
 import socs.distributed.middleware.server.MiddlewareServer;
 
 public class Bootstrap {
-    private static final Logger log = Logger.getLogger(MiddlewareRequestHandler.class);
+    private static final Logger log = Logger.getLogger(Bootstrap.class);
 
     public static void main(String[] args) {
         if (args.length != 1) {

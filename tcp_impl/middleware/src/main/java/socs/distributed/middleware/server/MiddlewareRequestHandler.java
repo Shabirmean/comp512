@@ -121,9 +121,6 @@ public class MiddlewareRequestHandler implements Runnable {
                         id = this.getInt(msgArgs.elementAt(1));
                         customerId = this.getInt(msgArgs.elementAt(2));
 
-                        Vector flightNumbers = new Vector();
-                        for (int i = 0; i < msgArgs.size() - 6; i++)
-                            flightNumbers.addElement(msgArgs.elementAt(3 + i));
                         String location = this.getString(msgArgs.elementAt(msgArgs.size() - 3));
                         boolean bookCars = this.getBoolean(msgArgs.elementAt(msgArgs.size() - 2));
                         boolean bookRooms = this.getBoolean(msgArgs.elementAt(msgArgs.size() - 1));
@@ -153,6 +150,11 @@ public class MiddlewareRequestHandler implements Runnable {
                                 mwResourceManager =
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+
+                                if (respFromRM.getStatus() == 0) {
+                                    //TODO:: Rollback Flight booking
+                                    break;
+                                }
                                 ReservableItem carItem = respFromRM.getItems().get(0);
                                 customer.reserve(Car.getKey(location), location, carItem.getPrice());
                             }
@@ -161,6 +163,11 @@ public class MiddlewareRequestHandler implements Runnable {
                                 mwResourceManager =
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+
+                                if (respFromRM.getStatus() == 0) {
+                                    //TODO:: Rollback Flight & Car booking
+                                    break;
+                                }
                                 ReservableItem roomItem = respFromRM.getItems().get(0);
                                 customer.reserve(Hotel.getKey(location), location, roomItem.getPrice());
                             }
@@ -203,41 +210,45 @@ public class MiddlewareRequestHandler implements Runnable {
 
                     } else {
                         ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
-                        ReservableItem reservableItem = respFromRM.getItems().elementAt(0);
-
-                        switch (requestMsgType) {
-                            case RESERVE_FLIGHT:
-                                customer.reserve(Flight.getKey(Integer.parseInt(locationOrFlNo)),
-                                        String.valueOf(locationOrFlNo), reservableItem.getPrice());
-                                break;
-
-                            case RESERVE_CAR:
-                                customer.reserve(Car.getKey(locationOrFlNo), locationOrFlNo, reservableItem.getPrice());
-                                break;
-
-                            case RESERVE_ROOM:
-                                customer.reserve(
-                                        Hotel.getKey(locationOrFlNo), locationOrFlNo, reservableItem.getPrice());
-                                break;
-                        }
-
-                        if (MiddlewareServer.internalResourceManager.reserveItem(id, customer)) {
-                            log.info("Reservation Successful");
-                            responseToClient.setMessage("Reservation was successfully completed");
-                            responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                        if (respFromRM.getStatus() == 0) {
+                            //TODO:: Rollback Flight booking
+                            System.out.println("Need to Roll back......");
                         } else {
-                            log.info("Reservation Failed");
-                            COMP512Exception exception = new COMP512Exception("Reservation could not be completed");
-                            responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToClient.setException(exception);
-                            responseToClient.setMessage("Reservation could not be completed");
+                            ReservableItem reservableItem = respFromRM.getItems().elementAt(0);
+                            switch (requestMsgType) {
+                                case RESERVE_FLIGHT:
+                                    customer.reserve(Flight.getKey(Integer.parseInt(locationOrFlNo)),
+                                            String.valueOf(locationOrFlNo), reservableItem.getPrice());
+                                    break;
+
+                                case RESERVE_CAR:
+                                    customer.reserve(Car.getKey(locationOrFlNo), locationOrFlNo, reservableItem
+                                            .getPrice());
+                                    break;
+
+                                case RESERVE_ROOM:
+                                    customer.reserve(
+                                            Hotel.getKey(locationOrFlNo), locationOrFlNo, reservableItem.getPrice());
+                                    break;
+                            }
+
+                            if (MiddlewareServer.internalResourceManager.reserveItem(id, customer)) {
+                                log.info("Reservation Successful");
+                                responseToClient.setMessage("Reservation was successfully completed");
+                                responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                            } else {
+                                log.info("Reservation Failed");
+                                COMP512Exception exception = new COMP512Exception("Reservation could not be completed");
+                                responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                                responseToClient.setException(exception);
+                                responseToClient.setMessage("Reservation could not be completed");
+                            }
                         }
                     }
                 } else {
                     responseToClient = contactResourceManager(mwResourceManager, requestMsgFromClient);
                 }
             }
-
             socketWriter.writeObject(responseToClient);
 
         } catch (IOException e) {

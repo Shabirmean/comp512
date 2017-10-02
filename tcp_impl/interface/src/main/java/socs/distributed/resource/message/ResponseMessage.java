@@ -2,7 +2,6 @@ package socs.distributed.resource.message;
 
 import socs.distributed.resource.dto.ReservableItem;
 import socs.distributed.resource.exception.COMP512Exception;
-
 import java.io.Serializable;
 import java.util.Vector;
 

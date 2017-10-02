@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MiddlewareServer {
-    private static final Logger log = Logger.getLogger(MiddlewareRequestHandler.class);
+    private static final Logger log = Logger.getLogger(MiddlewareServer.class);
 
     private short middlewarePort;
     static final CustomerResourceManager internalResourceManager = new CustomerResourceManager();

@@ -1,13 +1,12 @@
 package socs.distributed.middleware.util;
 
 import org.apache.log4j.Logger;
-import socs.distributed.middleware.server.MiddlewareRequestHandler;
 
 import java.io.*;
 import java.net.Socket;
 
 public class MiddlewareUtils {
-    private static final Logger log = Logger.getLogger(MiddlewareRequestHandler.class);
+    private static final Logger log = Logger.getLogger(MiddlewareUtils.class);
 
     public static void releaseSocket(Socket socket) {
         if (socket != null) {
