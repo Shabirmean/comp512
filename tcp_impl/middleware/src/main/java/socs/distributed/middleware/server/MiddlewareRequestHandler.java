@@ -154,19 +154,20 @@ public class MiddlewareRequestHandler implements Runnable {
                                 customer.reserve(Flight.getKey(flightNo), String.valueOf(flightNo), item.getPrice());
                             }
 
+                            // NEED to remove from customer
                             // TODO:: Need to be in a try-catch block to handle exceptions and rollback...
                             if (bookCars) {
                                 mwResourceManager =
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
 
-                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
-                                    // rollback flight booking if car-booking failed
-                                    log.warn("Itinerary Reservation failed when trying to make [Car] booking");
-                                    responseToClient = rollBackReservation(
-                                            requestMsgFromClient, MWResourceManager.RM_Type.FLIGHTS);
-                                    break;
-                                }
+//                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
+//                                    // rollback flight booking if car-booking failed
+//                                    log.warn("Itinerary Reservation failed when trying to make [Car] booking");
+//                                    responseToClient = rollBackReservation(
+//                                            requestMsgFromClient, MWResourceManager.RM_Type.FLIGHTS);
+//                                    break;
+//                                }
                                 ReservableItem carItem = respFromRM.getItems().get(0);
                                 customer.reserve(Car.getKey(location), location, carItem.getPrice());
                             }
@@ -176,13 +177,13 @@ public class MiddlewareRequestHandler implements Runnable {
                                         MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
                                 respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
 
-                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
-                                    // rollback car booking if hotel-booking failed
-                                    log.warn("Itinerary Reservation failed when trying to make [Hotel] booking");
-                                    responseToClient = rollBackReservation(requestMsgFromClient,
-                                            MWResourceManager.RM_Type.FLIGHTS, MWResourceManager.RM_Type.CARS);
-                                    break;
-                                }
+//                                if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
+//                                    // rollback car booking if hotel-booking failed
+//                                    log.warn("Itinerary Reservation failed when trying to make [Hotel] booking");
+//                                    responseToClient = rollBackReservation(requestMsgFromClient,
+//                                            MWResourceManager.RM_Type.FLIGHTS, MWResourceManager.RM_Type.CARS);
+//                                    break;
+//                                }
                                 ReservableItem roomItem = respFromRM.getItems().get(0);
                                 customer.reserve(Hotel.getKey(location), location, roomItem.getPrice());
                             }
