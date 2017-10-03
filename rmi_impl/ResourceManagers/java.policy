@@ -1,4 +1,4 @@
-grant codeBase "file:/Users/jianhuali/Desktop/512/ResourceManagers" {
+grant codeBase "file:/home/2016/sabdul23/Desktop/COMP512/comp512/rmi_impl/ResourceManagers" {
     permission java.security.AllPermission;
 };
 
