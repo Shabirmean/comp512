@@ -198,7 +198,7 @@ public class MiddlewareRequestHandler implements Runnable {
                             if (MiddlewareServer.internalResourceManager.reserveItem(id, customer)) {
                                 String clientMsg = "Itinerary Reservation Successful.";
                                 log.info(clientMsg);
-                                
+
                                 int noOFFlights = msgArgs.size() - 6;
                                 if (noOFFlights != reservableItems.size()) {
                                     log.warn("Not all flights were available for booking. Some were not booked!!!");
