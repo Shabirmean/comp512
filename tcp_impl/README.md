@@ -30,8 +30,9 @@ Also note, that the **"interface"** package is common to all other sources *(cli
 > - **step(5)** on the hosts where the clients would run
 
 
+
 (1) Fill in the right path <HERE>:
----------------------------------------------
+-----------------------------------
     	mvn install:install-file 
 	    	-Dfile=<HERE>/tcp_impl/interface/target/interface-1.0-SNAPSHOT.jar
 	    	-DgroupId=comp512-ShaJian 
@@ -39,22 +40,22 @@ Also note, that the **"interface"** package is common to all other sources *(cli
 	    	-Dversion=1.0-SNAPSHOT 
 	    	-Dpackaging=jar
 
-2) ./comp512.sh i	
+(2) ./comp512.sh i	
 ----------------------------
     builds the "interface" package and installs it in the local repo
     
-3) ./comp512.sh m
+(3) ./comp512.sh m
 ---------------------------
 	press "n" when it asks whether to do a "git pull"
 	press "y" to build it
 
-4) ./comp512.sh s
+(4) ./comp512.sh s
 --------------------------
 	press "n" when it asks whether to do a "git pull"
     press "y" to build it
 	mention the type of RM (c) for Car, (f) for Flight and (h) for Hotel
 
-5) ./comp512.sh c
+(5) ./comp512.sh c
 --------------------------
 	press "n" when it asks whether to do a "git pull"
     press "y" to build it
