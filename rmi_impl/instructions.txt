@@ -1,0 +1,12 @@
+To install, do ./install.sh
+
+To start the Resrouce Managers:
+to start the car manager, do ./executeCM.sh
+to start the hotel manager, do ./executeHM.sh
+to start the flight manager, do ./executeFM.sh
+
+To start the middleware manager, do ./executeMid.sh
+You might need to change the .sh file to indicate the servers that the resource managers will run on. To do so,
+just change the command line arguments of the last java command in the .sh file.
+
+To start a client, do ./executeC.sh
