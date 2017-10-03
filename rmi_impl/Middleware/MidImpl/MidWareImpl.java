@@ -459,7 +459,7 @@ public class MidWareImpl implements MidWare
         throws RemoteException
     {
         for (Object o : flightNumbers) {
-            fm.reserveFlight(id, customer, (int) o);
+            fm.reserveFlight(id, customer, Integer.parseInt((String) o));
         }
         if (Car) cm.reserveCar(id, customer, location);
         if (Room) hm.reserveRoom(id, customer, location);
