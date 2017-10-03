@@ -1,6 +1,5 @@
-===============================================================
+
 	Running the TCP-Sockets based distributed setup	       
-==============================================================
 
 The "comp512.sh" script is written to easily run the setup.
 This script is heavily customized to assume that the servers are run on the follwoing machines:
