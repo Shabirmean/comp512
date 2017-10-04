@@ -58,11 +58,11 @@ class ClientRequestHandler {
 
 
         } catch (IOException e) {
-            log.error("An error occurred whilst trying to READ/WRITE from socket to middleware server");
-            e.printStackTrace();
+            log.error("An error occurred in the response from Midldewareserver");
+//            e.printStackTrace();
         } catch (ClassNotFoundException e) {
             log.error("Object type received over the socket connection was not [ResponseMessage]");
-            e.printStackTrace();
+//            e.printStackTrace();
         } finally {
             ClientUtils.releaseSocket(clientSocket);
             ClientUtils.releaseWriter(socketWriter);
