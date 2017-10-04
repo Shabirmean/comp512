@@ -6,6 +6,7 @@ import socs.distributed.middleware.util.MiddlewareConstants;
 import socs.distributed.middleware.util.MiddlewareUtils;
 import socs.distributed.resource.dto.RMConcurrentHashMap;
 import socs.distributed.resource.dto.ReservableItem;
+import socs.distributed.resource.dto.ReservedItem;
 import socs.distributed.resource.entity.Car;
 import socs.distributed.resource.entity.Customer;
 import socs.distributed.resource.entity.Flight;
@@ -292,7 +293,7 @@ public class MiddlewareRequestHandler implements Runnable {
         hotelItems.add(customerID);
 
         for (Object reservedItem : customerResvMap.values()) {
-            ReservableItem reservdItem = (ReservableItem) reservedItem;
+            ReservedItem reservdItem = (ReservedItem) reservedItem;
             String itemKey = reservdItem.getKey();
 
             if (itemKey.contains(MiddlewareConstants.FLIGHT_ITEM_KEY)) {

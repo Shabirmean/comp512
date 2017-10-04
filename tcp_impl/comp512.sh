@@ -113,3 +113,5 @@ if [ "$project" = "c" ]; then
 
 	java -jar target/client-1.0-SNAPSHOT-jar-with-dependencies.jar $middlewareIP $port $clientId
 fi
+
+# mvn install:install-file -Dfile=/Users/shabirmean/Desktop/COMP512-PG1/project/tcp_impl/interface/target/interface-1.0-SNAPSHOT.jar -DgroupId=comp512-ShaJian -DartifactId=interface -Dversion=1.0-SNAPSHOT -Dpackaging=jar
