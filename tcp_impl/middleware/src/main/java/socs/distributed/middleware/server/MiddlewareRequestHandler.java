@@ -72,7 +72,7 @@ public class MiddlewareRequestHandler implements Runnable {
                         customerId = MiddlewareServer.internalResourceManager.newCustomer(id);
 
                         log.info("New customer added with ID:" + customerId);
-                        responseToClient.setMessage("A new customer was successfully added");
+                        responseToClient.setMessage("A new customer was successfully added. ID [" + customerId + "]");
                         responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         break;
 
