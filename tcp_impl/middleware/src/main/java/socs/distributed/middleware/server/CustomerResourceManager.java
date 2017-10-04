@@ -112,7 +112,7 @@ public class CustomerResourceManager {
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
         if (cust == null) {
             Trace.warn("RM::queryCustomerInfo(" + id + ", " + customerID + ") failed--customer doesn't exist");
-            return "";   // NOTE: don't change this--WC counts on this value indicating a customer does not exist...
+            return null;   // NOTE: don't change this--WC counts on this value indicating a customer does not exist...
         } else {
             String s = cust.printBill();
             Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows...");

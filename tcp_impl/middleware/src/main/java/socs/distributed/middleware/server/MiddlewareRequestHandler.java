@@ -114,7 +114,11 @@ public class MiddlewareRequestHandler implements Runnable {
                         customerId = this.getInt(msgArgs.elementAt(2));
                         String cusBill = MiddlewareServer.internalResourceManager.queryCustomerInfo(id, customerId);
 
-                        log.info("Customer info:" + cusBill);
+                        if (cusBill == null) {
+                            cusBill = "Customer info does not exist. No customer with ID:" + customerId;
+                        }
+
+                        log.info(cusBill);
                         responseToClient.setMessage("Customer info:" + cusBill);
                         responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         break;
