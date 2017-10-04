@@ -385,8 +385,8 @@ public class RMServerRequestHandler implements Runnable {
 
                     case UNRESERVE_RESOURCE: {
                         boolean unResStatus = false;
-                        id = this.getInt(msgArgs.elementAt(1));
-                        int customer = this.getInt(msgArgs.elementAt(2));
+                        id = this.getInt(msgArgs.elementAt(0));
+                        int customer = this.getInt(msgArgs.elementAt(1));
 
                         Vector resources = new Vector();
                         for (int i = 2; i < msgArgs.size(); i++) {

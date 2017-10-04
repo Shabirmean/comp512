@@ -311,7 +311,7 @@ public class MiddlewareRequestHandler implements Runnable {
         updateResrvMsg.setMsgType(MsgType.UNRESERVE_RESOURCE);
         updateResrvMsg.setMessage("Removing reservations for a deleted customer [" + customerID + "]");
 
-        if (flightItems.size() > 0) {
+        if (flightItems.size() > 2) {
             MWResourceManager mwResourceManager =
                     MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.FLIGHTS);
             updateResrvMsg.setMethodArguments(flightItems);
@@ -324,7 +324,7 @@ public class MiddlewareRequestHandler implements Runnable {
             }
         }
 
-        if (carItems.size() > 0) {
+        if (carItems.size() > 2) {
             MWResourceManager mwResourceManager =
                     MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
             updateResrvMsg.setMethodArguments(carItems);
@@ -337,7 +337,7 @@ public class MiddlewareRequestHandler implements Runnable {
             }
         }
 
-        if (hotelItems.size() > 0) {
+        if (hotelItems.size() > 2) {
             MWResourceManager mwResourceManager =
                     MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
             updateResrvMsg.setMethodArguments(hotelItems);
