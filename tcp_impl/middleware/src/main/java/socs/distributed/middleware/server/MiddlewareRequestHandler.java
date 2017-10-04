@@ -2,18 +2,18 @@ package socs.distributed.middleware.server;
 
 import org.apache.log4j.Logger;
 import socs.distributed.middleware.exception.MiddlewareException;
+import socs.distributed.middleware.util.MiddlewareConstants;
 import socs.distributed.middleware.util.MiddlewareUtils;
+import socs.distributed.resource.dto.RMConcurrentHashMap;
 import socs.distributed.resource.dto.ReservableItem;
 import socs.distributed.resource.entity.Car;
 import socs.distributed.resource.entity.Customer;
 import socs.distributed.resource.entity.Flight;
 import socs.distributed.resource.entity.Hotel;
-import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
 import socs.distributed.resource.message.ResponseMessage;
 
-import javax.xml.ws.Response;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -61,13 +61,6 @@ public class MiddlewareRequestHandler implements Runnable {
 
         try {
             RequestMessage requestMsgFromClient = (RequestMessage) socketReader.readObject();
-            String clientId = requestMsgFromClient.getClientID();
-
-            // TODO:: Remove this debugging stuff
-            if (clientId.equals("cs-25")) {
-                Thread.sleep(25000);
-            }
-
             MsgType requestMsgType = requestMsgFromClient.getMsgType();
             Vector msgArgs = requestMsgFromClient.getMethodArguments();
 
@@ -92,9 +85,7 @@ public class MiddlewareRequestHandler implements Runnable {
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("New customer could not be added with ID:" + customerId);
-                            COMP512Exception exception = new COMP512Exception("New customer could not be added");
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToClient.setException(exception);
                             responseToClient.setMessage("New customer could not be added with ID:" + customerId);
                         }
                         break;
@@ -102,15 +93,17 @@ public class MiddlewareRequestHandler implements Runnable {
                     case DELETE_CUSTOMER:
                         id = this.getInt(msgArgs.elementAt(1));
                         customerId = this.getInt(msgArgs.elementAt(2));
-                        if (MiddlewareServer.internalResourceManager.deleteCustomer(id, customerId)) {
+                        RMConcurrentHashMap customerResvMap =
+                                MiddlewareServer.internalResourceManager.deleteCustomer(id, customerId);
+                        if (customerResvMap != null) {
                             log.info("Customer deleted. ID:" + customerId);
                             responseToClient.setMessage("Customer deleted. ID:" + customerId);
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                            if (customerResvMap.size() > 0) {
+                                updateReservations(Integer.toString(id), Integer.toString(customerId), customerResvMap);
+                            }
                         } else {
-                            log.info("Customer could not be deleted. ID:" + customerId);
-                            COMP512Exception exception = new COMP512Exception("Customer could not be deleted.");
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToClient.setException(exception);
                             responseToClient.setMessage("Customer could not be deleted. ID:" + customerId);
                         }
                         break;
@@ -137,10 +130,7 @@ public class MiddlewareRequestHandler implements Runnable {
                         if (customer == null) {
                             log.info("Could not reserve itinerary for " +
                                     "[ID: " + id + ", CustomerID: " + customerId + "]");
-                            COMP512Exception exception =
-                                    new COMP512Exception("Itinerary reserve request failed. Customer does not exist.");
                             responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToClient.setException(exception);
                             responseToClient.setMessage("Itinerary reserve request failed. Customer does not exist.");
                         } else {
                             MWResourceManager mwResourceManager =
@@ -209,10 +199,7 @@ public class MiddlewareRequestHandler implements Runnable {
                                 responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                             } else {
                                 log.info("Itinerary Reservation Failed");
-                                COMP512Exception exception =
-                                        new COMP512Exception("Itinerary Reservation could not be completed");
                                 responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                                responseToClient.setException(exception);
                                 responseToClient.setMessage("Itinerary Reservation could not be completed");
                             }
                         }
@@ -233,10 +220,7 @@ public class MiddlewareRequestHandler implements Runnable {
                     Customer customer = MiddlewareServer.internalResourceManager.isValidCustomer(id, customerId);
                     if (customer == null) {
                         log.info("Could not execute reserve for [ID: " + id + ", CustomerID: " + customerId + "]");
-                        COMP512Exception exception =
-                                new COMP512Exception("Reservation request failed. Customer does not exist.");
                         responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                        responseToClient.setException(exception);
                         responseToClient.setMessage("Reservation request failed. Customer does not exist.");
 
                     } else {
@@ -269,9 +253,7 @@ public class MiddlewareRequestHandler implements Runnable {
                                 responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                             } else {
                                 log.info("Reservation Failed");
-                                COMP512Exception exception = new COMP512Exception("Reservation could not be completed");
                                 responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                                responseToClient.setException(exception);
                                 responseToClient.setMessage("Reservation could not be completed");
                             }
                         }
@@ -294,6 +276,98 @@ public class MiddlewareRequestHandler implements Runnable {
             MiddlewareUtils.releaseReader(socketReader);
         }
     }
+
+    private void updateReservations(String id, String customerID, RMConcurrentHashMap customerResvMap) throws
+            MiddlewareException {
+        Vector<String> flightItems = new Vector<>();
+        Vector<String> carItems = new Vector<>();
+        Vector<String> hotelItems = new Vector<>();
+
+        // add request ID and CustomerID to the front of the Vector
+        flightItems.add(id);
+        flightItems.add(customerID);
+        carItems.add(id);
+        carItems.add(customerID);
+        hotelItems.add(id);
+        hotelItems.add(customerID);
+
+        for (Object reservedItem : customerResvMap.values()) {
+            ReservableItem reservdItem = (ReservableItem) reservedItem;
+            String itemKey = reservdItem.getKey();
+
+            if (itemKey.contains(MiddlewareConstants.FLIGHT_ITEM_KEY)) {
+                flightItems.add(reservdItem.getLocation());
+            } else if (itemKey.contains(MiddlewareConstants.CAR_ITEM_KEY)) {
+                carItems.add(reservdItem.getLocation());
+            } else if (itemKey.contains(MiddlewareConstants.HOTEL_ITEM_KEY)) {
+                hotelItems.add(reservdItem.getLocation());
+            } else {
+                log.error("Unrecognized item key [" + itemKey + "] found for item of customer: [" + customerID + "]");
+            }
+        }
+
+        RequestMessage updateResrvMsg = new RequestMessage();
+        updateResrvMsg.setMsgType(MsgType.UNRESERVE_RESOURCE);
+        updateResrvMsg.setMessage("Removing reservations for a deleted customer [" + customerID + "]");
+
+        if (flightItems.size() > 0) {
+            MWResourceManager mwResourceManager =
+                    MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.FLIGHTS);
+            updateResrvMsg.setMethodArguments(flightItems);
+            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, updateResrvMsg);
+
+            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
+                log.info("Flight reservations for deleted customer [" + customerID + "] was updated.");
+            } else {
+                log.warn("Flight reservations for deleted customer [" + customerID + "] failed to update.");
+            }
+        }
+
+        if (carItems.size() > 0) {
+            MWResourceManager mwResourceManager =
+                    MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.CARS);
+            updateResrvMsg.setMethodArguments(carItems);
+            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, updateResrvMsg);
+
+            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
+                log.info("Car reservations for deleted customer [" + customerID + "] was updated.");
+            } else {
+                log.warn("Car reservations for deleted customer [" + customerID + "] failed to update.");
+            }
+        }
+
+        if (hotelItems.size() > 0) {
+            MWResourceManager mwResourceManager =
+                    MiddlewareServer.externalResourceManagers.get(MWResourceManager.RM_Type.ROOMS);
+            updateResrvMsg.setMethodArguments(hotelItems);
+            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, updateResrvMsg);
+            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
+                log.info("Hotel reservations for deleted customer [" + customerID + "] was updated.");
+            } else {
+                log.warn("Hotel reservations for deleted customer [" + customerID + "] failed to update.");
+            }
+        }
+    }
+
+
+    private ResponseMessage rollBackReservation(RequestMessage requestMsgFromClient,
+                                                MWResourceManager.RM_Type... rollbackRM) throws MiddlewareException {
+        for (MWResourceManager.RM_Type rmType : rollbackRM) {
+            MWResourceManager mwResourceManager = MiddlewareServer.externalResourceManagers.get(rmType);
+            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
+
+            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
+                log.warn("Rollback of [" + rmType.toString() + "] booking was 'SUCCESSFUL'.");
+            } else {
+                log.warn("Rollback of [" + rmType.toString() + "] booking 'FAILED'.");
+            }
+        }
+        ResponseMessage responseToClient = new ResponseMessage();
+        responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+        responseToClient.setMessage("Itinerary Reservation could not be completed");
+        return responseToClient;
+    }
+
 
     @SuppressWarnings({"StatementWithEmptyBody", "InfiniteLoopStatement"})
     private ResponseMessage contactResourceManager(MWResourceManager mwResourceManager,
@@ -335,7 +409,6 @@ public class MiddlewareRequestHandler implements Runnable {
             responseFromRMServer = new ResponseMessage();
             responseFromRMServer.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
             responseFromRMServer.setMessage(errMsg);
-            responseFromRMServer.setException(new COMP512Exception(errMsg));
             log.error(errMsg);
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -343,7 +416,6 @@ public class MiddlewareRequestHandler implements Runnable {
             responseFromRMServer = new ResponseMessage();
             responseFromRMServer.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
             responseFromRMServer.setMessage(errMsg);
-            responseFromRMServer.setException(new COMP512Exception(errMsg));
             log.error(errMsg);
             e.printStackTrace();
         } finally {
@@ -352,29 +424,6 @@ public class MiddlewareRequestHandler implements Runnable {
             MiddlewareUtils.releaseReader(socketReader);
         }
         return responseFromRMServer;
-    }
-
-    private ResponseMessage rollBackReservation(RequestMessage requestMsgFromClient,
-                                                MWResourceManager.RM_Type... rollbackRM) throws MiddlewareException {
-        for (MWResourceManager.RM_Type rmType : rollbackRM) {
-            MWResourceManager mwResourceManager = MiddlewareServer.externalResourceManagers.get(rmType);
-            requestMsgFromClient.setMsgType(MsgType.UNRESERVE_ITINERARY);
-            ResponseMessage respFromRM = contactResourceManager(mwResourceManager, requestMsgFromClient);
-
-            if (respFromRM.getStatus() == MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS) {
-                log.warn("Rollback of [" + rmType.toString() + "] booking was 'SUCCESSFUL'.");
-            } else {
-                log.warn("Rollback of [" + rmType.toString() + "] booking 'FAILED'.");
-            }
-        }
-
-        COMP512Exception exception =
-                new COMP512Exception("Itinerary Reservation could not be completed");
-        ResponseMessage responseToClient = new ResponseMessage();
-        responseToClient.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-        responseToClient.setException(exception);
-        responseToClient.setMessage("Itinerary Reservation could not be completed");
-        return responseToClient;
     }
 
     private int getInt(Object temp) throws Exception {

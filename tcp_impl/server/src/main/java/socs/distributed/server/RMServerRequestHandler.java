@@ -2,7 +2,6 @@ package socs.distributed.server;
 
 import org.apache.log4j.Logger;
 import socs.distributed.resource.dto.ReservableItem;
-import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
 import socs.distributed.resource.message.ResponseMessage;
@@ -48,21 +47,11 @@ public class RMServerRequestHandler implements Runnable {
         //TODO Reservation handling
         try {
             RequestMessage requestMsgFromMW = (RequestMessage) socketReader.readObject();
-            String clientId = requestMsgFromMW.getClientID();
-
-            // TODO:: Remove this debugging stuff
-            if (clientId.equals("cs-22")) {
-                Thread.sleep(25000);
-            }
-
             MsgType requestMsgType = requestMsgFromMW.getMsgType();
             Vector msgArgs = requestMsgFromMW.getMethodArguments();
 
             if (!RMServer.isAllowedRequest(requestMsgType)) {
-                COMP512Exception exception = new COMP512Exception("Request for invalid resource. This " +
-                        "Resource-Manager only handles requests related to [" + RMServer.rmServerRole + "]");
                 responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                responseToMW.setException(exception);
                 responseToMW.setMessage("Call to resource manager failed");
             } else {
                 switch (requestMsgType) {
@@ -78,9 +67,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Flight could not be added");
-                            COMP512Exception exception = new COMP512Exception("Flight could not be added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Flight could not be added");
                         }
                         break;
@@ -98,9 +85,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Cars could not be added");
-                            COMP512Exception exception = new COMP512Exception("Cars could not be added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Cars could not be added");
                         }
                         break;
@@ -118,9 +103,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Rooms could not be added");
-                            COMP512Exception exception = new COMP512Exception("Rooms could not be added");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Rooms could not be added");
                         }
                         break;
@@ -136,9 +119,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Flight could not be deleted");
-                            COMP512Exception exception = new COMP512Exception("FLight could not be deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Flight could not be deleted");
                         }
                         break;
@@ -154,9 +135,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Car could not be deleted");
-                            COMP512Exception exception = new COMP512Exception("Car could not be deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Car could not be deleted");
                         }
                         break;
@@ -171,9 +150,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Room could not be deleted");
-                            COMP512Exception exception = new COMP512Exception("Room could not be deleted");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Room could not be deleted");
                         }
                         break;
@@ -260,9 +237,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Flight could not be reserved");
-                            COMP512Exception exception = new COMP512Exception("Flight could not be reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Flight could not be reserved");
                         }
                         break;
@@ -283,9 +258,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Car could not be reserved");
-                            COMP512Exception exception = new COMP512Exception("Car could not be reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Car could not be reserved");
                         }
                         break;
@@ -306,9 +279,7 @@ public class RMServerRequestHandler implements Runnable {
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
                             log.info("Room could not be reserved");
-                            COMP512Exception exception = new COMP512Exception("Room could not be reserved");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
                             responseToMW.setMessage("Room could not be reserved");
                         }
                         break;
@@ -333,9 +304,7 @@ public class RMServerRequestHandler implements Runnable {
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                                 } else {
                                     log.info("Flights could not be reserved");
-                                    COMP512Exception exception = new COMP512Exception("Flights could not be reserved");
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                                    responseToMW.setException(exception);
                                     responseToMW.setMessage("Flights could not be reserved");
                                 }
                                 break;
@@ -353,9 +322,7 @@ public class RMServerRequestHandler implements Runnable {
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                                 } else {
                                     log.info("Car could not be reserved");
-                                    COMP512Exception exception = new COMP512Exception("Car could not be reserved");
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                                    responseToMW.setException(exception);
                                     responseToMW.setMessage("Car could not be reserved");
                                 }
                                 break;
@@ -374,9 +341,7 @@ public class RMServerRequestHandler implements Runnable {
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                                 } else {
                                     log.info("Hotel could not be reserved");
-                                    COMP512Exception exception = new COMP512Exception("Hotel could not be reserved");
                                     responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                                    responseToMW.setException(exception);
                                     responseToMW.setMessage("Hotel could not be reserved");
                                 }
                                 break;
@@ -384,7 +349,7 @@ public class RMServerRequestHandler implements Runnable {
                         break;
                     }
 
-                    case UNRESERVE_ITINERARY: {
+                    case ROLLBACK_ITINERARY: {
                         boolean unResStatus = false;
                         id = this.getInt(msgArgs.elementAt(1));
                         int customer = this.getInt(msgArgs.elementAt(2));
@@ -407,15 +372,48 @@ public class RMServerRequestHandler implements Runnable {
                         }
 
                         if (unResStatus) {
+                            responseToMW.setMessage("Itinerary rollback request carried out successfully");
+                            responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
+                        } else {
+                            log.info("Itinerary [ROLLBACK] call failed");
+                            responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
+                            responseToMW.setMessage("Itinerary [ROLLBACK] call failed at " +
+                                    "- [" + RMServer.rmServerRole.toUpperCase() + "-RManager].");
+                        }
+                        break;
+                    }
+
+                    case UNRESERVE_RESOURCE: {
+                        boolean unResStatus = false;
+                        id = this.getInt(msgArgs.elementAt(1));
+                        int customer = this.getInt(msgArgs.elementAt(2));
+
+                        Vector resources = new Vector();
+                        for (int i = 2; i < msgArgs.size(); i++) {
+                            resources.addElement(msgArgs.elementAt(i));
+                        }
+
+                        switch (RMServer.rmServerRole.toUpperCase()) {
+                            case RMServerConstants.RM_FLIGHT_SERVER:
+                                unResStatus = RMServer.RM_SERVER_MANAGER.unReserveFlights(id, customer, resources);
+                                break;
+
+                            case RMServerConstants.RM_CAR_SERVER:
+                                unResStatus = RMServer.RM_SERVER_MANAGER.unReserveCars(id, customer, resources);
+                                break;
+
+                            case RMServerConstants.RM_HOTEL_SERVER:
+                                unResStatus = RMServer.RM_SERVER_MANAGER.unReserveRooms(id, customer, resources);
+                                break;
+                        }
+
+                        if (unResStatus) {
                             responseToMW.setMessage("UN-reserve request carried out successfully");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_SUCCESS_STATUS);
                         } else {
-                            log.info("UN-reserve [ROLLBACK] call failed");
-                            COMP512Exception exception = new COMP512Exception("UN-reserve [ROLLBACK] call failed at " +
-                                    "- [" + RMServer.rmServerRole.toUpperCase() + "-RManager].");
+                            log.info("UN-reserve call failed");
                             responseToMW.setStatus(MsgType.MessageStatus.RM_SERVER_FAIL_STATUS);
-                            responseToMW.setException(exception);
-                            responseToMW.setMessage("UN-reserve [ROLLBACK] call failed at " +
+                            responseToMW.setMessage("UN-reserve call failed at " +
                                     "- [" + RMServer.rmServerRole.toUpperCase() + "-RManager].");
                         }
                     }

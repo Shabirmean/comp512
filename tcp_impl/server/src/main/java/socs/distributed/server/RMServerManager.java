@@ -295,4 +295,22 @@ class RMServerManager {
         }
         return unReserveStatus;
     }
+
+    boolean unReserveCars(int id, int customerID, Vector carLocations) {
+        boolean unReserveStatus = false;
+        for (Object obj: carLocations) {
+            String carLoc = (String) obj;
+            unReserveStatus = unReserveCar(id, customerID, carLoc);
+        }
+        return unReserveStatus;
+    }
+
+    boolean unReserveRooms(int id, int customerID, Vector hotelLocations) {
+        boolean unReserveStatus = false;
+        for (Object obj: hotelLocations) {
+            String location = (String) obj;
+            unReserveStatus = unReserveRoom(id, customerID, location);
+        }
+        return unReserveStatus;
+    }
 }

@@ -3,7 +3,6 @@ package socs.distributed.client;
 import org.apache.log4j.Logger;
 import socs.distributed.client.exception.ClientException;
 import socs.distributed.client.util.ClientUtils;
-import socs.distributed.resource.exception.COMP512Exception;
 import socs.distributed.resource.message.MsgType;
 import socs.distributed.resource.message.RequestMessage;
 import socs.distributed.resource.message.ResponseMessage;
@@ -31,7 +30,6 @@ class ClientRequestHandler {
         ObjectOutputStream socketWriter = null;
         ObjectInputStream socketReader = null;
         RequestMessage clientReqMsg = new RequestMessage();
-        clientReqMsg.setClientID(this.clientID);
         clientReqMsg.setMsgType(msgType);
         clientReqMsg.setMessage("A message of type: " + msgType.getMsgCode() + " from client [" + clientID + "]");
         clientReqMsg.setMethodArguments(arguments);
@@ -52,12 +50,10 @@ class ClientRequestHandler {
             socketWriter.writeObject(clientReqMsg);
             ResponseMessage responseFromMiddleware = (ResponseMessage) socketReader.readObject();
 
-            log.info("***" + responseFromMiddleware.getMessage() + "***");
             if (responseFromMiddleware.getStatus() == MsgType.MessageStatus.RM_SERVER_FAIL_STATUS) {
-                COMP512Exception requestErr = responseFromMiddleware.getException();
-                if (requestErr != null) {
-                    requestErr.getMessage();
-                }
+                log.error("*** " + responseFromMiddleware.getMessage() + " ***");
+            } else {
+                log.info("*** " + responseFromMiddleware.getMessage() + " ***");
             }
 
 

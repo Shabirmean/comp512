@@ -1,23 +1,16 @@
 package socs.distributed.resource.message;
 
+import socs.distributed.resource.dto.ReservableItem;
+
 import java.io.Serializable;
 import java.util.Vector;
 
 public class RequestMessage implements Serializable {
     private static final long serialVersionUID = 7526472295622776109L;
 
-    private String clientID;
     private MsgType msgType;
     private String message;
     private Vector methodArguments;
-
-    public String getClientID() {
-        return clientID;
-    }
-
-    public void setClientID(String clientID) {
-        this.clientID = clientID;
-    }
 
     public MsgType getMsgType() {
         return msgType;

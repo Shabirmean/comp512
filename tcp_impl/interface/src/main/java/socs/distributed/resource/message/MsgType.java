@@ -27,7 +27,8 @@ public enum MsgType implements Serializable {
     DELETE_CUSTOMER(8),
     QUERY_CUSTOMER_INFO(12),
     RESERVE_ITINERARY(19),
-    UNRESERVE_ITINERARY(20);
+    ROLLBACK_ITINERARY(20),
+    UNRESERVE_RESOURCE(21);
 
     private static final long serialVersionUID = 7526472295622776149L;
 
