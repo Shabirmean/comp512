@@ -101,7 +101,7 @@ if [ "$project" = "c" ]; then
 
 	read -p "Middleware IP: " middlewareIP
 	read -p "Middleware Port: " port
-    clientId=`hostname`
+    	clientId=`hostname`
 
 	if [ -z "$middlewareIP" ]; then
     		middlewareIP="cs-26.cs.mcgill.ca"

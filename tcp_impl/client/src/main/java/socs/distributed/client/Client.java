@@ -31,10 +31,6 @@ public class Client {
             middlewarePort = Short.parseShort(args[1]);
         }
 
-        if (args.length > 2) {
-            clientId = args[2];
-        }
-
         if (args.length > 3) {
             log.info("Usage: java src.java.client [MiddlewareHost [MiddlewarePort]]");
             System.exit(1);
@@ -43,19 +39,6 @@ public class Client {
         ClientRequestHandler clientRequestHandler = new ClientRequestHandler(clientId, middlewareIP, middlewarePort);
         log.info("\n\n\tClient [" + clientId + "] Interface connecting to " + middlewareIP + ":" + middlewarePort);
         log.info("Type \"help\" for list of supported commands");
-
-        // TODO:: Remove this debugging stuff
-        if (clientId.equals("cs-25")) {
-            log.info("============================================================");
-            log.info("This client would sleep at the MIDDLEWARE SERVER for 25 secs");
-            log.info("============================================================");
-        }
-
-        if (clientId.equals("cs-22")) {
-            log.info("===========================================================");
-            log.info("This client would sleep at the RESOURCE-MANAGER for 25 secs");
-            log.info("===========================================================");
-        }
 
         while (true) {
             System.out.print("\n>");
