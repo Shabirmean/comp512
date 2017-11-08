@@ -138,36 +138,31 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
     // reserve an item
-    protected boolean reserveItem(int id, int customerID, String key, String location) {
-        Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
-        // Read customer object if it exists (and read lock it)
-        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
-        if (cust == null) {
-            Trace.warn("RM::reserveCar( " + id + ", " + customerID + ", " + key + ", " + location + ")  " +
-                    "failed--customer doesn't exist");
-            return false;
-        }
+    public String reserveItem(int id, int customerID, String location, int resourceType) {
+        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
+        String key;
+        if (resourceType == 0) key = Car.getKey(location);
+        else if (resourceType == 1) key = Hotel.getKey(location);
+        else key = Flight.getKey(Integer.parseInt(location));
+
 
         // check if the item is available
         ReservableItem item = (ReservableItem) readData(id, key);
         if (item == null) {
             Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--item " +
                     "doesn't exist");
-            return false;
+            return "-1" + " " + key;
         } else if (item.getCount() == 0) {
             Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--No " +
                     "more items");
-            return false;
+            return "-1" + " " + key;
         } else {
-            cust.reserve(key, location, item.getPrice());
-            writeData(id, cust.getKey(), cust);
-
             // decrease the number of available items in the storage
             item.setCount(item.getCount() - 1);
             item.setReserved(item.getReserved() + 1);
 
             Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
-            return true;
+            return item.getPrice() + " " + key;
         }
     }
 
@@ -438,18 +433,21 @@ public class ResourceManagerImpl implements ResourceManager {
 
     // Adds car reservation to this customer. 
     public boolean reserveCar(int id, int customerID, String location) throws RemoteException {
-        return reserveItem(id, customerID, Car.getKey(location), location);
+        // return reserveItem(id, customerID, Car.getKey(location), location);
+        return false;
     }
 
 
     // Adds room reservation to this customer. 
     public boolean reserveRoom(int id, int customerID, String location) throws RemoteException {
-        return reserveItem(id, customerID, Hotel.getKey(location), location);
+        // return reserveItem(id, customerID, Hotel.getKey(location), location);
+        return false;
     }
 
     // Adds flight reservation to this customer.
     public boolean reserveFlight(int id, int customerID, int flightNum) throws RemoteException {
-        return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+        // return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+        return false;
     }
 
 }
