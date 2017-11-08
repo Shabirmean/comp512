@@ -41,7 +41,7 @@ public class ResourceManagerImpl implements ResourceManager {
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("GroupOneResourceManager", rm);
+            registry.rebind("ShabirJianResourceManager", rm);
 
             System.err.println("Server ready");
         } catch (Exception e) {

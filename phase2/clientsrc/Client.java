@@ -47,7 +47,7 @@ public class Client {
             // get a reference to the rmiregistry
             Registry registry = LocateRegistry.getRegistry(server, port);
             // get the proxy and the remote reference by rmiregistry lookup
-            rm = (Middleware) registry.lookup("ShabirJainMiddleware");
+            rm = (Middleware) registry.lookup("ShabirJianMiddleware");
             if (rm != null) {
                 System.out.println("Successful");
                 System.out.println("Connected to Middleware");

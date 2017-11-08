@@ -55,7 +55,7 @@ public class MiddlewareManagerImpl implements Middleware {
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("ShabirJainMiddleware", rm);
+            registry.rebind("ShabirJianMiddleware", rm);
 
             System.err.println("Server ready");
 

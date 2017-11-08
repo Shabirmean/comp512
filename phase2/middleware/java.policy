@@ -1,4 +1,4 @@
-grant codeBase "file:/Users/shabirmean/Desktop/COMP512/Phase-2/Source/middleware/" {
+grant codeBase "file:/Users/jianhuali/Desktop/part2/comp512/phase2/middleware" {
     permission java.security.AllPermission;
 };
 
