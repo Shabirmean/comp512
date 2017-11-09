@@ -4,20 +4,27 @@
 //
 package ResImpl;
 
-import ResInterface.*;
+import LockManager.LockManager;
+import ResInterface.InvalidTransactionException;
+import ResInterface.ResourceManager;
+import ResInterface.TransactionAbortedException;
 
-import java.util.*;
-
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.UUID;
 
 public class ResourceManagerImpl implements ResourceManager {
 
     protected RMHashtable m_itemHT = new RMHashtable();
+    protected LockManager rm_lockMan = new LockManager();
 
+    public ResourceManagerImpl() throws RemoteException {
+    }
 
     public static void main(String args[]) {
         // Figure out where server is running
@@ -55,7 +62,29 @@ public class ResourceManagerImpl implements ResourceManager {
         }
     }
 
-    public ResourceManagerImpl() throws RemoteException {
+    @Override
+    public int start() throws RemoteException {
+        UUID uuid = UUID.randomUUID();
+        int newTId = uuid.hashCode();
+//        Transaction newTrans = new Transaction(newTId);
+//        transactionMap.put(newTId, newTrans);
+        return newTId;
+    }
+
+    @Override
+    public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
+        return false;
+        //TODO:: Handle this bro
+    }
+
+    @Override
+    public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
+
+    }
+
+    @Override
+    public boolean shutdown() throws RemoteException {
+        return false;
     }
 
 
@@ -139,7 +168,8 @@ public class ResourceManagerImpl implements ResourceManager {
 
     // reserve an item
     public String reserveItem(int id, int customerID, String location, int resourceType) {
-        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
+        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " )
+        // called");
         String key;
         if (resourceType == 0) key = Car.getKey(location);
         else if (resourceType == 1) key = Hotel.getKey(location);

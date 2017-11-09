@@ -18,7 +18,7 @@ public class LockManager {
         super();
     }
 
-    public boolean Lock(int xid, String strData, int lockType) throws DeadlockException, InvalidTypeObjectException {
+    public boolean Lock(int xid, String strData, int lockType) throws DeadlockException {
 
         // if any parameter is invalid, then return false
         if (xid < 0) {
@@ -41,8 +41,6 @@ public class LockManager {
         try {
             boolean bConflict = true;
             BitSet bConvert = new BitSet(1);
-
-
             while (bConflict) {
                 synchronized (lockTable) {
                     // check if this lock request conflicts with existing locks
@@ -78,9 +76,8 @@ public class LockManager {
                                         tempTrxnObj.setLockType(TrxnObj.WRITE);
                                     }
                                 } else {
-                                    throw new InvalidTypeObjectException(
-                                            "An Invalid Object type of class [" + obj.getClass() + "] was found in " +
-                                                    "the elements vector for TID [" + trxnObj.getXId() + "]");
+                                    System.out.println("An Invalid Object type of class [" + obj.getClass() + "] was " +
+                                            "found in the elements vector for TID [" + trxnObj.getXId() + "]");
                                 }
                             }
                         } else {
@@ -249,6 +246,8 @@ public class LockManager {
 
     }
 
+
+    //TODO:: Look for deadlock
     private void WaitLock(DataObj dataObj) throws DeadlockException {
         // Check timestamp or add a new one.
         // Will always add new timestamp for each new lock request since
@@ -313,8 +312,7 @@ public class LockManager {
 
 
     // cleanupDeadlock cleans up stampTable and waitTable, and throws DeadlockException
-    private void cleanupDeadlock(TimeObj tmObj, WaitObj waitObj)
-            throws DeadlockException {
+    private void cleanupDeadlock(TimeObj tmObj, WaitObj waitObj) throws DeadlockException {
         synchronized (stampTable) {
             synchronized (waitTable) {
                 stampTable.remove(tmObj);

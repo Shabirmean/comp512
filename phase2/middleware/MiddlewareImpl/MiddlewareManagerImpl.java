@@ -2,6 +2,9 @@ package MiddlewareImpl;
 
 import MiddlewareInterface.*;
 import ResInterface.*;
+import Transaction.InvalidOperationException;
+import Transaction.TransactionManager;
+import util.RequestType;
 
 import java.util.*;
 
@@ -14,10 +17,13 @@ import java.rmi.RMISecurityManager;
 public class MiddlewareManagerImpl implements Middleware {
 
     protected RMHashtable m_itemHT = new RMHashtable();
+    static TransactionManager transactionMan;
     static ResourceManager cm = null;
     static ResourceManager hm = null;
     static ResourceManager fm = null;
 
+    public MiddlewareManagerImpl() throws RemoteException {
+    }
 
     public static void main(String args[]) {
         // Figure out where server is running
@@ -70,24 +76,25 @@ public class MiddlewareManagerImpl implements Middleware {
                 System.out.println("Unsuccessful");
             }
 
-           Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
-           hm = (ResourceManager) hotelregistry.lookup("ShabirJianResourceManager");
-           if (hm != null) {
-               System.out.println("Successful");
-               System.out.println("Connected to HotelManager");
-           } else {
-               System.out.println("Unsuccessful");
-           }
+            Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
+            hm = (ResourceManager) hotelregistry.lookup("ShabirJianResourceManager");
+            if (hm != null) {
+                System.out.println("Successful");
+                System.out.println("Connected to HotelManager");
+            } else {
+                System.out.println("Unsuccessful");
+            }
 
-           Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
-           fm = (ResourceManager) flightregistry.lookup("ShabirJianResourceManager");
-           if (fm != null) {
-               System.out.println("Successful");
-               System.out.println("Connected to FlightManager");
-           } else {
-               System.out.println("Unsuccessful");
-           }
+            Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
+            fm = (ResourceManager) flightregistry.lookup("ShabirJianResourceManager");
+            if (fm != null) {
+                System.out.println("Successful");
+                System.out.println("Connected to FlightManager");
+            } else {
+                System.out.println("Unsuccessful");
+            }
 
+            transactionMan = new TransactionManager(cm, hm, fm);
 
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
@@ -100,9 +107,25 @@ public class MiddlewareManagerImpl implements Middleware {
         }
     }
 
-    public MiddlewareManagerImpl() throws RemoteException {
+    @Override
+    public int start() throws RemoteException {
+        return transactionMan.start();
     }
 
+    @Override
+    public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
+        return false;
+    }
+
+    @Override
+    public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
+
+    }
+
+    @Override
+    public boolean shutdown() throws RemoteException {
+        return false;
+    }
 
     // Reads a data item
     private RMItem readData(int id, String key) {
@@ -124,7 +147,6 @@ public class MiddlewareManagerImpl implements Middleware {
             return (RMItem) m_itemHT.remove(key);
         }
     }
-
 
     // deletes the entire item
     protected boolean deleteItem(int id, String key) {
@@ -175,13 +197,14 @@ public class MiddlewareManagerImpl implements Middleware {
     // reserve an item
     // resourceType: 0 for car, 1 for hotel, 2 for flight
     protected boolean reserveItem(int id, int customerID, String location, int resourceType) {
-        
-        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
+
+        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " )
+        // called");
         // Read customer object if it exists (and read lock it)
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
         if (cust == null) {
             // Trace.warn("RM::reserveCar( " + id + ", " + customerID + ", " + key + ", " + location + ")  " +
-                    // "failed--customer doesn't exist");
+            // "failed--customer doesn't exist");
             return false;
         }
 
@@ -189,60 +212,97 @@ public class MiddlewareManagerImpl implements Middleware {
         int price = -1;
         String key = "";
         String retString = "";
+
         try {
-            if (resourceType == 0) retString = cm.reserveItem(id, customerID, location, 0);
-            else if (resourceType == 1) retString = hm.reserveItem(id, customerID, location, 1);
-            else retString = fm.reserveItem(id, customerID, location, 2);
+            if (resourceType == ResourceManagerType.CAR.getRMCode()) {
+                retString = cm.reserveItem(id, customerID, location, ResourceManagerType.CAR.getRMCode());
+            } else if (resourceType == ResourceManagerType.HOTEL.getRMCode()) {
+                retString = hm.reserveItem(id, customerID, location, ResourceManagerType.HOTEL.getRMCode());
+            } else {
+                retString = fm.reserveItem(id, customerID, location, ResourceManagerType.FLIGHT.getRMCode());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         Scanner s = new Scanner(retString);
         price = s.nextInt();
         key = s.next();
         if (price == -1) {
-            // Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--item " +
-                    // "doesn't exist");
+            // Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ")
+            // failed--item " +
+            // "doesn't exist");
             return false;
         } else {
             cust.reserve(key, location, price);
             writeData(id, cust.getKey(), cust);
 
-            // Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
+            // Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ")
+            // succeeded");
             return true;
         }
     }
 
     // Create a new flight, or add seats to existing flight
     //  NOTE: if flightPrice <= 0 and the flight already exists, it maintains its current price
+
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
             throws RemoteException {
         Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called");
-        if (fm.addFlight(id, flightNum, flightSeats, flightPrice)) return true;
-        else return false;
+//        if (fm.addFlight(id, flightNum, flightSeats, flightPrice)) return true;
+//        else return false;
+        Flight flightItem = new Flight(flightNum, flightSeats, flightPrice);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.ADD_FLIGHT, flightItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
 
-    public boolean deleteFlight(int id, int flightNum)
-            throws RemoteException {
-        if (fm.deleteFlight(id, flightNum)) return true;
-        else return false;
+    public boolean deleteFlight(int id, int flightNum) throws RemoteException {
+//        if (fm.deleteFlight(id, flightNum)) return true;
+//        else return false;
+        Flight flightItem = new Flight(flightNum, -1, -1);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_FLIGHT, flightItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
 
     // Create a new room location or add rooms to an existing location
     //  NOTE: if price <= 0 and the room location already exists, it maintains its current price
-    public boolean addRooms(int id, String location, int count, int price)
-            throws RemoteException {
+    public boolean addRooms(int id, String location, int count, int price) throws RemoteException {
         Trace.info("RM::addRooms(" + id + ", " + location + ", " + count + ", $" + price + ") called");
-        if (hm.addRooms(id, location, count, price)) return true;
-        else return false;
+//        if (hm.addRooms(id, location, count, price)) return true;
+//        else return false;
+        Hotel hotelItem = new Hotel(location, count, price);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.ADD_ROOMS, hotelItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
     // Delete rooms from a location
-    public boolean deleteRooms(int id, String location)
-            throws RemoteException {
-        return hm.deleteRooms(id, location);
-
+    public boolean deleteRooms(int id, String location) throws RemoteException {
+//        return hm.deleteRooms(id, location);
+        Hotel hotelItem = new Hotel(location, -1, -1);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_ROOMS, hotelItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
     // Create a new car location or add cars to an existing location
@@ -250,23 +310,43 @@ public class MiddlewareManagerImpl implements Middleware {
     public boolean addCars(int id, String location, int count, int price)
             throws RemoteException {
         // Trace.info("RM::addCars(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
-        if (cm.addCars(id, location, count, price)) return true;
-        else return false;
+//        if (cm.addCars(id, location, count, price)) return true;
+//        else return false;
+        Car carItem = new Car(location, count, price);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.ADD_CARS, carItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
 
     // Delete cars from a location
-    public boolean deleteCars(int id, String location)
-            throws RemoteException {
-        if (cm.deleteCars(id, location)) return true;
-        else return false;
+    public boolean deleteCars(int id, String location) throws RemoteException {
+//        if (cm.deleteCars(id, location)) return true;
+//        else return false;
+        Car carItem = new Car(location, -1, -1);
+        int tManResponse = 0;
+        try {
+            tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_CARS, carItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
+        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusNo();
     }
 
 
     // Returns the number of empty seats on this flight
-    public int queryFlight(int id, int flightNum)
-            throws RemoteException {
-        return fm.queryFlight(id, flightNum);
+    public int queryFlight(int id, int flightNum) throws RemoteException {
+//        return fm.queryFlight(id, flightNum);
+        Flight flightItem = new Flight(flightNum, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT, flightItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
     // Returns the number of reservations for this flight.
@@ -284,39 +364,66 @@ public class MiddlewareManagerImpl implements Middleware {
 
 
     // Returns price of this flight
-    public int queryFlightPrice(int id, int flightNum)
-            throws RemoteException {
-        return fm.queryFlightPrice(id, flightNum);
+    public int queryFlightPrice(int id, int flightNum) throws RemoteException {
+//        return fm.queryFlightPrice(id, flightNum);
+        Flight flightItem = new Flight(flightNum, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT_PRICE, flightItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
 
     // Returns the number of rooms available at a location
-    public int queryRooms(int id, String location)
-            throws RemoteException {
-        return hm.queryRooms(id, location);
+    public int queryRooms(int id, String location) throws RemoteException {
+//        return hm.queryRooms(id, location);
+        Hotel hotelItem = new Hotel(location, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_ROOMS, hotelItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
 
     // Returns room price at this location
-    public int queryRoomsPrice(int id, String location)
-            throws RemoteException {
-        return hm.queryRoomsPrice(id, location);
+    public int queryRoomsPrice(int id, String location) throws RemoteException {
+//        return hm.queryRoomsPrice(id, location);
+        Hotel hotelItem = new Hotel(location, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_ROOM_PRICE, hotelItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
 
     // Returns the number of cars available at a location
-    public int queryCars(int id, String location)
-            throws RemoteException {
-        return cm.queryCars(id, location);
+    public int queryCars(int id, String location) throws RemoteException {
+//        return cm.queryCars(id, location);
+        Car carItem = new Car(location, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_CARS, carItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
 
     // Returns price of cars at this location
-    public int queryCarsPrice(int id, String location)
-            throws RemoteException {
-        return cm.queryCarsPrice(id, location);
+    public int queryCarsPrice(int id, String location) throws RemoteException {
+//        return cm.queryCarsPrice(id, location);
+        Car carItem = new Car(location, -1, -1);
+        try {
+            return transactionMan.submitOperation(id, RequestType.QUERY_CAR_PRICE, carItem);
+        } catch (InvalidOperationException | InvalidTransactionException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 
+
+    //TODO:: Handle Cutomer Related Requests
     // Returns data structure containing customer reservation info. Returns null if the
     //  customer doesn't exist. Returns empty RMHashtable if customer exists but has no
     //  reservations.
@@ -335,18 +442,17 @@ public class MiddlewareManagerImpl implements Middleware {
 
     // return a bill
     public String queryCustomerInfo(int id, int customerID)
-        throws RemoteException
-    {
-        Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" );
-        Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
-        if ( cust == null ) {
-            Trace.warn("RM::queryCustomerInfo(" + id + ", " + customerID + ") failed--customer doesn't exist" );
+            throws RemoteException {
+        Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called");
+        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
+        if (cust == null) {
+            Trace.warn("RM::queryCustomerInfo(" + id + ", " + customerID + ") failed--customer doesn't exist");
             return "";   // NOTE: don't change this--WC counts on this value indicating a customer does not exist...
         } else {
-                String s = cust.printBill();
-                Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows..." );
-                System.out.println( s );
-                return s;
+            String s = cust.printBill();
+            Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows...");
+            System.out.println(s);
+            return s;
         } // if
     }
 
@@ -434,19 +540,19 @@ public class MiddlewareManagerImpl implements Middleware {
 
     // Adds car reservation to this customer.
     public boolean reserveCar(int id, int customerID, String location) throws RemoteException {
-        return reserveItem(id, customerID, location, 0);
+        return reserveItem(id, customerID, location, ResourceManagerType.CAR.getRMCode());
     }
 
 
     // Adds room reservation to this customer.
     public boolean reserveRoom(int id, int customerID, String location) throws RemoteException {
-        return reserveItem(id, customerID, location, 1);
+        return reserveItem(id, customerID, location, ResourceManagerType.HOTEL.getRMCode());
     }
 
 
     // Adds flight reservation to this customer.
     public boolean reserveFlight(int id, int customerID, int flightNum) throws RemoteException {
-        return reserveItem(id, customerID, flightNum+"", 2);
+        return reserveItem(id, customerID, flightNum + "", ResourceManagerType.FLIGHT.getRMCode());
     }
 
     // Reserve an itinerary
@@ -455,5 +561,6 @@ public class MiddlewareManagerImpl implements Middleware {
 
         return true;
     }
+
 
 }

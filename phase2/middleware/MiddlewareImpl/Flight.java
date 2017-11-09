@@ -4,7 +4,7 @@ public class Flight extends ReservableItem
 {
     public Flight( int flightNum, int flightSeats, int flightPrice )
     {
-        super( new Integer(flightNum).toString(), flightSeats, flightPrice );
+        super(Integer.toString(flightNum), flightSeats, flightPrice );
     }
 
     public String getKey()

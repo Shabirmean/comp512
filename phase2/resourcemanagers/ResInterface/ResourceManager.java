@@ -5,15 +5,16 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import java.util.*;
+
 /**
  * Simplified version from CSE 593 Univ. of Washington
- *
+ * <p>
  * Distributed  System in Java.
- *
+ * <p>
  * failure reporting is done using two pieces, exceptions and boolean
  * return values.  Exceptions are used for systemy things. Return
  * values are used for operations that would affect the consistency
- *
+ * <p>
  * If there is a boolean return value and you're not sure how it
  * would be used in your implementation, ignore it.  I used boolean
  * return values in the interface generously to allow flexibility in
@@ -21,8 +22,7 @@ import java.util.*;
  * has succeeded.
  */
 
-public interface ResourceManager extends Remote
-{
+public interface ResourceManager extends Remote {
     /* Add seats to a flight.  In general this will be used to create a new
      * flight, but it should be possible to add seats to an existing flight.
      * Adding to an existing flight should overwrite the current price of the
@@ -57,10 +57,10 @@ public interface ResourceManager extends Remote
             throws RemoteException;
 
     /**
-     *   Delete the entire flight.
-     *   deleteflight implies whole deletion of the flight.
-     *   all seats, all reservations.  If there is a reservation on the flight,
-     *   then the flight cannot be deleted
+     * Delete the entire flight.
+     * deleteflight implies whole deletion of the flight.
+     * all seats, all reservations.  If there is a reservation on the flight,
+     * then the flight cannot be deleted
      *
      * @return success.
      */
@@ -84,7 +84,7 @@ public interface ResourceManager extends Remote
             throws RemoteException;
 
     /* deleteCustomer removes the customer and associated reservations */
-    public boolean deleteCustomer(int id,int customer)
+    public boolean deleteCustomer(int id, int customer)
             throws RemoteException;
 
     /* queryFlight returns the number of empty seats. */
@@ -100,7 +100,7 @@ public interface ResourceManager extends Remote
             throws RemoteException;
 
     /* return a bill */
-    public String queryCustomerInfo(int id,int customer)
+    public String queryCustomerInfo(int id, int customer)
             throws RemoteException;
 
     /* queryFlightPrice returns the price of a seat on this flight. */
@@ -131,5 +131,12 @@ public interface ResourceManager extends Remote
             throws RemoteException;
 
 
+    public int start() throws RemoteException;
+
+    public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException;
+
+    public void abort(int transactionId) throws RemoteException, InvalidTransactionException;
+
+    public boolean shutdown() throws RemoteException;
 
 }

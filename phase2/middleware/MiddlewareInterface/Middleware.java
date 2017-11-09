@@ -1,6 +1,9 @@
 package MiddlewareInterface;
 
 
+import ResInterface.InvalidTransactionException;
+import ResInterface.TransactionAbortedException;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -131,5 +134,13 @@ public interface Middleware extends Remote
     /* reserve an itinerary */
     public boolean itinerary(int id,int customer,Vector flightNumbers,String location, boolean Car, boolean Room)
             throws RemoteException;
+
+    public int start() throws RemoteException;
+
+    public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException;
+
+    public void abort(int transactionId) throws RemoteException, InvalidTransactionException;
+
+    public boolean shutdown() throws RemoteException;
 
 }
