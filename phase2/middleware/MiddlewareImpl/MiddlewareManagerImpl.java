@@ -2,7 +2,7 @@ package MiddlewareImpl;
 
 import MiddlewareInterface.*;
 import ResInterface.*;
-import Transaction.InvalidOperationException;
+import exception.InvalidOperationException;
 import Transaction.TransactionManager;
 import util.RequestType;
 

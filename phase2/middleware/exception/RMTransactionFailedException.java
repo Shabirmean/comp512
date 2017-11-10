@@ -1,4 +1,4 @@
-package Transaction;
+package exception;
 
 
 public class RMTransactionFailedException extends Exception{

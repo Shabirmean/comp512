@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.UUID;
+import java.util.Vector;
 
 public class ResourceManagerImpl implements ResourceManager {
 
@@ -62,13 +63,13 @@ public class ResourceManagerImpl implements ResourceManager {
         }
     }
 
+    // TODO:: Need to have TM to ensure valide transactions
     @Override
     public int start() throws RemoteException {
         UUID uuid = UUID.randomUUID();
-        int newTId = uuid.hashCode();
-//        Transaction newTrans = new Transaction(newTId);
-//        transactionMap.put(newTId, newTrans);
-        return newTId;
+        // Transaction newTrans = new Transaction(newTId);
+        // transactionMap.put(newTId, newTrans);
+        return uuid.hashCode();
     }
 
     @Override
@@ -141,6 +142,25 @@ public class ResourceManagerImpl implements ResourceManager {
         } // if
     }
 
+//    public int getReserveCount(int id, String key) throws RemoteException {
+//        Trace.info("RM::queryNum(" + id + ", " + key + ") called");
+//        ReservableItem curObj = (ReservableItem) readData(id, key);
+//        int value = 0;
+//        if (curObj != null) {
+//            value = curObj.getReserved();
+//        } // else
+//        Trace.info("RM::queryNum(" + id + ", " + key + ") returns reserved=" + value);
+//        return value;
+//    }
+
+    public ReservableItem getItem(int id, String key) throws RemoteException{
+        Trace.info("RM::getItem(" + id + ", " + key + ") called");
+        ReservableItem curObj = (ReservableItem) readData(id, key);
+        if (curObj == null) {
+            Trace.info("RM::getItem(" + id + ", " + key + ") returns NULL item");
+        }
+        return curObj;
+    }
 
     // query the number of available seats/rooms/cars
     protected int queryNum(int id, String key) {
@@ -167,32 +187,39 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
     // reserve an item
-    public String reserveItem(int id, int customerID, String location, int resourceType) {
-        // Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " )
-        // called");
-        String key;
-        if (resourceType == 0) key = Car.getKey(location);
-        else if (resourceType == 1) key = Hotel.getKey(location);
-        else key = Flight.getKey(Integer.parseInt(location));
+    protected boolean reserveItem(int id, int customerID, String key, String location) {
+        Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
+        // Read customer object if it exists (and read lock it)
+        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
 
+        //TODO:: Remove customer related stuff
+//        if (cust == null) {
+//            Trace.warn("RM::reserveCar" +
+//                    "( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--customer doesn't
+// exist");
+//            return false;
+//        }
 
         // check if the item is available
         ReservableItem item = (ReservableItem) readData(id, key);
         if (item == null) {
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--item " +
-                    "doesn't exist");
-            return "-1" + " " + key;
+            Trace.warn("RM::reserveItem" +
+                    "( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--item doesn't exist");
+            return false;
         } else if (item.getCount() == 0) {
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--No " +
-                    "more items");
-            return "-1" + " " + key;
+            Trace.warn("RM::reserveItem" +
+                    "( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--No more items");
+            return false;
         } else {
+//            cust.reserve(key, location, item.getPrice());
+//            writeData(id, cust.getKey(), cust);
+
             // decrease the number of available items in the storage
             item.setCount(item.getCount() - 1);
             item.setReserved(item.getReserved() + 1);
 
             Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
-            return item.getPrice() + " " + key;
+            return true;
         }
     }
 
@@ -463,20 +490,26 @@ public class ResourceManagerImpl implements ResourceManager {
 
     // Adds car reservation to this customer. 
     public boolean reserveCar(int id, int customerID, String location) throws RemoteException {
-        // return reserveItem(id, customerID, Car.getKey(location), location);
-        return false;
+        return reserveItem(id, customerID, Car.getKey(location), location);
+//        return false;
     }
 
 
     // Adds room reservation to this customer. 
     public boolean reserveRoom(int id, int customerID, String location) throws RemoteException {
-        // return reserveItem(id, customerID, Hotel.getKey(location), location);
-        return false;
+        return reserveItem(id, customerID, Hotel.getKey(location), location);
+//        return false;
     }
 
     // Adds flight reservation to this customer.
     public boolean reserveFlight(int id, int customerID, int flightNum) throws RemoteException {
-        // return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+        return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
+//        return false;
+    }
+
+    @Override
+    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
+            throws RemoteException {
         return false;
     }
 

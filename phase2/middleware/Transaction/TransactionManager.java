@@ -6,6 +6,8 @@ import MiddlewareImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
 import ResInterface.TransactionAbortedException;
+import exception.InvalidOperationException;
+import exception.RMTransactionFailedException;
 import util.RequestType;
 
 import java.rmi.RemoteException;
@@ -14,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TransactionManager {
+    static final int VAL_NOT_SET = -1;
     static LockManager lockMan = new LockManager();
     static ConcurrentHashMap<Integer, Transaction> transactionMap = new ConcurrentHashMap<Integer, Transaction>();
     ResourceManager carManager;
@@ -73,32 +76,40 @@ public class TransactionManager {
                 throw new InvalidOperationException(errMsg);
             }
 
+            // If the item has already deleted (found in this transactions delete set and operation is not ADD)
+            if (transaction.getDeleteSet().containsKey(itemKey) && !isAddOperation(requestType)) {
+                String errMsg = "This item has already been deleted by an earlier operation of this transaction.";
+                printMsg(errMsg);
+                throw new InvalidOperationException(errMsg);
+            }
+
             switch (requestType) {
-                case ADD_FLIGHT:
+                case ADD_FLIGHT: {
                     Flight newFlight = (Flight) resourceItem;
                     HashMap<String, Flight> flightMap = transaction.getFlightSet();
                     flightMap.put(newFlight.getKey(), newFlight);
                     transaction.getWriteSet().put(newFlight.getKey(), resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case ADD_CARS:
+                }
+                case ADD_CARS: {
                     Car newCar = (Car) resourceItem;
                     HashMap<String, Car> carMap = transaction.getCarSet();
                     carMap.put(newCar.getKey(), newCar);
                     transaction.getWriteSet().put(newCar.getKey(), resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case ADD_ROOMS:
+                }
+                case ADD_ROOMS: {
                     Hotel newHotel = (Hotel) resourceItem;
                     HashMap<String, Hotel> hotelMap = transaction.getHotelSet();
                     hotelMap.put(newHotel.getKey(), newHotel);
                     transaction.getWriteSet().put(newHotel.getKey(), resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case DELETE_FLIGHT:
+                }
+                case DELETE_FLIGHT: {
+                    //TODO:: Need to check if updates on a deleted Item
                     Flight delFlight = (Flight) resourceItem;
                     String flKey = delFlight.getKey();
                     HashMap<String, Flight> existingFMap = transaction.getFlightSet();
@@ -108,8 +119,8 @@ public class TransactionManager {
                     transaction.getDeleteSet().put(flKey, resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case DELETE_CARS:
+                }
+                case DELETE_CARS: {
                     Car delCar = (Car) resourceItem;
                     String carKey = delCar.getKey();
                     HashMap<String, Car> existingCarMap = transaction.getCarSet();
@@ -119,8 +130,8 @@ public class TransactionManager {
                     transaction.getDeleteSet().put(carKey, resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case DELETE_ROOMS:
+                }
+                case DELETE_ROOMS: {
                     Hotel delHotel = (Hotel) resourceItem;
                     String hotelKey = delHotel.getKey();
                     HashMap<String, Hotel> existingHotelMap = transaction.getHotelSet();
@@ -130,53 +141,200 @@ public class TransactionManager {
                     transaction.getDeleteSet().put(hotelKey, resManType);
                     responseNumber = ReqStatusNo.SUCCESS.getStatusNo();
                     break;
-
-                case QUERY_FLIGHT:
+                }
+                case QUERY_FLIGHT: {
                     //TODO::Check Abort Conditions and Failed Commits
                     Flight flight = (Flight) resourceItem;
                     String reqKey = flight.getKey();
                     HashMap<String, Flight> flSet = transaction.getFlightSet();
                     Flight alreadyReadFlight = flSet.get(reqKey);
-                    if (alreadyReadFlight == null || alreadyReadFlight.getCount() == -1) {
 
+//                    if (alreadyReadFlight == null || alreadyReadFlight.getCount() == VAL_NOT_SET) {
+                    if (alreadyReadFlight == null) {
                         int rmTID = flightManager.start();
                         int flightNum = Integer.parseInt(flight.getLocation());
-                        int flightCount = flightManager.queryFlight(rmTID, flightNum);
+                        Flight fetchedFlight = (Flight) flightManager.getItem(rmTID, Flight.getKey(flightNum));
 
+
+                        int flightCount = flightManager.queryFlight(rmTID, flightNum);
+                        int reservedSeats = flightManager.getReserveCount(rmTID, Flight.getKey(flightNum));
                         boolean commitStat = flightManager.commit(rmTID);
+
                         if (!commitStat) {
-                            String errMsg = "Call to Flight ResourceManger to Query data on behave of Transaction " +
-                                    "[" + tId + "] for item with key [" + itemKey + "] could not commit.";
+                            String errMsg = "Call to Flight ResourceManger to Query [COUNT] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
                             throw new RMTransactionFailedException(errMsg);
                         }
 
                         if (alreadyReadFlight == null) {
-                            alreadyReadFlight = new Flight(flightNum, flightCount, -1);
+                            alreadyReadFlight = new Flight(flightNum, flightCount, VAL_NOT_SET);
+                            alreadyReadFlight.setReserved(reservedSeats);
                         } else {
                             alreadyReadFlight.setCount(flightCount);
                         }
                         flSet.put(alreadyReadFlight.getKey(), alreadyReadFlight);
                     }
                     responseNumber = alreadyReadFlight.getCount();
-
-                case QUERY_CARS:
+                    break;
+                }
+                case QUERY_CARS: {
                     Car car = (Car) resourceItem;
+                    String reqKey = car.getKey();
+                    HashMap<String, Car> carSet = transaction.getCarSet();
+                    Car alreadyReadCar = carSet.get(reqKey);
+
+                    if (alreadyReadCar == null || alreadyReadCar.getCount() == VAL_NOT_SET) {
+                        int rmTID = carManager.start();
+                        String carLocation = car.getLocation();
+                        int carCount = carManager.queryCars(rmTID, carLocation);
+                        boolean commitStat = carManager.commit(rmTID);
+
+                        if (!commitStat) {
+                            String errMsg = "Call to Car ResourceManger to Query  [COUNT] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
+                            throw new RMTransactionFailedException(errMsg);
+                        }
+
+                        if (alreadyReadCar == null) {
+                            alreadyReadCar = new Car(carLocation, carCount, VAL_NOT_SET);
+                        } else {
+                            alreadyReadCar.setCount(carCount);
+                        }
+                        carSet.put(alreadyReadCar.getKey(), alreadyReadCar);
+                    }
+                    responseNumber = alreadyReadCar.getCount();
                     break;
-                case QUERY_ROOMS:
+                }
+                case QUERY_ROOMS: {
                     Hotel hotel = (Hotel) resourceItem;
+                    String reqKey = hotel.getKey();
+                    HashMap<String, Hotel> hotelSet = transaction.getHotelSet();
+                    Hotel alreadyReadHotel = hotelSet.get(reqKey);
+
+                    if (alreadyReadHotel == null || alreadyReadHotel.getCount() == VAL_NOT_SET) {
+                        int rmTID = hotelManager.start();
+                        String hotelLocation = hotel.getLocation();
+                        int roomCount = hotelManager.queryRooms(rmTID, hotelLocation);
+                        boolean commitStat = hotelManager.commit(rmTID);
+
+                        if (!commitStat) {
+                            String errMsg = "Call to Hotel ResourceManger to Query [COUNT] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
+                            throw new RMTransactionFailedException(errMsg);
+                        }
+
+                        if (alreadyReadHotel == null) {
+                            alreadyReadHotel = new Hotel(hotelLocation, roomCount, VAL_NOT_SET);
+                        } else {
+                            alreadyReadHotel.setCount(roomCount);
+                        }
+                        hotelSet.put(alreadyReadHotel.getKey(), alreadyReadHotel);
+                    }
+                    responseNumber = alreadyReadHotel.getCount();
                     break;
-                case QUERY_FLIGHT_PRICE:
+                }
+                case QUERY_FLIGHT_PRICE: {
+                    //TODO::Check Abort Conditions and Failed Commits
                     Flight pFLight = (Flight) resourceItem;
+                    String reqKey = pFLight.getKey();
+                    HashMap<String, Flight> flSet = transaction.getFlightSet();
+                    Flight alreadyReadFlight = flSet.get(reqKey);
+
+                    if (alreadyReadFlight == null || alreadyReadFlight.getPrice() == VAL_NOT_SET) {
+                        int rmTID = flightManager.start();
+                        int flightNum = Integer.parseInt(pFLight.getLocation());
+                        int flightPrice = flightManager.queryFlightPrice(rmTID, flightNum);
+                        boolean commitStat = flightManager.commit(rmTID);
+
+                        if (!commitStat) {
+                            String errMsg = "Call to Flight ResourceManger to Query [PRICE] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
+                            throw new RMTransactionFailedException(errMsg);
+                        }
+
+                        if (alreadyReadFlight == null) {
+                            alreadyReadFlight = new Flight(flightNum, VAL_NOT_SET, flightPrice);
+                        } else {
+                            alreadyReadFlight.setPrice(flightPrice);
+                        }
+                        flSet.put(alreadyReadFlight.getKey(), alreadyReadFlight);
+                    }
+                    responseNumber = alreadyReadFlight.getPrice();
                     break;
-                case QUERY_CAR_PRICE:
+                }
+                case QUERY_CAR_PRICE: {
                     Car pCar = (Car) resourceItem;
+                    String reqKey = pCar.getKey();
+                    HashMap<String, Car> carSet = transaction.getCarSet();
+                    Car alreadyReadCar = carSet.get(reqKey);
+
+                    if (alreadyReadCar == null || alreadyReadCar.getPrice() == VAL_NOT_SET) {
+                        int rmTID = carManager.start();
+                        String carLocation = pCar.getLocation();
+                        int carPrice = carManager.queryCarsPrice(rmTID, carLocation);
+                        boolean commitStat = carManager.commit(rmTID);
+
+                        if (!commitStat) {
+                            String errMsg = "Call to Car ResourceManger to Query [PRICE] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
+                            throw new RMTransactionFailedException(errMsg);
+                        }
+
+                        if (alreadyReadCar == null) {
+                            alreadyReadCar = new Car(carLocation, VAL_NOT_SET, carPrice);
+                        } else {
+                            alreadyReadCar.setPrice(carPrice);
+                        }
+                        carSet.put(alreadyReadCar.getKey(), alreadyReadCar);
+                    }
+                    responseNumber = alreadyReadCar.getPrice();
                     break;
-                case QUERY_ROOM_PRICE:
+                }
+                case QUERY_ROOM_PRICE: {
                     Hotel pHotel = (Hotel) resourceItem;
+                    String reqKey = pHotel.getKey();
+                    HashMap<String, Hotel> hotelSet = transaction.getHotelSet();
+                    Hotel alreadyReadHotel = hotelSet.get(reqKey);
+
+                    if (alreadyReadHotel == null || alreadyReadHotel.getPrice() == VAL_NOT_SET) {
+                        int rmTID = hotelManager.start();
+                        String hotelLocation = pHotel.getLocation();
+                        int roomPrice = hotelManager.queryRoomsPrice(rmTID, hotelLocation);
+                        boolean commitStat = hotelManager.commit(rmTID);
+
+                        if (!commitStat) {
+                            String errMsg = "Call to Hotel ResourceManger to Query [PRICE] data on behalf of " +
+                                    "Transaction [" + tId + "] for item with key [" + itemKey + "] could not be " +
+                                    "committed.";
+                            throw new RMTransactionFailedException(errMsg);
+                        }
+
+                        if (alreadyReadHotel == null) {
+                            alreadyReadHotel = new Hotel(hotelLocation, VAL_NOT_SET, roomPrice);
+                        } else {
+                            alreadyReadHotel.setPrice(roomPrice);
+                        }
+                        hotelSet.put(alreadyReadHotel.getKey(), alreadyReadHotel);
+                    }
+                    responseNumber = alreadyReadHotel.getPrice();
                     break;
-                case RESERVE_FLIGHT:
-                    Flight flightToReserve = (Flight) resourceItem;
+                }
+                case RESERVE_FLIGHT: {
+                    Flight flight = (Flight) resourceItem;
+                    String reqKey = flight.getKey();
+                    HashMap<String, Flight> flightSet = transaction.getFlightSet();
+                    Flight alreadyReadFlight = flightSet.get(reqKey);
+
+                    if () {
+                    }
+
                     break;
+                }
                 case RESERVE_CAR:
                     Car carToReserve = (Car) resourceItem;
                     break;
@@ -219,7 +377,7 @@ public class TransactionManager {
     }
 
 
-    ResourceManagerType requestForWhichRM(RequestType requestType) {
+    private ResourceManagerType requestForWhichRM(RequestType requestType) {
         ResourceManagerType matchingResourceMan = null;
 //        if (requestType == RequestType.UNRESERVE_RESOURCE || requestType == RequestType.ROLLBACK_ITINERARY ||
 //                requestType == RequestType.RESERVE_ITINERARY) {
@@ -245,8 +403,8 @@ public class TransactionManager {
     }
 
 
-    int isReadOWrite(RequestType requestType) {
-        int readOWrite = -1; //TODO:: Need to add for reserveItinerary
+    private int isReadOWrite(RequestType requestType) {
+        int readOWrite = VAL_NOT_SET; //TODO:: Need to add for reserveItinerary
 
         if (requestType == RequestType.ADD_FLIGHT || requestType == RequestType.DELETE_FLIGHT ||
                 requestType == RequestType.ADD_CARS || requestType == RequestType.DELETE_CARS ||
@@ -266,24 +424,30 @@ public class TransactionManager {
         return readOWrite;
     }
 
-    void printMsg(String msg) {
+    private boolean isAddOperation(RequestType requestType) {
+        return requestType == RequestType.ADD_FLIGHT || requestType == RequestType.ADD_CARS ||
+                requestType == RequestType.ADD_ROOMS || requestType == RequestType.ADD_NEW_CUSTOMER_WITHOUT_ID ||
+                requestType == RequestType.ADD_NEW_CUSTOMER_WITH_ID;
+    }
+
+    private void printMsg(String msg) {
         System.out.println("[Transaction Manager] " + msg);
     }
 
 
-    public enum ReqStatusNo {
-        SUCCESS(0),
-        FAILURE(-1);
+public enum ReqStatusNo {
+    SUCCESS(0),
+    FAILURE(-1);
 
-        private final int statusNo;
+    private final int statusNo;
 
-        ReqStatusNo(int statusNo) {
-            this.statusNo = statusNo;
-        }
-
-        public int getStatusNo() {
-            return this.statusNo;
-        }
-
+    ReqStatusNo(int statusNo) {
+        this.statusNo = statusNo;
     }
+
+    public int getStatusNo() {
+        return this.statusNo;
+    }
+
+}
 }

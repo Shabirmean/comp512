@@ -1,4 +1,4 @@
-package MiddlewareImpl;
+package exception;
 
 
 public class MiddlewareClientException extends Exception{
