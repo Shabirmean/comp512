@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Transaction {
-
+    private static final int TTL = 90000; // 1 minute and 30 seconds
     private int transactionId;
     private TStatus status;
     private ConcurrentHashMap<String, RMItem> accessedItemSet = new ConcurrentHashMap<>();
@@ -28,9 +28,14 @@ public class Transaction {
     private List<String> writeCustomerList = new ArrayList<>();
     private List<String> deleteCustomerList = new ArrayList<>();
 
+    private int timeToLive;
+    private long ttlSetTime;
+
     Transaction(int transactionId){
         this.transactionId = transactionId;
         this.status = TStatus.RUNNING;
+        this.timeToLive = TTL;
+        this.ttlSetTime = System.currentTimeMillis();
     }
 
     public int getTransactionId() {
@@ -41,12 +46,20 @@ public class Transaction {
         this.status = status;
     }
 
-    public Transaction.TStatus getStatus() {
-        return this.status;
-    }
-
     ConcurrentHashMap<String, RMItem> getAccessedItemSet() {
         return accessedItemSet;
+    }
+
+    synchronized void resetTTL(){
+        this.timeToLive = TTL;
+        this.ttlSetTime = System.currentTimeMillis();
+    }
+
+    synchronized int updateTimeToLive() {
+        int timeLapse = (int) (System.currentTimeMillis() - ttlSetTime);
+        this.timeToLive = timeToLive - timeLapse;
+        this.ttlSetTime = System.currentTimeMillis();
+        return timeToLive;
     }
 
 //    HashMap<String, ResourceManagerType> getWriteSet() {

@@ -12,10 +12,7 @@ import util.RequestType;
 import util.ResourceManagerType;
 
 import java.rmi.RemoteException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TransactionManager {
@@ -25,10 +22,13 @@ public class TransactionManager {
     private static final String HOTEL_ITEM_KEY = "room";
     private static final String CUSTOMER_ITEM_KEY = "customer";
     private static final Object countLock = new Object();
+    private static final Timer transactionTimer = new Timer();
+
     private static Integer TRANSACTION_ID_COUNT = 0;
     private static LockManager lockMan = new LockManager();
     private static HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
     private static ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
+
 
     public TransactionManager(ResourceManager carManager, ResourceManager flightManager,
                               ResourceManager hotelManager, ResourceManager customerManager) {
@@ -36,6 +36,24 @@ public class TransactionManager {
         resourceManagers.put(ResourceManagerType.FLIGHT, flightManager);
         resourceManagers.put(ResourceManagerType.HOTEL, hotelManager);
         resourceManagers.put(ResourceManagerType.CUSTOMER, customerManager);
+    }
+
+    public void initTransactionManager() {
+        transactionTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    for (Transaction transaction : transMap.values()) {
+                        int ttl = transaction.updateTimeToLive();
+                        if (ttl <= 0) {
+                            abort(transaction.getTransactionId());
+                        }
+                    }
+                } catch (InvalidTransactionException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 0, 5 * 1000);
     }
 
     public int start() throws RemoteException {
@@ -52,13 +70,16 @@ public class TransactionManager {
         String errMsg;
         boolean status = false;
         Transaction thisTransaction = transMap.get(transactionId);
+        //noinspection Duplicates
         if (thisTransaction == null) {
             errMsg = "TId [" + transactionId + "] No valid transactions found with the given transactionId";
             printMsg(errMsg);
             throw new InvalidOperationException(errMsg);
+        } else {
+            thisTransaction.resetTTL();
         }
-        ConcurrentHashMap<String, RMItem> tAccessedItemSet = thisTransaction.getAccessedItemSet();
 
+        ConcurrentHashMap<String, RMItem> tAccessedItemSet = thisTransaction.getAccessedItemSet();
         try {
             for (ResourceManagerType rmType : ResourceManagerType.values()) {
                 ResourceManager rm = resourceManagers.get(rmType);
@@ -101,6 +122,7 @@ public class TransactionManager {
         lockMan.UnlockAll(transactionId);
         thisTransaction.clearAll();
         thisTransaction.setStatus(Transaction.TStatus.ENDED);
+        transMap.remove(transactionId);
         return status;
     }
 
@@ -108,14 +130,19 @@ public class TransactionManager {
         String errMsg;
         try {
             Transaction thisTransaction = transMap.get(transactionId);
+            //noinspection Duplicates
             if (thisTransaction == null) {
                 errMsg = "TId [" + transactionId + "] No valid transactions found with the given transactionId";
                 printMsg(errMsg);
                 throw new InvalidOperationException(errMsg);
+            } else {
+                thisTransaction.resetTTL();
             }
+
             lockMan.UnlockAll(transactionId);
             thisTransaction.clearAll();
             thisTransaction.setStatus(Transaction.TStatus.ENDED);
+            transMap.remove(transactionId);
         } catch (InvalidOperationException e) {
             e.printStackTrace();
         }
@@ -131,6 +158,8 @@ public class TransactionManager {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
                 throw new InvalidTransactionException("No transaction exists with transaction id [" + tId + "]");
+            } else {
+                transaction.resetTTL();
             }
 
             String itemKey = resourceItem.getKey();
@@ -300,7 +329,11 @@ public class TransactionManager {
         try {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
-                throw new InvalidTransactionException("No transaction exists with transaction id [" + tId + "]");
+                errMsg = "No transaction exists with transaction id [" + tId + "]";
+                printMsg(errMsg);
+                throw new InvalidTransactionException(errMsg);
+            } else {
+                transaction.resetTTL();
             }
 
             ResourceManagerType resManType = requestForWhichRM(requestType);
@@ -446,7 +479,11 @@ public class TransactionManager {
         try {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
-                throw new InvalidTransactionException("No transaction exists with transaction id [" + tId + "]");
+                errMsg = "No transaction exists with transaction id [" + tId + "]";
+                printMsg(errMsg);
+                throw new InvalidTransactionException(errMsg);
+            } else {
+                transaction.resetTTL();
             }
 
             String itemKey = customerItem.getKey();
@@ -659,6 +696,7 @@ public class TransactionManager {
         return requestType == RequestType.QUERY_FLIGHT_PRICE || requestType == RequestType.QUERY_CAR_PRICE ||
                 requestType == RequestType.QUERY_ROOM_PRICE;
     }
+
 
 //    private boolean isReserveRequest(RequestType requestType) {
 //        return requestType == RequestType.RESERVE_FLIGHT || requestType == RequestType.RESERVE_CAR ||

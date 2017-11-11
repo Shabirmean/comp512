@@ -96,6 +96,7 @@ public class MiddlewareManagerImpl implements Middleware {
 
             MWResourceManager mw = new MWResourceManager();
             transactionMan = new TransactionManager(cm, hm, fm, mw);
+            transactionMan.initTransactionManager();
 
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());

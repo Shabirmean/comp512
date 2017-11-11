@@ -84,7 +84,7 @@ public class ResourceManagerImpl implements ResourceManager {
 
     @Override
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
-        
+
     }
 
     @Override
