@@ -4,8 +4,7 @@ public enum ResourceManagerType {
     CAR(0),
     HOTEL(1),
     FLIGHT(2),
-    CUSTOMER(3),
-    RESERVE(4);
+    CUSTOMER(3);
 
     private final int rmCode;
     private String rmCodeString;
@@ -24,9 +23,6 @@ public enum ResourceManagerType {
                 break;
             case 3:
                 this.rmCodeString = "CUSTOMER";
-                break;
-            case 4:
-                this.rmCodeString = "RESERVE";
                 break;
         }
 

@@ -26,6 +26,11 @@ import java.util.*;
  */
 
 public interface ResourceManager extends Remote {
+
+    public void writeData(int id, String key, RMItem value) throws RemoteException;
+
+    public boolean deleteItem(int id, String key) throws RemoteException;
+
     /* Add seats to a flight.  In general this will be used to create a new
      * flight, but it should be possible to add seats to an existing flight.
      * Adding to an existing flight should overwrite the current price of the

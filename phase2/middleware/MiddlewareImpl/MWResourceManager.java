@@ -62,7 +62,7 @@ public class MWResourceManager implements ResourceManager {
     }
 
     // Writes a data item
-    private void writeData(int id, String key, RMItem value) {
+    public void writeData(int id, String key, RMItem value) {
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
@@ -77,7 +77,7 @@ public class MWResourceManager implements ResourceManager {
 
 
     // deletes the entire item
-    protected boolean deleteItem(int id, String key) {
+    public boolean deleteItem(int id, String key) {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         // Check if there is such an item in the storage

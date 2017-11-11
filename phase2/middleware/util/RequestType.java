@@ -25,7 +25,8 @@ public enum RequestType {
     QUERY_CUSTOMER_INFO(12),
     RESERVE_ITINERARY(19),
     ROLLBACK_ITINERARY(20),
-    UNRESERVE_RESOURCE(21);
+    RESERVE_RESOURCE(21),
+    UNRESERVE_RESOURCE(22);
 
     private static final long serialVersionUID = 7526472295622776149L;
 

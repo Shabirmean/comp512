@@ -4,7 +4,6 @@
 //
 package ResImpl;
 
-import LockManager.LockManager;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
 import ResInterface.TransactionAbortedException;
@@ -14,15 +13,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Calendar;
-import java.util.Enumeration;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
+@SuppressWarnings("ALL")
 public class ResourceManagerImpl implements ResourceManager {
 
-    protected RMHashtable m_itemHT = new RMHashtable();
-    protected LockManager rm_lockMan = new LockManager();
+    private RMHashtable m_itemHT = new RMHashtable();
+    private List<Integer> transactionList = new ArrayList<Integer>();
 
     public ResourceManagerImpl() throws RemoteException {
     }
@@ -67,20 +64,27 @@ public class ResourceManagerImpl implements ResourceManager {
     @Override
     public int start() throws RemoteException {
         UUID uuid = UUID.randomUUID();
-        // Transaction newTrans = new Transaction(newTId);
-        // transactionMap.put(newTId, newTrans);
-        return uuid.hashCode();
+        int newTid = uuid.hashCode();
+        while (transactionList.contains(newTid)) {
+            newTid = uuid.hashCode();
+        }
+        transactionList.add(newTid);
+        return newTid;
     }
 
     @Override
     public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
-        return false;
-        //TODO:: Handle this bro
+        if (!transactionList.contains(transactionId)) {
+            System.out.println("Invalide Transaction Id = " + transactionId);
+            return false;
+        }
+        transactionList.remove(transactionId);
+        return true;
     }
 
     @Override
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
-
+        
     }
 
     @Override
@@ -106,7 +110,7 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
     // Writes a data item
-    private void writeData(int id, String key, RMItem value) {
+    public void writeData(int id, String key, RMItem value) {
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
@@ -121,7 +125,7 @@ public class ResourceManagerImpl implements ResourceManager {
 
 
     // deletes the entire item
-    protected boolean deleteItem(int id, String key) {
+    public boolean deleteItem(int id, String key) {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         // Check if there is such an item in the storage
