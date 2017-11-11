@@ -1,66 +1,22 @@
-// -------------------------------
-// adapted from Kevin T. Manley
-// CSE 593
-//
-package ResImpl;
+package MiddlewareImpl;
 
 import LockManager.LockManager;
+import ResImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
 import ResInterface.TransactionAbortedException;
 
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.UUID;
 import java.util.Vector;
 
-public class ResourceManagerImpl implements ResourceManager {
-
+public class MWResourceManager implements ResourceManager {
     protected RMHashtable m_itemHT = new RMHashtable();
     protected LockManager rm_lockMan = new LockManager();
 
-    public ResourceManagerImpl() throws RemoteException {
-    }
-
-    public static void main(String args[]) {
-        // Figure out where server is running
-        String server = "localhost";
-        int port = 1100;
-
-        if (args.length == 1) {
-            server = server + ":" + args[0];
-            port = Integer.parseInt(args[0]);
-        } else if (args.length != 0 && args.length != 1) {
-            System.err.println("Wrong usage");
-            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
-            System.exit(1);
-        }
-
-        try {
-            // create a new Server object
-            ResourceManagerImpl obj = new ResourceManagerImpl();
-            // dynamically generate the stub (client proxy)
-            ResourceManager rm = (ResourceManager) UnicastRemoteObject.exportObject(obj, 0);
-
-            // Bind the remote object's stub in the registry
-            Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("ShabirJianResourceManager", rm);
-
-            System.err.println("Server ready");
-        } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
-            e.printStackTrace();
-        }
-
-        // Create and install a security manager
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }
+    public MWResourceManager() throws RemoteException {
     }
 
     // TODO:: Need to have TM to ensure valide transactions
@@ -92,11 +48,11 @@ public class ResourceManagerImpl implements ResourceManager {
     private RMItem readData(int id, String key) {
         synchronized (m_itemHT) {
             /*
-            try        
+            try
             {
                 Thread.sleep(10000);
-            } 
-            catch(InterruptedException ex) 
+            }
+            catch(InterruptedException ex)
             {
                 Thread.currentThread().interrupt();
             }
@@ -189,7 +145,7 @@ public class ResourceManagerImpl implements ResourceManager {
     protected boolean reserveItem(int id, int customerID, String key, String location) {
         Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
         // Read customer object if it exists (and read lock it)
-//        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
+        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
 
         //TODO:: Remove customer related stuff
 //        if (cust == null) {
@@ -248,7 +204,8 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
 
-    public boolean deleteFlight(int id, int flightNum) throws RemoteException {
+    public boolean deleteFlight(int id, int flightNum)
+            throws RemoteException {
         return deleteItem(id, Flight.getKey(flightNum));
     }
 
@@ -325,7 +282,7 @@ public class ResourceManagerImpl implements ResourceManager {
         return queryNum(id, Flight.getKey(flightNum));
     }
 
-    // Returns the number of reservations for this flight. 
+    // Returns the number of reservations for this flight.
 //    public int queryFlightReservations(int id, int flightNum)
 //        throws RemoteException
 //    {
@@ -434,7 +391,7 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
 
-    // Deletes customer from the database. 
+    // Deletes customer from the database.
     public boolean deleteCustomer(int id, int customerID) throws RemoteException {
         Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
@@ -442,7 +399,7 @@ public class ResourceManagerImpl implements ResourceManager {
             Trace.warn("RM::deleteCustomer(" + id + ", " + customerID + ") failed--customer doesn't exist");
             return false;
         } else {
-            // Increase the reserved numbers of all reservable items which the customer reserved. 
+            // Increase the reserved numbers of all reservable items which the customer reserved.
             RMHashtable reservationHT = cust.getReservations();
             for (Enumeration e = reservationHT.keys(); e.hasMoreElements(); ) {
                 String reservedkey = (String) (e.nextElement());
@@ -486,14 +443,14 @@ public class ResourceManagerImpl implements ResourceManager {
     */
 
 
-    // Adds car reservation to this customer. 
+    // Adds car reservation to this customer.
     public boolean reserveCar(int id, int customerID, String location) throws RemoteException {
         return reserveItem(id, customerID, Car.getKey(location), location);
 //        return false;
     }
 
 
-    // Adds room reservation to this customer. 
+    // Adds room reservation to this customer.
     public boolean reserveRoom(int id, int customerID, String location) throws RemoteException {
         return reserveItem(id, customerID, Hotel.getKey(location), location);
 //        return false;
@@ -506,9 +463,7 @@ public class ResourceManagerImpl implements ResourceManager {
     }
 
     @Override
-    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
-            throws RemoteException {
+    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
         return false;
     }
-
 }

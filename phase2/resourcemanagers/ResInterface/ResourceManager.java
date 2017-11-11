@@ -1,6 +1,7 @@
 package ResInterface;
 
 
+import ResImpl.RMItem;
 import ResImpl.ReservableItem;
 
 import java.rmi.Remote;
@@ -82,7 +83,7 @@ public interface ResourceManager extends Remote {
 
 //    /* returns the number of reserved items (seats/rooms/cars) of the given resource. */
 //    public int getReserveCount(int id, String key) throws RemoteException;
-    public ReservableItem getItem(int id, String itemKey) throws RemoteException;
+    public RMItem getItem(int id, String itemKey) throws RemoteException;
 
     /* queryFlight returns the number of empty seats. */
     public int queryFlight(int id, int flightNumber) throws RemoteException;
@@ -125,5 +126,4 @@ public interface ResourceManager extends Remote {
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException;
 
     public boolean shutdown() throws RemoteException;
-
 }
