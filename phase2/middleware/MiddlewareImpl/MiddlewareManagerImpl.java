@@ -1,10 +1,11 @@
 package MiddlewareImpl;
 
-import MiddlewareInterface.InvalidTransactionException;
 import MiddlewareInterface.Middleware;
-import MiddlewareInterface.TransactionAbortedException;
 import ResImpl.*;
+import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
+import ResInterface.TransactionAbortedException;
+import Transaction.ReqStatus;
 import Transaction.TransactionManager;
 import exception.InvalidOperationException;
 import util.RequestType;
@@ -133,7 +134,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException e) {
             e.printStackTrace();
         }
-        System.out.println();
+        System.out.println("");
         return false;
     }
 
@@ -144,7 +145,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (ResInterface.InvalidTransactionException e) {
             e.printStackTrace();
         }
-        System.out.println();
+        System.out.println("");
     }
 
     @Override
@@ -232,8 +233,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
 
@@ -245,8 +246,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
 
@@ -261,8 +262,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
     // Delete rooms from a location
@@ -274,8 +275,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
     // Create a new car location or add cars to an existing location
@@ -289,8 +290,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
 
@@ -303,8 +304,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
 
@@ -317,7 +318,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -344,7 +345,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -358,7 +359,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -372,7 +373,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -386,7 +387,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -400,7 +401,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return tManResponse;
     }
 
@@ -417,7 +418,7 @@ public class MiddlewareManagerImpl implements Middleware {
                     "exist");
             return null;
         } else {
-            System.out.println();
+            System.out.println("");
             return cust.getReservations();
         } // if
     }
@@ -432,7 +433,7 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
+        System.out.println("");
         return response;
     }
 
@@ -454,14 +455,14 @@ public class MiddlewareManagerImpl implements Middleware {
             throw new RemoteException(e.getMessage());
         }
 
-        if (response.equals(TransactionManager.ReqStatusNo.SUCCESS.getStatus())){
+        if (response.equals(ReqStatus.SUCCESS.getStatus())){
             Trace.info("RM::newCustomer(" + cid + ") returns ID=" + cid);
             returnId = cid;
         } else {
             Trace.info("RM::newCustomer(" + cid + ") there was some error creating customer");
             returnId = TransactionManager.VALUE_NOT_SET;
         }
-        System.out.println();
+        System.out.println("");
         return returnId;
     }
 
@@ -475,8 +476,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return response.equals(TransactionManager.ReqStatusNo.SUCCESS.getStatus());
+        System.out.println("");
+        return response.equals(ReqStatus.SUCCESS.getStatus());
     }
 
 
@@ -490,8 +491,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return response.equals(TransactionManager.ReqStatusNo.SUCCESS.getStatus());
+        System.out.println("");
+        return response.equals(ReqStatus.SUCCESS.getStatus());
     }
 
 
@@ -524,8 +525,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
     // Adds room reservation to this customer.
@@ -538,8 +539,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManResponse == ReqStatus.SUCCESS.getStatusCode();
     }
 
     // Adds flight reservation to this customer.
@@ -552,8 +553,8 @@ public class MiddlewareManagerImpl implements Middleware {
         } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
-        System.out.println();
-        return tManRspnse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
+        System.out.println("");
+        return tManRspnse == ReqStatus.SUCCESS.getStatusCode();
     }
 
     // Reserve an itinerary
@@ -561,7 +562,7 @@ public class MiddlewareManagerImpl implements Middleware {
             throws RemoteException {
         boolean itinStat = false;
         itinStat = transactionMan.submitReserveItineraryOperation(id, customer, flightNumbers, location, car, room);
-        System.out.println();
+        System.out.println("");
         return itinStat;
     }
 

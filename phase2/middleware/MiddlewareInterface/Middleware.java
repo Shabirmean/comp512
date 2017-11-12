@@ -5,6 +5,9 @@ package MiddlewareInterface;
 //import ResInterface.InvalidTransactionException;
 //import ResInterface.TransactionAbortedException;
 
+import ResInterface.InvalidTransactionException;
+import ResInterface.TransactionAbortedException;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 

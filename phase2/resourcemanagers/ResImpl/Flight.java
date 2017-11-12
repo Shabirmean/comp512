@@ -11,6 +11,13 @@ public class Flight extends ReservableItem
         super( new Integer(flightNum).toString(), flightSeats, flightPrice );
     }
 
+
+    public Flight(Flight copyFlight)
+    {
+        super( copyFlight.getLocation(), copyFlight.getCount(), copyFlight.getPrice() );
+        this.setReserved(copyFlight.getReserved());
+    }
+
     public String getKey()
     {
         return Flight.getKey( Integer.parseInt( getLocation() ) );

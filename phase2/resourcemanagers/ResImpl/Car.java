@@ -12,6 +12,12 @@ public class Car extends ReservableItem
         super( location, count, price );
     }
 
+    public Car(Car copyCar )
+    {
+        super( copyCar.getLocation(), copyCar.getCount(), copyCar.getPrice() );
+        this.setReserved(copyCar.getReserved());
+    }
+
     public String getKey()
     {
         return Car.getKey( getLocation() );

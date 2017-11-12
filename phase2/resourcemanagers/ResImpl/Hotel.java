@@ -11,6 +11,12 @@ public class Hotel extends ReservableItem
         super( location, count, price );
     }
 
+    public Hotel( Hotel copyHotel )
+    {
+        super( copyHotel.getLocation(), copyHotel.getCount(), copyHotel.getPrice() );
+        this.setReserved(copyHotel.getReserved());
+    }
+
     public String getKey()
     {
         return Hotel.getKey( getLocation() );

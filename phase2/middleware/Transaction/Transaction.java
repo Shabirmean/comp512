@@ -11,10 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Transaction {
     private static final int TTL = 150000; // 2 minute and 30 seconds
     private int transactionId;
+
     private TStatus status;
     private ConcurrentHashMap<String, RMItem> accessedItemSet = new ConcurrentHashMap<>();
-//    private HashMap<String, ResourceManagerType> writeSet = new HashMap<>();
-//    private HashMap<String, ResourceManagerType> deleteSet = new HashMap<>();
 
     private List<String> writeCarList = new ArrayList<>();
     private List<String> deleteCarList = new ArrayList<>();
@@ -31,7 +30,7 @@ public class Transaction {
     private int timeToLive;
     private long ttlSetTime;
 
-    Transaction(int transactionId){
+    Transaction(int transactionId) {
         this.transactionId = transactionId;
         this.status = TStatus.RUNNING;
         this.timeToLive = TTL;
@@ -46,11 +45,15 @@ public class Transaction {
         this.status = status;
     }
 
+    public Transaction.TStatus getStatus() {
+        return status;
+    }
+
     ConcurrentHashMap<String, RMItem> getAccessedItemSet() {
         return accessedItemSet;
     }
 
-    synchronized void resetTTL(){
+    synchronized void resetTTL() {
         this.timeToLive = TTL;
         this.ttlSetTime = System.currentTimeMillis();
     }
@@ -62,42 +65,10 @@ public class Transaction {
         return timeToLive;
     }
 
-//    HashMap<String, ResourceManagerType> getWriteSet() {
-//        return writeSet;
-//    }
-//
-//    HashMap<String, ResourceManagerType> getDeleteSet() {
-//        return deleteSet;
-//    }
-
-//    public List<String> getWriteCarList() {
-//        return writeCarList;
-//    }
-//
-//    public List<String> getDeleteCarList() {
-//        return DeleteCarList;
-//    }
-//
-//    public List<String> getWriteFlightList() {
-//        return writeFlightList;
-//    }
-//
-//    public List<String> getDeleteFlightList() {
-//        return DeleteFlightList;
-//    }
-//
-//    public List<String> getWriteHotelList() {
-//        return writeHotelList;
-//    }
-//
-//    public List<String> getDeleteHotelList() {
-//        return DeleteHotelList;
-//    }
-
     @SuppressWarnings("Duplicates")
-    List<String> getCorrespondingWriteList(ResourceManagerType rmType){
+    List<String> getCorrespondingWriteList(ResourceManagerType rmType) {
         List<String> list = null;
-        switch (rmType){
+        switch (rmType) {
             case CAR:
                 list = writeCarList;
                 break;
@@ -115,9 +86,9 @@ public class Transaction {
     }
 
     @SuppressWarnings("Duplicates")
-    List<String> getCorrespondingDeleteList(ResourceManagerType rmType){
+    List<String> getCorrespondingDeleteList(ResourceManagerType rmType) {
         List<String> list = null;
-        switch (rmType){
+        switch (rmType) {
             case CAR:
                 list = deleteCarList;
                 break;
@@ -134,7 +105,7 @@ public class Transaction {
         return list;
     }
 
-    void clearAll(){
+    void clearAll() {
         this.accessedItemSet.clear();
         this.writeCustomerList.clear();
         this.writeCarList.clear();

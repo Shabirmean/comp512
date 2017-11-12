@@ -24,7 +24,7 @@ public class TransactionManager {
     private static final Object countLock = new Object();
     private static final Timer transactionTimer = new Timer();
 
-    private static Integer TRANSACTION_ID_COUNT = 0;
+    private static Integer TRANSACTION_ID_COUNT = 1001;
     private static LockManager lockMan = new LockManager();
     private static HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
     private static ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
@@ -161,7 +161,7 @@ public class TransactionManager {
     @SuppressWarnings("Duplicates")
     public int submitOperation(int tId, RequestType requestType, ReservableItem resourceItem)
             throws InvalidOperationException, InvalidTransactionException {
-        int responseNum = ReqStatusNo.FAILURE.getStatusCode();
+        int responseNum = ReqStatus.FAILURE.getStatusCode();
         String errMsg;
         try {
             Transaction transaction = transMap.get(tId);
@@ -199,27 +199,21 @@ public class TransactionManager {
             }
 
 //             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
-//            if (transaction.getDeleteSet().containsKey(itemKey) && !isAddOperation(requestType)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
                 throw new InvalidOperationException(errMsg);
             }
 
-//            if (transaction.getDeleteVector().contains(itemKey) && !isAddOperation(requestType)) {
-//                errMsg = "This item has already been deleted by an earlier operation of this transaction.";
-//                printMsg(errMsg);
-//                throw new InvalidOperationException(errMsg);
-//            }
-
             ConcurrentHashMap<String, RMItem> itemSet = transaction.getAccessedItemSet();
-//            if (readRequiredOperation(requestType)) {
             ReservableItem alreadyAccessedItem = (ReservableItem) itemSet.get(itemKey);
 
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
                 int rmTID = resMan.start();
-                alreadyAccessedItem = (ReservableItem) resMan.getItem(rmTID, itemKey);
+//                alreadyAccessedItem = (ReservableItem) resMan.getItem(rmTID, itemKey);
+                RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
+                alreadyAccessedItem = (ReservableItem) getCopyItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
@@ -228,13 +222,6 @@ public class TransactionManager {
                     printMsg(errMsg);
                     throw new RMTransactionFailedException(errMsg);
                 }
-
-//                if (alreadyAccessedItem == null && !isAddOperation(requestType)) {
-//                    errMsg = "TId [" + tId + "] Call to ResourceManger to Query [" + resManType.getCodeString() +
-//                            "] with key [" + itemKey + "] returned NULL.";
-//                    throw new InvalidOperationException(errMsg);
-//
-//                } else
 
                 if (alreadyAccessedItem != null) {
                     itemSet.put(alreadyAccessedItem.getKey(), alreadyAccessedItem);
@@ -245,7 +232,6 @@ public class TransactionManager {
                     throw new InvalidOperationException(errMsg);
                 }
             }
-//            }
 
             alreadyAccessedItem = (ReservableItem) itemSet.get(itemKey);
             if (isAddOperation(requestType)) {
@@ -269,17 +255,15 @@ public class TransactionManager {
                     Trace.info("TManager::addFlight(" + tId + ") modified existing " + resManType.getCodeString()
                             + " " + itemUniqueAttrib + ", " + "seats=" + itemCount + ", price=$" + itemPrice);
                 }
-//                transaction.getWriteSet().put(itemKey, resManType);
                 transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                responseNum = ReqStatusNo.SUCCESS.getStatusCode();
+                responseNum = ReqStatus.SUCCESS.getStatusCode();
 
             } else if (isDeleteOperation(requestType)) {
                 //TODO:: Check if item has reservations
                 if (alreadyAccessedItem.getReserved() == 0) {
                     itemSet.remove(itemKey);
-//                    transaction.getDeleteSet().put(itemKey, resManType);
                     transaction.getCorrespondingDeleteList(resManType).add(itemKey);
-                    responseNum = ReqStatusNo.SUCCESS.getStatusCode();
+                    responseNum = ReqStatus.SUCCESS.getStatusCode();
                     Trace.info("TManager::deleteItem(" + tId + ", " + itemKey + ") item deleted");
                 } else {
                     Trace.info("TManager::deleteItem(" + tId + ", " + itemKey + ") item can't be deleted " +
@@ -287,32 +271,30 @@ public class TransactionManager {
                 }
 
             } else if (isCountQuery(requestType)) {
-                Trace.info("RM::queryNum(" + tId + ", " + itemKey + ") called");
+                Trace.info("TM::queryNum(" + tId + ", " + itemKey + ") called");
                 responseNum = alreadyAccessedItem.getCount();
-                Trace.info("RM::queryNum(" + tId + ", " + itemKey + ") returns count=" + responseNum);
+                Trace.info("TM::queryNum(" + tId + ", " + itemKey + ") returns count=" + responseNum);
 
             } else if (isPriceQuery(requestType)) {
-                Trace.info("RM::queryPrice(" + tId + ", " + itemKey + ") called");
+                Trace.info("TM::queryPrice(" + tId + ", " + itemKey + ") called");
                 responseNum = alreadyAccessedItem.getPrice();
-                Trace.info("RM::queryPrice(" + tId + ", " + itemKey + ") returns cost=$" + responseNum);
+                Trace.info("TM::queryPrice(" + tId + ", " + itemKey + ") returns cost=$" + responseNum);
 
             } else if (requestType == RequestType.UNRESERVE_RESOURCE) {
                 int reservedCountOfItem = alreadyAccessedItem.getReserved();
                 int reservedByCustomer = resourceItem.getCount();
                 alreadyAccessedItem.setReserved(reservedCountOfItem - reservedByCustomer);
                 alreadyAccessedItem.setCount(resourceItem.getCount() + reservedByCustomer);
-//                transaction.getWriteSet().put(itemKey, resManType);
                 transaction.getCorrespondingWriteList(resManType).add(itemKey);
                 responseNum = alreadyAccessedItem.getReserved();
 
             } else if (requestType == RequestType.RESERVE_RESOURCE) {
                 String location = alreadyAccessedItem.getLocation();
-                Trace.info("RM::reserveItem( " + tId + ", " + itemKey + ", " + location + " ) called");
+                Trace.info("TM::reserveItem( " + tId + ", " + itemKey + ", " + location + " ) called");
                 int currentCount = alreadyAccessedItem.getCount();
                 int currentReservd = alreadyAccessedItem.getReserved();
                 alreadyAccessedItem.setCount(currentCount - 1);
                 alreadyAccessedItem.setReserved(currentReservd + 1);
-//                transaction.getWriteSet().put(itemKey, resManType);
                 transaction.getCorrespondingWriteList(resManType).add(itemKey);
                 responseNum = alreadyAccessedItem.getPrice();
             }
@@ -333,7 +315,7 @@ public class TransactionManager {
     @SuppressWarnings("Duplicates")
     public String submitOperation(int tId, RequestType requestType, Customer customerItem)
             throws InvalidTransactionException, InvalidOperationException {
-        String response = ReqStatusNo.FAILURE.getStatus();
+        String response = ReqStatus.FAILURE.getStatus();
         String errMsg;
         try {
             Transaction transaction = transMap.get(tId);
@@ -364,7 +346,6 @@ public class TransactionManager {
             }
 
 //             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
-//            if (transaction.getDeleteSet().containsKey(itemKey) && !isAddOperation(requestType)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
@@ -378,7 +359,9 @@ public class TransactionManager {
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
                 int rmTID = resMan.start();
-                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
+//                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
+                RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
+                alreadyAccessedItem = (Customer) getCopyItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
@@ -404,13 +387,12 @@ public class TransactionManager {
                 case ADD_NEW_CUSTOMER_WITHOUT_ID: {
                     if (alreadyAccessedItem == null) {
                         itemSet.put(itemKey, customerItem);
-                        Trace.info("RM::newCustomer(" + tId + ") returns ID=" + customerId);
-//                        transaction.getWriteSet().put(itemKey, resManType);
+                        Trace.info("TM::newCustomer(" + tId + ") returns ID=" + customerId);
                         transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                        response = ReqStatusNo.SUCCESS.getStatus();
+                        response = ReqStatus.SUCCESS.getStatus();
 
                     } else {
-                        Trace.info("RM::newCustomer(" + tId + ") returns error. " +
+                        Trace.info("TM::newCustomer(" + tId + ") returns error. " +
                                 "Generated Id : " + customerId + " conflicts with an existing customer.");
                     }
                     break;
@@ -418,13 +400,13 @@ public class TransactionManager {
                 case ADD_NEW_CUSTOMER_WITH_ID: {
                     if (alreadyAccessedItem == null) {
                         itemSet.put(itemKey, customerItem);
-                        Trace.info("INFO: RM::newCustomer(" + tId + ", " + customerId + ") created a new customer");
+                        Trace.info("INFO: TM::newCustomer(" + tId + ", " + customerId + ") created a new customer");
 //                        transaction.getWriteSet().put(itemKey, resManType);
                         transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                        response = ReqStatusNo.SUCCESS.getStatus();
+                        response = ReqStatus.SUCCESS.getStatus();
 
                     } else {
-                        Trace.info("INFO: RM::newCustomer(" + tId + ", " + customerId + ") failed--" +
+                        Trace.info("INFO: TM::newCustomer(" + tId + ", " + customerId + ") failed--" +
                                 "customer already exists");
                     }
                     break;
@@ -435,29 +417,28 @@ public class TransactionManager {
                     for (Enumeration e = reservationHT.keys(); e.hasMoreElements(); ) {
                         String reservedkey = (String) (e.nextElement());
                         ReservedItem reserveditem = alreadyAccessedItem.getReservedItem(reservedkey);
-                        Trace.info("RM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
+                        Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
                                 reserveditem.getKey() + " " + reserveditem.getCount() + " times");
 
                         String resItemKey = reserveditem.getKey();
                         ReservableItem reservableItem = (ReservableItem) itemSet.get(resItemKey);
                         int newReserveCount = submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservableItem);
                         int newCount = reservableItem.getCount() + (reservableItem.getReserved() - newReserveCount);
-                        Trace.info("RM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
+                        Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
                                 reserveditem.getKey() + "which is now updated to be reserved" + newReserveCount +
                                 " times and is now available " + newCount + " times");
                     }
 
                     itemSet.remove(itemKey);
-//                    transaction.getDeleteSet().put(itemKey, resManType);
                     transaction.getCorrespondingDeleteList(resManType).add(itemKey);
-                    response = ReqStatusNo.SUCCESS.getStatus();
-                    Trace.info("RM::deleteCustomer(" + tId + ", " + customerId + ") succeeded");
+                    response = ReqStatus.SUCCESS.getStatus();
+                    Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") succeeded");
                     break;
                 }
                 case QUERY_CUSTOMER_INFO: {
-                    Trace.info("RM::queryCustomerInfo(" + tId + ", " + customerId + ") called");
+                    Trace.info("TM::queryCustomerInfo(" + tId + ", " + customerId + ") called");
                     String customerBill = alreadyAccessedItem.printBill();
-                    Trace.info("RM::queryCustomerInfo(" + tId + ", " + customerId + "), bill follows...");
+                    Trace.info("TM::queryCustomerInfo(" + tId + ", " + customerId + "), bill follows...");
                     System.out.println(customerBill);
                     response = customerBill;
                     break;
@@ -483,7 +464,7 @@ public class TransactionManager {
     public int submitReserveOperation(int tId, Customer customerItem,
                                       RequestType requestType, ReservableItem resourceItem)
             throws InvalidOperationException, InvalidTransactionException {
-        int responseNum = ReqStatusNo.FAILURE.getStatusCode();
+        int responseNum = ReqStatus.FAILURE.getStatusCode();
         String errMsg;
         try {
             Transaction transaction = transMap.get(tId);
@@ -514,7 +495,6 @@ public class TransactionManager {
             }
 
 //             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
-//            if (transaction.getDeleteSet().containsKey(itemKey)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
@@ -528,7 +508,9 @@ public class TransactionManager {
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
                 int rmTID = resMan.start();
-                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
+//                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
+                RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
+                alreadyAccessedItem = (Customer) getCopyItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
@@ -554,11 +536,10 @@ public class TransactionManager {
             String resourceLoc = resourceItem.getLocation();
             alreadyAccessedItem = (Customer) itemSet.get(itemKey);
             alreadyAccessedItem.reserve(resourceKey, resourceLoc, reservedItemPrice);
-            Trace.info("RM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
+            Trace.info("TM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
                     resourceLoc + ") succeeded");
-//            transaction.getWriteSet().put(itemKey, resManType);
             transaction.getCorrespondingWriteList(resManType).add(itemKey);
-            responseNum = ReqStatusNo.SUCCESS.getStatusCode();
+            responseNum = ReqStatus.SUCCESS.getStatusCode();
 
         } catch (DeadlockException e) {
             e.printStackTrace();
@@ -577,14 +558,14 @@ public class TransactionManager {
     public boolean submitReserveItineraryOperation(int tId, int cId, Vector flightNumbers,
                                                    String location, boolean bookCar, boolean bookHotel) {
         String errMsg;
-        int responseVal = ReqStatusNo.FAILURE.getStatusCode();
+        int responseVal = ReqStatus.FAILURE.getStatusCode();
         Customer customer = new Customer(cId);
         try {
             for (Object flightNumber : flightNumbers) {
                 int flNumber = (int) flightNumber;
                 Flight flightToBook = new Flight(flNumber, VALUE_NOT_SET, VALUE_NOT_SET);
                 responseVal = submitReserveOperation(tId, customer, RequestType.RESERVE_RESOURCE, flightToBook);
-                if (responseVal == ReqStatusNo.FAILURE.getStatusCode()) {
+                if (responseVal == ReqStatus.FAILURE.getStatusCode()) {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + flightToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
@@ -595,7 +576,7 @@ public class TransactionManager {
             if (bookCar) {
                 Car carToBook = new Car(location, VALUE_NOT_SET, VALUE_NOT_SET);
                 responseVal = submitReserveOperation(tId, customer, RequestType.RESERVE_RESOURCE, carToBook);
-                if (responseVal == ReqStatusNo.FAILURE.getStatusCode()) {
+                if (responseVal == ReqStatus.FAILURE.getStatusCode()) {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + carToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
@@ -606,7 +587,7 @@ public class TransactionManager {
             if (bookHotel) {
                 Hotel hotelToBook = new Hotel(location, VALUE_NOT_SET, VALUE_NOT_SET);
                 responseVal = submitReserveOperation(tId, customer, RequestType.RESERVE_RESOURCE, hotelToBook);
-                if (responseVal == ReqStatusNo.FAILURE.getStatusCode()) {
+                if (responseVal == ReqStatus.FAILURE.getStatusCode()) {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + hotelToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
@@ -616,7 +597,7 @@ public class TransactionManager {
         } catch (InvalidOperationException | InvalidTransactionException e) {
             e.printStackTrace();
         }
-        return responseVal == ReqStatusNo.SUCCESS.getStatusCode();
+        return responseVal == ReqStatus.SUCCESS.getStatusCode();
     }
 
 
@@ -706,50 +687,24 @@ public class TransactionManager {
                 requestType == RequestType.QUERY_ROOM_PRICE;
     }
 
+    private RMItem getCopyItem(RMItem itemToCopy){
+        RMItem copyItem = null;
+        if (itemToCopy instanceof Flight) {
+            copyItem = new Flight((Flight) itemToCopy);
 
-//    private boolean isReserveRequest(RequestType requestType) {
-//        return requestType == RequestType.RESERVE_FLIGHT || requestType == RequestType.RESERVE_CAR ||
-//                requestType == RequestType.RESERVE_ROOM;
-//    }
-//
-//    private boolean readRequiredOperation(RequestType requestType) {
-//        return requestType == RequestType.QUERY_FLIGHT || requestType == RequestType.QUERY_FLIGHT_PRICE ||
-//                requestType == RequestType.QUERY_CARS || requestType == RequestType.QUERY_CAR_PRICE ||
-//                requestType == RequestType.QUERY_ROOMS || requestType == RequestType.QUERY_ROOM_PRICE ||
-//                requestType == RequestType.RESERVE_FLIGHT || requestType == RequestType.RESERVE_CAR ||
-//                requestType == RequestType.RESERVE_ROOM || requestType == RequestType.RESERVE_ITINERARY ||
-//                requestType == RequestType.QUERY_CUSTOMER_INFO;
-//    }
+        } else if (itemToCopy instanceof Car) {
+            copyItem = new Car((Car) itemToCopy);
 
-    private void printMsg(String msg) {
-        System.out.println("[Transaction Manager] " + msg);
+        } else if (itemToCopy instanceof Hotel) {
+            copyItem = new Hotel((Hotel) itemToCopy);
+
+        } else if (itemToCopy instanceof Customer) {
+            copyItem = new Customer((Customer) itemToCopy);
+        }
+        return copyItem;
     }
 
-    public enum ReqStatusNo {
-        SUCCESS(0),
-        FAILURE(-1);
-
-        private final int statusCode;
-        private String status;
-
-        ReqStatusNo(int statusCode) {
-            this.statusCode = statusCode;
-            switch (statusCode) {
-                case 0:
-                    this.status = "SUCCESS";
-                    break;
-                case 1:
-                    this.status = "FAILURE";
-                    break;
-            }
-        }
-
-        public int getStatusCode() {
-            return this.statusCode;
-        }
-
-        public String getStatus() {
-            return this.status;
-        }
+    private void printMsg(String msg) {
+        System.out.println("TM:: " + msg);
     }
 }
