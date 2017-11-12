@@ -1,4 +1,4 @@
-package ResInterface;
+package MiddlewareInterface;
 
 public class TransactionAbortedException extends Exception {
     private static final long serialVersionUID = 1997753363232071239L;

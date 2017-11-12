@@ -39,6 +39,7 @@ public class TPHashTable
         if ( hashSlot < 0 ) {
             hashSlot = -hashSlot;
         }
+
         vectSlot = (Vector) vect.elementAt( hashSlot );
         vectSlot.addElement(xobj);
     }
@@ -53,7 +54,7 @@ public class TPHashTable
         if ( hashSlot < 0 ) {
             hashSlot = -hashSlot;
         }
-        
+
         vectSlot = (Vector) vect.elementAt( hashSlot );
 
         //TODO:: Redundant loop

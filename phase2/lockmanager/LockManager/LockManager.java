@@ -67,19 +67,12 @@ public class LockManager {
                             // For all the elements corresponding to this TID check if the data-element
                             // matches the current data-element and if so upgrade it to a WRITE LOCK.
                             // Have to loop through since there could be 2 corresponding elements - TrxnObj & DataObj
-                            Vector vect = lockTable.elements(dataObj);
-                            for (int a = 0; a < vect.size(); a++) {
-                                XObj obj = (XObj) vect.elementAt(a);
-                                if (obj instanceof TrxnObj) {
-                                    TrxnObj tempTrxnObj = (TrxnObj) obj;
-                                    if (trxnObj.getDataName().equals(tempTrxnObj.getDataName())) {
-                                        tempTrxnObj.setLockType(TrxnObj.WRITE);
-                                    }
-                                } else {
-                                    System.out.println("An Invalid Object type of class [" + obj.getClass() + "] was " +
-                                            "found in the elements vector for TID [" + trxnObj.getXId() + "]");
-                                }
-                            }
+                            TrxnObj oldTrnx = new TrxnObj(xid, strData, READ);
+                            DataObj oldData = new DataObj(xid, strData, READ);
+                            lockTable.remove(oldTrnx);
+                            lockTable.remove(oldData);
+                            lockTable.add(trxnObj);
+                            lockTable.add(dataObj);
                         } else {
                             // a lock request that is not lock conversion
                             lockTable.add(trxnObj);
@@ -113,6 +106,10 @@ public class LockManager {
         synchronized (lockTable) {
             Vector vect = lockTable.elements(trxnQueryObj);
 
+            for (int a = 0; a < vect.size(); a++){
+                System.out.println("LM:: Unlock Elem " + a + ": " + vect.elementAt(a));
+            }
+
             TrxnObj trxnObj;
             Vector waitVector;
             WaitObj waitObj;
@@ -125,6 +122,8 @@ public class LockManager {
 
                 DataObj dataObj = new DataObj(trxnObj.getXId(), trxnObj.getDataName(), trxnObj.getLockType());
                 lockTable.remove(dataObj);
+
+                System.out.println("LM:: Released lock on " + trxnObj.getDataName() + " by Tid: " + trxnObj.getXId());
 
                 // check if there are any waiting transactions. 
                 synchronized (waitTable) {
@@ -191,9 +190,14 @@ public class LockManager {
 
     private boolean LockConflict(DataObj dataObj, BitSet bitset) throws DeadlockException,
             RedundantLockRequestException {
+        System.out.println("LM:: Checking LOCK conflicts for tId-" + dataObj.getXId() + " on item-" + dataObj.strData);
         Vector vect = lockTable.elements(dataObj);
         DataObj dataObj2;
         int size = vect.size();
+
+        for (int a = 0; a < vect.size(); a++){
+            System.out.println("LM:: Lock Elem " + a + ": " + vect.elementAt(a));
+        }
 
         // as soon as a lock that conflicts with the current lock request is found, return true
         for (int i = 0; i < size; i++) {
@@ -227,7 +231,9 @@ public class LockManager {
                     if (dataObj2.getLockType() == DataObj.WRITE) {
                         // transaction is requesting a READ lock and some other transaction
                         // already has a WRITE lock on it ==> conflict
-                        System.out.println("Want READ, someone has WRITE");
+//                        System.out.println("Want READ, someone has WRITE");
+                        System.out.println("LM:: " + dataObj2.getXId() + "-has WRITE on " + dataObj2.strData + ", " +
+                                dataObj.getXId() + "-wants READ on " + dataObj.strData + ".");
                         return true;
                     } else {
                         // do nothing 
@@ -235,7 +241,9 @@ public class LockManager {
                 } else if (dataObj.getLockType() == DataObj.WRITE) {
                     // transaction is requesting a WRITE lock and some other transaction has either
                     // a READ or a WRITE lock on it ==> conflict
-                    System.out.println("Want WRITE, someone has READ or WRITE");
+//                    System.out.println("Want WRITE, someone has READ or WRITE");
+                    System.out.println("LM:: " + dataObj2.getXId() + "-has lock on " + dataObj2.strData + ", " +
+                            dataObj.getXId() + "-wants WRITE on " + dataObj.strData + ".");
                     return true;
                 }
             }

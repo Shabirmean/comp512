@@ -2,36 +2,41 @@ package MiddlewareImpl;
 
 import LockManager.LockManager;
 import ResImpl.*;
-import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
+import ResInterface.InvalidTransactionException;
 import ResInterface.TransactionAbortedException;
 
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Enumeration;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 public class MWResourceManager implements ResourceManager {
     protected RMHashtable m_itemHT = new RMHashtable();
-    protected LockManager rm_lockMan = new LockManager();
+    private List<Integer> transactionList = new ArrayList<Integer>();
+    private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
+    private static final Object countLock = new Object();
 
     public MWResourceManager() throws RemoteException {
     }
 
-    // TODO:: Need to have TM to ensure valide transactions
+    // TODO:: Need to have TM to ensure valide ResInterface.transactions
     @Override
     public int start() throws RemoteException {
-        UUID uuid = UUID.randomUUID();
-        // Transaction newTrans = new Transaction(newTId);
-        // transactionMap.put(newTId, newTrans);
-        return uuid.hashCode();
+        int newTId;
+        synchronized (countLock) {
+            newTId = TRANSACTION_ID_COUNT++;
+        }
+        transactionList.add(newTId);
+        return newTId;
     }
 
     @Override
     public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
-        return false;
-        //TODO:: Handle this bro
+        if (!transactionList.contains(transactionId)) {
+            System.out.println("Invalide Transaction Id = " + transactionId);
+            return false;
+        }
+        transactionList.remove(transactionList.indexOf(transactionId));
+        return true;
     }
 
     @Override
@@ -108,9 +113,9 @@ public class MWResourceManager implements ResourceManager {
 //        return value;
 //    }
 
-    public ReservableItem getItem(int id, String key) throws RemoteException{
+    public RMItem getItem(int id, String key) throws RemoteException{
         Trace.info("RM::getItem(" + id + ", " + key + ") called");
-        ReservableItem curObj = (ReservableItem) readData(id, key);
+        RMItem curObj = (RMItem) readData(id, key);
         if (curObj == null) {
             Trace.info("RM::getItem(" + id + ", " + key + ") returns NULL item");
         }

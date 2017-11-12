@@ -4,8 +4,8 @@
 //
 package ResImpl;
 
-import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
+import ResInterface.InvalidTransactionException;
 import ResInterface.TransactionAbortedException;
 
 import java.rmi.RMISecurityManager;
@@ -20,6 +20,8 @@ public class ResourceManagerImpl implements ResourceManager {
 
     private RMHashtable m_itemHT = new RMHashtable();
     private List<Integer> transactionList = new ArrayList<Integer>();
+    private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
+    private static final Object countLock = new Object();
 
     public ResourceManagerImpl() throws RemoteException {
     }
@@ -60,16 +62,22 @@ public class ResourceManagerImpl implements ResourceManager {
         }
     }
 
-    // TODO:: Need to have TM to ensure valide transactions
+    // TODO:: Need to have TM to ensure valide ResInterface.transactions
     @Override
     public int start() throws RemoteException {
-        UUID uuid = UUID.randomUUID();
-        int newTid = uuid.hashCode();
-        while (transactionList.contains(newTid)) {
-            newTid = uuid.hashCode();
+//        UUID uuid = UUID.randomUUID();
+//        int newTid = uuid.hashCode();
+//        while (transactionList.contains(newTid)) {
+//            newTid = uuid.hashCode();
+//        }
+//        transactionList.add(newTid);
+//        return newTid;
+        int newTId;
+        synchronized (countLock) {
+            newTId = TRANSACTION_ID_COUNT++;
         }
-        transactionList.add(newTid);
-        return newTid;
+        transactionList.add(newTId);
+        return newTId;
     }
 
     @Override
@@ -78,7 +86,7 @@ public class ResourceManagerImpl implements ResourceManager {
             System.out.println("Invalide Transaction Id = " + transactionId);
             return false;
         }
-        transactionList.remove(transactionId);
+        transactionList.remove(transactionList.indexOf(transactionId));
         return true;
     }
 

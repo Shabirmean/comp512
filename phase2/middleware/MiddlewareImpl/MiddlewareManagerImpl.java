@@ -1,20 +1,21 @@
 package MiddlewareImpl;
 
-import MiddlewareInterface.*;
+import MiddlewareInterface.InvalidTransactionException;
+import MiddlewareInterface.Middleware;
+import MiddlewareInterface.TransactionAbortedException;
 import ResImpl.*;
-import ResInterface.*;
-import exception.InvalidOperationException;
+import ResInterface.ResourceManager;
 import Transaction.TransactionManager;
+import exception.InvalidOperationException;
 import util.RequestType;
-import util.ResourceManagerType;
 
-import java.util.*;
-
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Calendar;
+import java.util.Vector;
 
 public class MiddlewareManagerImpl implements Middleware {
 
@@ -28,6 +29,7 @@ public class MiddlewareManagerImpl implements Middleware {
     }
 
     public static void main(String args[]) {
+        System.out.println("#########" + System.getProperty("java.class.path"));
         // Figure out where server is running
         String server = "localhost";
         String carserver = "";
@@ -38,16 +40,22 @@ public class MiddlewareManagerImpl implements Middleware {
         int hotelport = 1101;
         int flightport = 1102;
 
-        if (args.length == 1) {
-            server = server + ":" + args[0];
-            port = Integer.parseInt(args[0]);
-        } else if (args.length == 4) {
-            server = server + ":" + args[0];
-            port = Integer.parseInt(args[0]);
-            carserver = args[1];
-            hotelserver = args[2];
-            flightserver = args[3];
-        }
+//        if (args.length == 1) {
+//            server = server + ":" + args[0];
+//            port = Integer.parseInt(args[0]);
+//        } else if (args.length == 4) {
+//            server = server + ":" + args[0];
+//            port = Integer.parseInt(args[0]);
+//            carserver = args[1];
+//            hotelserver = args[2];
+//            flightserver = args[3];
+//        }
+
+        server = server + ":" + args[0];
+        port = Integer.parseInt(args[0]);
+        carserver = "localhost";
+        hotelserver = "localhost";
+        flightserver = "localhost";
 
         // else if (args.length != 0 &&  args.length != 1) {
         //     System.err.println ("Wrong usage");
@@ -117,16 +125,26 @@ public class MiddlewareManagerImpl implements Middleware {
     @Override
     public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
         try {
-            return transactionMan.commit(transactionId);
+            try {
+                return transactionMan.commit(transactionId);
+            } catch (ResInterface.TransactionAbortedException e) {
+                e.printStackTrace();
+            }
         } catch (InvalidOperationException e) {
             e.printStackTrace();
         }
+        System.out.println();
         return false;
     }
 
     @Override
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
-        transactionMan.abort(transactionId);
+        try {
+            transactionMan.abort(transactionId);
+        } catch (ResInterface.InvalidTransactionException e) {
+            e.printStackTrace();
+        }
+        System.out.println();
     }
 
     @Override
@@ -211,9 +229,10 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.ADD_FLIGHT, flightItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -223,9 +242,10 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_FLIGHT, flightItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -238,9 +258,10 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.ADD_ROOMS, hotelItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -250,9 +271,10 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_ROOMS, hotelItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -264,9 +286,10 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.ADD_CARS, carItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -277,21 +300,25 @@ public class MiddlewareManagerImpl implements Middleware {
         int tManResponse;
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.DELETE_CARS, carItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
 
     // Returns the number of empty seats on this flight
     public int queryFlight(int id, int flightNum) throws RemoteException {
+        int tManResponse;
         Flight flightItem = new Flight(flightNum, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT, flightItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT, flightItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
     // Returns the number of reservations for this flight.
@@ -310,56 +337,71 @@ public class MiddlewareManagerImpl implements Middleware {
 
     // Returns price of this flight
     public int queryFlightPrice(int id, int flightNum) throws RemoteException {
+        int tManResponse;
         Flight flightItem = new Flight(flightNum, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT_PRICE, flightItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_FLIGHT_PRICE, flightItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
 
     // Returns the number of rooms available at a location
     public int queryRooms(int id, String location) throws RemoteException {
+        int tManResponse;
         Hotel hotelItem = new Hotel(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_ROOMS, hotelItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_ROOMS, hotelItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
 
     // Returns room price at this location
     public int queryRoomsPrice(int id, String location) throws RemoteException {
+        int tManResponse;
         Hotel hotelItem = new Hotel(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_ROOM_PRICE, hotelItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_ROOM_PRICE, hotelItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
 
     // Returns the number of cars available at a location
     public int queryCars(int id, String location) throws RemoteException {
+        int tManResponse;
         Car carItem = new Car(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_CARS, carItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_CARS, carItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
 
     // Returns price of cars at this location
     public int queryCarsPrice(int id, String location) throws RemoteException {
+        int tManResponse;
         Car carItem = new Car(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
-            return transactionMan.submitOperation(id, RequestType.QUERY_CAR_PRICE, carItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+            tManResponse = transactionMan.submitOperation(id, RequestType.QUERY_CAR_PRICE, carItem);
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return tManResponse;
     }
 
 
@@ -367,8 +409,7 @@ public class MiddlewareManagerImpl implements Middleware {
     // Returns data structure containing customer reservation info. Returns null if the
     //  customer doesn't exist. Returns empty RMHashtable if customer exists but has no
     //  reservations.
-    public RMHashtable getCustomerReservations(int id, int customerID)
-            throws RemoteException {
+    public RMHashtable getCustomerReservations(int id, int customerID) throws RemoteException {
         Trace.info("RM::getCustomerReservations(" + id + ", " + customerID + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
         if (cust == null) {
@@ -376,19 +417,23 @@ public class MiddlewareManagerImpl implements Middleware {
                     "exist");
             return null;
         } else {
+            System.out.println();
             return cust.getReservations();
         } // if
     }
 
     // return a bill
     public String queryCustomerInfo(int id, int customerID) throws RemoteException {
+        String response;
         try {
             Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called");
             Customer customer = new Customer(customerID);
-            return transactionMan.submitOperation(id, RequestType.QUERY_CUSTOMER_INFO, customer);
-        } catch (InvalidTransactionException | InvalidOperationException e) {
+            response = transactionMan.submitOperation(id, RequestType.QUERY_CUSTOMER_INFO, customer);
+        } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
+        return response;
     }
 
     // customer functions
@@ -405,7 +450,7 @@ public class MiddlewareManagerImpl implements Middleware {
         try {
             Customer customer = new Customer(cid);
             response = transactionMan.submitOperation(id, RequestType.ADD_NEW_CUSTOMER_WITH_ID, customer);
-        } catch (InvalidTransactionException | InvalidOperationException e) {
+        } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
 
@@ -416,6 +461,7 @@ public class MiddlewareManagerImpl implements Middleware {
             Trace.info("RM::newCustomer(" + cid + ") there was some error creating customer");
             returnId = TransactionManager.VALUE_NOT_SET;
         }
+        System.out.println();
         return returnId;
     }
 
@@ -426,9 +472,10 @@ public class MiddlewareManagerImpl implements Middleware {
 
         try {
             response = transactionMan.submitOperation(id, RequestType.ADD_NEW_CUSTOMER_WITH_ID, customer);
-        } catch (InvalidTransactionException | InvalidOperationException e) {
+        } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return response.equals(TransactionManager.ReqStatusNo.SUCCESS.getStatus());
     }
 
@@ -440,9 +487,10 @@ public class MiddlewareManagerImpl implements Middleware {
         String response;
         try {
             response = transactionMan.submitOperation(id, RequestType.DELETE_CUSTOMER, customer);
-        } catch (InvalidTransactionException | InvalidOperationException e) {
+        } catch (ResInterface.InvalidTransactionException | InvalidOperationException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return response.equals(TransactionManager.ReqStatusNo.SUCCESS.getStatus());
     }
 
@@ -473,9 +521,10 @@ public class MiddlewareManagerImpl implements Middleware {
         Car carItem = new Car(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
             tManResponse = transactionMan.submitReserveOperation(id, customer, RequestType.RESERVE_RESOURCE, carItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -486,9 +535,10 @@ public class MiddlewareManagerImpl implements Middleware {
         Hotel hotelItem = new Hotel(location, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
             tManResponse = transactionMan.submitReserveOperation(id, customer, RequestType.RESERVE_RESOURCE, hotelItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManResponse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
@@ -499,16 +549,20 @@ public class MiddlewareManagerImpl implements Middleware {
         Flight flightItem = new Flight(flightNum, TransactionManager.VALUE_NOT_SET, TransactionManager.VALUE_NOT_SET);
         try {
             tManRspnse = transactionMan.submitReserveOperation(id, customer, RequestType.RESERVE_RESOURCE, flightItem);
-        } catch (InvalidOperationException | InvalidTransactionException e) {
+        } catch (InvalidOperationException | ResInterface.InvalidTransactionException e) {
             throw new RemoteException(e.getMessage());
         }
+        System.out.println();
         return tManRspnse == TransactionManager.ReqStatusNo.SUCCESS.getStatusCode();
     }
 
     // Reserve an itinerary
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean car, boolean room)
             throws RemoteException {
-        return transactionMan.submitReserveItineraryOperation(id, customer, flightNumbers, location, car, room);
+        boolean itinStat = false;
+        itinStat = transactionMan.submitReserveItineraryOperation(id, customer, flightNumbers, location, car, room);
+        System.out.println();
+        return itinStat;
     }
 
 

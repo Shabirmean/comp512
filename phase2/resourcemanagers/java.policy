@@ -1,4 +1,5 @@
-grant codeBase "file:/Users/jianhuali/Desktop/part2/comp512/phase2/resourcemanagers" {
+//grant codeBase "file:/Users/jianhuali/Desktop/part2/comp512/phase2/resourcemanagers" {
+grant codeBase "file:/Users/shabirmean/Desktop/COMP512/Phase-1/project/phase2/resourcemanagers/" {
     permission java.security.AllPermission;
 };
 

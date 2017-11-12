@@ -46,7 +46,9 @@ public class TransactionManager {
                     for (Transaction transaction : transMap.values()) {
                         int ttl = transaction.updateTimeToLive();
                         if (ttl <= 0) {
-                            abort(transaction.getTransactionId());
+                            int tiD = transaction.getTransactionId();
+                            System.out.println("TM:: Transaction-" + tiD + " has timed-out. Aborting it....");
+                            abort(tiD);
                         }
                     }
                 } catch (InvalidTransactionException e) {
@@ -72,7 +74,7 @@ public class TransactionManager {
         Transaction thisTransaction = transMap.get(transactionId);
         //noinspection Duplicates
         if (thisTransaction == null) {
-            errMsg = "TId [" + transactionId + "] No valid transactions found with the given transactionId";
+            errMsg = "TId [" + transactionId + "] No valid ResInterface.transactions found with the given transactionId";
             printMsg(errMsg);
             throw new InvalidOperationException(errMsg);
         } else {
@@ -86,6 +88,11 @@ public class TransactionManager {
                 List<String> writeList = thisTransaction.getCorrespondingWriteList(rmType);
                 List<String> deleteList = thisTransaction.getCorrespondingDeleteList(rmType);
 
+                if (writeList.isEmpty() && deleteList.isEmpty()) {
+                    status = true;
+                    continue;
+                }
+
                 int rmTId = rm.start();
                 for (String itemKey : writeList) {
                     RMItem thisItem = tAccessedItemSet.get(itemKey);
@@ -95,7 +102,10 @@ public class TransactionManager {
                         rm.deleteItem(rmTId, itemKey);
                         deleteList.remove(itemKey);
                     }
-                    writeList.remove(itemKey);
+                }
+
+                for (String itemKey : deleteList) {
+                    rm.deleteItem(rmTId, itemKey);
                 }
 
                 status = rm.commit(rmTId);
@@ -132,13 +142,12 @@ public class TransactionManager {
             Transaction thisTransaction = transMap.get(transactionId);
             //noinspection Duplicates
             if (thisTransaction == null) {
-                errMsg = "TId [" + transactionId + "] No valid transactions found with the given transactionId";
+                errMsg = "TId [" + transactionId + "] No valid ResInterface.transactions found with the given transactionId";
                 printMsg(errMsg);
                 throw new InvalidOperationException(errMsg);
-            } else {
-                thisTransaction.resetTTL();
             }
 
+            System.out.println("TM:: Aborting transaction-" + transactionId + "....");
             lockMan.UnlockAll(transactionId);
             thisTransaction.clearAll();
             thisTransaction.setStatus(Transaction.TStatus.ENDED);
@@ -189,7 +198,7 @@ public class TransactionManager {
                 throw new InvalidOperationException(errMsg);
             }
 
-//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
 //            if (transaction.getDeleteSet().containsKey(itemKey) && !isAddOperation(requestType)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
@@ -354,7 +363,7 @@ public class TransactionManager {
                 throw new InvalidOperationException(errMsg);
             }
 
-//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
 //            if (transaction.getDeleteSet().containsKey(itemKey) && !isAddOperation(requestType)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
@@ -504,7 +513,7 @@ public class TransactionManager {
                 throw new InvalidOperationException(errMsg);
             }
 
-//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
 //            if (transaction.getDeleteSet().containsKey(itemKey)) {
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";

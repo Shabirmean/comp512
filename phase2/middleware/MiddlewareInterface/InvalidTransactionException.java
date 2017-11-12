@@ -1,4 +1,4 @@
-package ResInterface;
+package MiddlewareInterface;
 
 
 public class InvalidTransactionException extends Exception {

@@ -2,12 +2,10 @@ package ResInterface;
 
 
 import ResImpl.RMItem;
-import ResImpl.ReservableItem;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import java.util.*;
+import java.util.Vector;
 
 /**
  * Simplified version from CSE 593 Univ. of Washington

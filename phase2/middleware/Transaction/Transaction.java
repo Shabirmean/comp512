@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Transaction {
-    private static final int TTL = 90000; // 1 minute and 30 seconds
+    private static final int TTL = 150000; // 2 minute and 30 seconds
     private int transactionId;
     private TStatus status;
     private ConcurrentHashMap<String, RMItem> accessedItemSet = new ConcurrentHashMap<>();
