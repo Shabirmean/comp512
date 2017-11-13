@@ -119,10 +119,38 @@ public class ClientManager {
     static void randomReadFromRM(int rmType, int loopCount) {
         int locSize = locations.size();
         long lStartTime, lEndTime, respTime;
-        int averageReadTime = 0;
+        long avRTime = 0;
+
+        avRTime = getAverageResponseTime(rmType);
+        System.out.println("#### Average Time: " + avRTime);
+        long avgBuffer = avRTime / 10;
+        System.out.println("#### Average Buffer: " + avgBuffer);
+
+        int checkSec = 1;
+        long secToMicro = 1000000;
+        int numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
+
+        while (numOfTransactions <= 0) {
+            numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
+            checkSec++;
+        }
+
+        long balanceSec = (checkSec * secToMicro) - (numOfTransactions * avgBuffer);
+        long balancePerT = (int) (balanceSec / numOfTransactions);
+
+        long timePerT = avgBuffer + balancePerT;
+        System.out.println("#### Time Per T: " + timePerT);
+        System.out.println("#### No of T: " + numOfTransactions);
+
+        System.exit(0);
+
+
         try {
             switch (rmType) {
                 case 0:
+                    //get average response time first
+
+
                     for (int start = 0; start < loopCount; start++) {
                         int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
@@ -283,6 +311,113 @@ public class ClientManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    private static long getAverageResponseTime(int rmType) {
+        int locSize = locations.size();
+        long lStartTime, lEndTime, respTime;
+        long avRTime = 0;
+        int avCLoops = 100;
+        try {
+            switch (rmType) {
+                case 0:
+                    //get average response time first
+                    for (int start = 0; start < avCLoops; start++) {
+                        int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                        int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                        String location = locations.get(readLocIndex);
+
+                        if (priceOCount == 0) {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.queryCars(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.queryCarsPrice(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        avRTime += respTime;
+                    }
+                    break;
+                case 1:
+                    for (int start = 0; start < avCLoops; start++) {
+                        int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                        int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                        String location = locations.get(readLocIndex);
+
+                        if (priceOCount == 0) {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.queryRooms(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.queryRoomsPrice(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        avRTime += respTime;
+                    }
+                    break;
+                case 2:
+                    for (int start = 0; start < avCLoops; start++) {
+                        int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                        int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                        String location = locations.get(readLocIndex);
+                        int locHashCode = location.hashCode();
+
+                        if (priceOCount == 0) {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.queryFlight(tId, locHashCode);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else {
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            int count = rm.queryFlightPrice(tId, locHashCode);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        avRTime += respTime;
+                    }
+                    break;
+                case 3:
+                    for (int start = 0; start < avCLoops; start++) {
+                        int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                        String location = locations.get(readLocIndex);
+                        int locHashCode = location.hashCode();
+
+                        lStartTime = System.nanoTime();
+                        int tId = rm.start();
+                        rm.queryCustomerInfo(tId, locHashCode);
+                        rm.commit(tId);
+                        lEndTime = System.nanoTime();
+                        respTime = lEndTime - lStartTime;
+                        avRTime += respTime;
+                    }
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        avRTime = (avRTime / avCLoops);
+        System.out.println("#### Average response time on " +
+                avCLoops + " loops is " + avRTime + " micro-secs");
+        return avRTime;
     }
 
 

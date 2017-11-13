@@ -52,7 +52,7 @@ public class MiddlewareManagerImpl implements Middleware {
             hotelserver = args[2];
             flightserver = args[3];
         }
-        
+
         System.out.println("Middleware: " + server + ":" + port);
         System.out.println("Car Manager: " + carserver + ":" + carport);
         System.out.println("Hotel Manager: " + hotelserver + ":" + hotelport);
