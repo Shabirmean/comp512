@@ -17,18 +17,24 @@ if [ "$project" = "s" ]; then
 	do
 	  read -p "Whats the RM type [Car, Flight or Hotel]? " answer
 	  case $answer in
-	  	[Cc]* ) pkill -f rmiregistry
-				rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1100 &
+	  	[Cc]* ) 
+				# pkill -f rmiregistry
+				# sleep(2000)
+				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1100 &
 				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1100
 	           	break;;
 
-	   	[Ff]* ) pkill -f rmiregistry
-				rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1101 &
+	   	[Ff]* ) 
+				# pkill -f rmiregistry
+				# sleep(2000)
+				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1101 &
 				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1102
 				break;;
 
-		[Hh]* )	pkill -f rmiregistry
-				rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1102 &
+		[Hh]* )	
+				# pkill -f rmiregistry
+				# sleep(2000)
+				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1102 &
 				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1101
 				break;;
 
@@ -40,8 +46,9 @@ fi
 
 if [ "$project" = "m" ]; then
   	cd middleware
-  	pkill -f rmiregistry
-  	rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1099 &
+  	# pkill -f rmiregistry
+  	# sleep(2000)
+  	# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1099 &
 	java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-26.cs.mcgill.ca cs-27.cs.mcgill.ca
 fi
 
