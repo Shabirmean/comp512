@@ -22,6 +22,8 @@ public class ResourceManagerImpl implements ResourceManager {
     private List<Integer> transactionList = new ArrayList<Integer>();
     private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
     private static final Object countLock = new Object();
+    private static boolean SHUTDOWN = false;
+    private static final Timer shutdownTimer = new Timer();
 
     public ResourceManagerImpl() throws RemoteException {
     }
@@ -60,18 +62,20 @@ public class ResourceManagerImpl implements ResourceManager {
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
         }
+
+        shutdownTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (SHUTDOWN){
+                    System.exit(0);
+                }
+            }
+        }, 0, 5 * 1000);
     }
 
     // TODO:: Need to have TM to ensure valide ResInterface.transactions
     @Override
     public int start() throws RemoteException {
-//        UUID uuid = UUID.randomUUID();
-//        int newTid = uuid.hashCode();
-//        while (transactionList.contains(newTid)) {
-//            newTid = uuid.hashCode();
-//        }
-//        transactionList.add(newTid);
-//        return newTid;
         int newTId;
         synchronized (countLock) {
             newTId = TRANSACTION_ID_COUNT++;
@@ -92,11 +96,17 @@ public class ResourceManagerImpl implements ResourceManager {
 
     @Override
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
-
+        transactionList.remove(transactionList.indexOf(transactionId));
     }
 
     @Override
     public boolean shutdown() throws RemoteException {
+        if (transactionList.isEmpty()) {
+            Trace.warn("Shutdown invoked and no active transactions. Hence shutting down...");
+            SHUTDOWN = true;
+            return true;
+        }
+        Trace.warn("Shutdown invoked but there are active transactions. Hence rejected call!");
         return false;
     }
 

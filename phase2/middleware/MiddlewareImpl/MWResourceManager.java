@@ -14,6 +14,7 @@ public class MWResourceManager implements ResourceManager {
     private List<Integer> transactionList = new ArrayList<Integer>();
     private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
     private static final Object countLock = new Object();
+    public static boolean SHUTDOWN = false;
 
     public MWResourceManager() throws RemoteException {
     }
@@ -41,11 +42,17 @@ public class MWResourceManager implements ResourceManager {
 
     @Override
     public void abort(int transactionId) throws RemoteException, InvalidTransactionException {
-
+        transactionList.remove(transactionList.indexOf(transactionId));
     }
 
     @Override
     public boolean shutdown() throws RemoteException {
+        if (transactionList.isEmpty()) {
+            Trace.warn("Shutdown invoked and no active transactions. Hence shutting down...");
+            SHUTDOWN = true;
+            return true;
+        }
+        Trace.warn("Shutdown invoked but there are active transactions. Hence rejected call!");
         return false;
     }
 
@@ -84,21 +91,22 @@ public class MWResourceManager implements ResourceManager {
     // deletes the entire item
     public boolean deleteItem(int id, String key) {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
-        ReservableItem curObj = (ReservableItem) readData(id, key);
+//        ReservableItem curObj = (ReservableItem) readData(id, key);
+        Customer curObj = (Customer) readData(id, key);
         // Check if there is such an item in the storage
         if (curObj == null) {
             Trace.warn("RM::deleteItem(" + id + ", " + key + ") failed--item doesn't exist");
             return false;
         } else {
-            if (curObj.getReserved() == 0) {
-                removeData(id, curObj.getKey());
-                Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
-                return true;
-            } else {
-                Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers " +
-                        "reserved it");
-                return false;
-            }
+//            if (curObj.getReserved() == 0) {
+            removeData(id, curObj.getKey());
+            Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
+            return true;
+//            } else {
+//                Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers " +
+//                        "reserved it");
+//                return false;
+//            }
         } // if
     }
 
@@ -113,7 +121,7 @@ public class MWResourceManager implements ResourceManager {
 //        return value;
 //    }
 
-    public RMItem getItem(int id, String key) throws RemoteException{
+    public RMItem getItem(int id, String key) throws RemoteException {
         Trace.info("RM::getItem(" + id + ", " + key + ") called");
         RMItem curObj = (RMItem) readData(id, key);
         if (curObj == null) {
@@ -468,7 +476,8 @@ public class MWResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
+    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
+            throws RemoteException {
         return false;
     }
 }

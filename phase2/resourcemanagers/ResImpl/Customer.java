@@ -18,7 +18,7 @@ public class Customer extends RMItem {
 
     public Customer(Customer copyCustomer) {
         super();
-        m_Reservations = copyCustomer.getReservations();
+        m_Reservations = (RMHashtable) copyCustomer.getReservations().clone();
         m_nID = copyCustomer.m_nID;
     }
 

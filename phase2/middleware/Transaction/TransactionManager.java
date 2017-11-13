@@ -2,12 +2,12 @@ package Transaction;
 
 import LockManager.LockManager;
 import LockManager.DeadlockException;
+import MiddlewareImpl.MiddlewareManagerImpl;
 import ResImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
 import ResInterface.TransactionAbortedException;
-import exception.InvalidOperationException;
-import exception.RMTransactionFailedException;
+import exception.TransactionManagerException;
 import util.RequestType;
 import util.ResourceManagerType;
 
@@ -23,6 +23,7 @@ public class TransactionManager {
     private static final String CUSTOMER_ITEM_KEY = "customer";
     private static final Object countLock = new Object();
     private static final Timer transactionTimer = new Timer();
+    private static final Timer shutdownTimer = new Timer();
 
     private static Integer TRANSACTION_ID_COUNT = 1001;
     private static LockManager lockMan = new LockManager();
@@ -42,17 +43,20 @@ public class TransactionManager {
         transactionTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+                int tiD = -1;
                 try {
                     for (Transaction transaction : transMap.values()) {
                         int ttl = transaction.updateTimeToLive();
                         if (ttl <= 0) {
-                            int tiD = transaction.getTransactionId();
+                            tiD = transaction.getTransactionId();
                             System.out.println("TM:: Transaction-" + tiD + " has timed-out. Aborting it....");
                             abort(tiD);
                         }
                     }
-                } catch (InvalidTransactionException e) {
-                    e.printStackTrace();
+                } catch (TransactionManagerException e) {
+                    String errMsg = "Attempted to abort an invalid transaction [" + tiD + "] " +
+                            "that seemed to have timed-out." + e;
+                    printMsg(errMsg);
                 }
             }
         }, 0, 5 * 1000);
@@ -68,22 +72,27 @@ public class TransactionManager {
         return newTId;
     }
 
-    public boolean commit(int transactionId) throws TransactionAbortedException, InvalidOperationException {
+    public boolean commit(int transId) throws TransactionManagerException {
         String errMsg;
         boolean status = false;
-        Transaction thisTransaction = transMap.get(transactionId);
+        Transaction thisTransaction = transMap.get(transId);
         //noinspection Duplicates
         if (thisTransaction == null) {
-            errMsg = "TId [" + transactionId + "] No valid ResInterface.transactions found with the given transactionId";
+            errMsg = "TId [" + transId + "] No valid ResInterface.transactions found with the given " +
+                    "transactionId";
             printMsg(errMsg);
-            throw new InvalidOperationException(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
         } else {
             thisTransaction.resetTTL();
         }
 
         ConcurrentHashMap<String, RMItem> tAccessedItemSet = thisTransaction.getAccessedItemSet();
+        int rmTId = -1;
+        String rmNow = "";
+
         try {
             for (ResourceManagerType rmType : ResourceManagerType.values()) {
+                rmNow = rmType.getCodeString();
                 ResourceManager rm = resourceManagers.get(rmType);
                 List<String> writeList = thisTransaction.getCorrespondingWriteList(rmType);
                 List<String> deleteList = thisTransaction.getCorrespondingDeleteList(rmType);
@@ -93,7 +102,7 @@ public class TransactionManager {
                     continue;
                 }
 
-                int rmTId = rm.start();
+                rmTId = rm.start();
                 for (String itemKey : writeList) {
                     RMItem thisItem = tAccessedItemSet.get(itemKey);
                     rm.writeData(rmTId, itemKey, thisItem);
@@ -110,68 +119,107 @@ public class TransactionManager {
 
                 status = rm.commit(rmTId);
                 if (!status) {
-                    errMsg = "[" + transactionId + "] Commit attempt to resource manager " +
+                    errMsg = "[" + transId + "] Commit attempt to resource manager " +
                             "[" + rmType.getCodeString() + "] with rmTId [" + rmTId + "] failed.";
                     printMsg(errMsg);
-                    throw new RMTransactionFailedException(errMsg);
-                }
-
-                if (!deleteList.isEmpty()) {
-                    errMsg = "[" + transactionId + "] After complete commit to resource manager " +
-                            "[" + rmType.getCodeString() + "] with rmTId [" + rmTId + "] deleteList is not empty.";
-                    printMsg(errMsg);
-                    throw new RMTransactionFailedException(errMsg);
+                    rm.abort(rmTId);
+                    throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
                 }
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (RMTransactionFailedException e) {
-            e.printStackTrace();
+            errMsg = "An error occurred with transaction [" + rmTId + "] on RM [" + rmNow + "] at middleware.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
+        } catch (InvalidTransactionException | TransactionAbortedException e) {
+            errMsg = "TId [" + transId + "] Call to abort transaction [" + rmTId + "] at RM [" + rmNow + "] failed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
 
+        lockMan.UnlockAll(transId);
+        thisTransaction.clearAll();
+        thisTransaction.setStatus(Transaction.TStatus.ENDED);
+        transMap.remove(transId);
+        return status;
+    }
+
+    public void abort(int transactionId) throws TransactionManagerException {
+        String errMsg;
+        Transaction thisTransaction = transMap.get(transactionId);
+        //noinspection Duplicates
+        if (thisTransaction == null) {
+            errMsg = "TId [" + transactionId + "] No valid transactions found with the given transactionId";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
+        }
+
+        System.out.println("TM:: Aborting transaction-" + transactionId + "....");
         lockMan.UnlockAll(transactionId);
         thisTransaction.clearAll();
         thisTransaction.setStatus(Transaction.TStatus.ENDED);
         transMap.remove(transactionId);
-        return status;
     }
 
-    public void abort(int transactionId) throws InvalidTransactionException {
+
+    public boolean shutdown() throws TransactionManagerException {
+        boolean rmShutdownStatus = false;
         String errMsg;
+        String rmNow = null;
+        String shutRMs = "";
         try {
-            Transaction thisTransaction = transMap.get(transactionId);
-            //noinspection Duplicates
-            if (thisTransaction == null) {
-                errMsg = "TId [" + transactionId + "] No valid ResInterface.transactions found with the given transactionId";
+            if (transMap.isEmpty()) {
+                printMsg("Shutdown invoked and no active transactions. Hence shutting down RMs!!");
+                for (ResourceManagerType rmType : ResourceManagerType.values()) {
+                    rmNow = rmType.getCodeString();
+                    ResourceManager rm = resourceManagers.get(rmType);
+                    rmShutdownStatus = rm.shutdown();
+                    if (!rmShutdownStatus) {
+                        errMsg = "Shutdown call to RM [" + rmNow + "] said NO. Already shutdown RMs - " + shutRMs;
+                        printMsg(errMsg);
+                        throw new TransactionManagerException(errMsg, ReqStatus.SHUTDOWN_AT_TM_MIGHT_BE_PARTIAL);
+                    }
+                    shutRMs = rmNow + ", ";
+                }
+
+                shutdownTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.exit(0);
+                    }
+                }, 5000);
+            } else {
+                errMsg = "Transaction manager still has active transactions. Hence, cannot shutdown.";
                 printMsg(errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.ACTIVE_TRANSACTIONS_EXIST);
             }
-
-            System.out.println("TM:: Aborting transaction-" + transactionId + "....");
-            lockMan.UnlockAll(transactionId);
-            thisTransaction.clearAll();
-            thisTransaction.setStatus(Transaction.TStatus.ENDED);
-            transMap.remove(transactionId);
-        } catch (InvalidOperationException e) {
-            e.printStackTrace();
+        } catch (RemoteException e) {
+            errMsg = "Shutdown call to RM [" + rmNow + "] throwed an error.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.SHUTDOWN_TO_RM_THROWED_ERROR);
         }
-
+        return rmShutdownStatus;
     }
 
     @SuppressWarnings("Duplicates")
     public int submitOperation(int tId, RequestType requestType, ReservableItem resourceItem)
-            throws InvalidOperationException, InvalidTransactionException {
-        int responseNum = ReqStatus.FAILURE.getStatusCode();
+            throws TransactionManagerException {
         String errMsg;
+        String rmType = "";
+        String itemKey = "";
+        int rmTID = -1;
+        int responseNum = ReqStatus.FAILURE.getStatusCode();
+
         try {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
-                throw new InvalidTransactionException("No transaction exists with transaction id [" + tId + "]");
+                errMsg = "No transaction exists with transaction id [" + tId + "]";
+                printMsg(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
             } else {
                 transaction.resetTTL();
             }
 
-            String itemKey = resourceItem.getKey();
+            itemKey = resourceItem.getKey();
             ResourceManagerType resManType = requestForWhichRM(requestType);
             if (resManType == null) {
                 resManType = itemToRMTypeMatcher(itemKey);
@@ -179,9 +227,12 @@ public class TransactionManager {
                     errMsg = "Reserve/UnReserve request for item [" + itemKey + "] cannot be completed since no " +
                             "matching RM found.";
                     printMsg(errMsg);
-                    throw new InvalidOperationException(errMsg);
+                    throw new TransactionManagerException(errMsg, ReqStatus.NO_MATCHING_RM);
                 }
+            } else {
+                rmType = resManType.getCodeString();
             }
+
             int opType = isReadOWrite(requestType);
             boolean tryLock = lockMan.Lock(tId, itemKey, opType);
 
@@ -195,14 +246,14 @@ public class TransactionManager {
                             "is invalid due unknown Operation-TYPE";
                 }
                 printMsg("Lock request on item [" + itemKey + "] for transaction [" + tId + "] failed.\n    " + errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.LOCK_REQUEST_FAILED);
             }
 
-//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_DELETED_ITEM);
             }
 
             ConcurrentHashMap<String, RMItem> itemSet = transaction.getAccessedItemSet();
@@ -210,17 +261,18 @@ public class TransactionManager {
 
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
-                int rmTID = resMan.start();
+                rmTID = resMan.start();
 //                alreadyAccessedItem = (ReservableItem) resMan.getItem(rmTID, itemKey);
                 RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
-                alreadyAccessedItem = (ReservableItem) getCopyItem(itemFromRM);
+                alreadyAccessedItem = (ReservableItem) getCopyOfItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to Query [" + resManType.getCodeString() +
                             "] data for item with key [" + itemKey + "] could not be committed.";
                     printMsg(errMsg);
-                    throw new RMTransactionFailedException(errMsg);
+                    resMan.abort(rmTID);
+                    throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
                 }
 
                 if (alreadyAccessedItem != null) {
@@ -229,7 +281,7 @@ public class TransactionManager {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to access [" + resManType.getCodeString() + "]" +
                             " with key [" + itemKey + "] returned NULL.";
                     printMsg(errMsg);
-                    throw new InvalidOperationException(errMsg);
+                    throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_NULL_ITEM);
                 }
             }
 
@@ -299,37 +351,55 @@ public class TransactionManager {
                 responseNum = alreadyAccessedItem.getPrice();
             }
         } catch (DeadlockException e) {
-            e.printStackTrace();
-            //TODO:: Handle Deadlock and all Exception
+            //TODO:: Print Deadlock message in Lock manager
+            errMsg = "TId [" + tId + "] failed its LOCK request on item [" + resourceItem.getKey() + "] on DEADLOCK.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
+
         } catch (RemoteException e) {
-            e.printStackTrace();
+            errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
+
         } catch (TransactionAbortedException e) {
-            e.printStackTrace();
-        } catch (RMTransactionFailedException e) {
-            e.printStackTrace();
+            errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
+                    "key [" + itemKey + "] could not be committed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
+
+        } catch (InvalidTransactionException e) {
+            errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
+
         }
-        return responseNum; //TODO:: NEED TO CHANGE THIS
+        return responseNum;
     }
 
 
     @SuppressWarnings("Duplicates")
     public String submitOperation(int tId, RequestType requestType, Customer customerItem)
-            throws InvalidTransactionException, InvalidOperationException {
-        String response = ReqStatus.FAILURE.getStatus();
+            throws TransactionManagerException {
         String errMsg;
+        String rmType = "";
+        String itemKey = "";
+        int rmTID = -1;
+        String response = ReqStatus.FAILURE.getStatus();
+
         try {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
                 errMsg = "No transaction exists with transaction id [" + tId + "]";
                 printMsg(errMsg);
-                throw new InvalidTransactionException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
             } else {
                 transaction.resetTTL();
             }
 
             ResourceManagerType resManType = requestForWhichRM(requestType);
+            rmType = resManType.getCodeString();
             int opType = isReadOWrite(requestType);
-            String itemKey = customerItem.getKey();
+            itemKey = customerItem.getKey();
             boolean tryLock = lockMan.Lock(tId, itemKey, opType);
 
             if (!tryLock) {
@@ -342,14 +412,14 @@ public class TransactionManager {
                             "is invalid due unknown Operation-TYPE";
                 }
                 printMsg("Lock request on item [" + itemKey + "] for transaction [" + tId + "] failed.\n    " + errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.LOCK_REQUEST_FAILED);
             }
 
-//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey) && !isAddOperation(requestType)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_DELETED_ITEM);
             }
 
             ConcurrentHashMap<String, RMItem> itemSet = transaction.getAccessedItemSet();
@@ -358,17 +428,18 @@ public class TransactionManager {
 
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
-                int rmTID = resMan.start();
+                rmTID = resMan.start();
 //                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
                 RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
-                alreadyAccessedItem = (Customer) getCopyItem(itemFromRM);
+                alreadyAccessedItem = (Customer) getCopyOfItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to Query [" + resManType.getCodeString() +
                             "] data for item with key [" + itemKey + "] could not be committed.";
                     printMsg(errMsg);
-                    throw new RMTransactionFailedException(errMsg);
+                    resMan.abort(rmTID);
+                    throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
                 }
 
                 if (alreadyAccessedItem != null) {
@@ -378,7 +449,7 @@ public class TransactionManager {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to access [" + resManType.getCodeString() + "]" +
                             " with key [" + itemKey + "] returned NULL.";
                     printMsg(errMsg);
-                    throw new InvalidOperationException(errMsg);
+                    throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_NULL_ITEM);
                 }
             }
 
@@ -420,8 +491,7 @@ public class TransactionManager {
                         Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
                                 reserveditem.getKey() + " " + reserveditem.getCount() + " times");
 
-                        String resItemKey = reserveditem.getKey();
-                        ReservableItem reservableItem = (ReservableItem) itemSet.get(resItemKey);
+                        ReservableItem reservableItem = getCopyOfReservedItem(reserveditem);
                         int newReserveCount = submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservableItem);
                         int newCount = reservableItem.getCount() + (reservableItem.getReserved() - newReserveCount);
                         Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
@@ -446,14 +516,25 @@ public class TransactionManager {
             }
 
         } catch (DeadlockException e) {
-            e.printStackTrace();
-            //TODO:: Handle Deadlock and all Exception
+            errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
+
         } catch (RemoteException e) {
-            e.printStackTrace();
+            errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
+
         } catch (TransactionAbortedException e) {
-            e.printStackTrace();
-        } catch (RMTransactionFailedException e) {
-            e.printStackTrace();
+            errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
+                    "key [" + itemKey + "] could not be committed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
+
+        } catch (InvalidTransactionException e) {
+            errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
 
         return response;
@@ -461,23 +542,27 @@ public class TransactionManager {
 
 
     @SuppressWarnings("Duplicates")
-    public int submitReserveOperation(int tId, Customer customerItem,
-                                      RequestType requestType, ReservableItem resourceItem)
-            throws InvalidOperationException, InvalidTransactionException {
-        int responseNum = ReqStatus.FAILURE.getStatusCode();
+    public int submitReserveOperation(int tId, Customer customerItem, RequestType requestType,
+                                      ReservableItem resourceItem) throws TransactionManagerException {
         String errMsg;
+        String rmType = "";
+        String itemKey = "";
+        int rmTID = -1;
+        int responseNum;
+
         try {
             Transaction transaction = transMap.get(tId);
             if (transaction == null) {
                 errMsg = "No transaction exists with transaction id [" + tId + "]";
                 printMsg(errMsg);
-                throw new InvalidTransactionException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
             } else {
                 transaction.resetTTL();
             }
 
-            String itemKey = customerItem.getKey();
+            itemKey = customerItem.getKey();
             ResourceManagerType resManType = itemToRMTypeMatcher(itemKey);
+            rmType = resManType.getCodeString();
             int opType = isReadOWrite(requestType);
             boolean tryLock = lockMan.Lock(tId, itemKey, opType);
 
@@ -491,14 +576,14 @@ public class TransactionManager {
                             "is invalid due unknown Operation-TYPE";
                 }
                 printMsg("Lock request on item [" + itemKey + "] for transaction [" + tId + "] failed.\n    " + errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.LOCK_REQUEST_FAILED);
             }
 
-//             If the item has already deleted (found in this ResInterface.transactions delete set and operation is not ADD)
+//             If the item has already deleted (found in this transactions delete set and operation is not ADD)
             if (transaction.getCorrespondingDeleteList(resManType).contains(itemKey)) {
                 errMsg = "This item has already been deleted by an earlier operation of this transaction.";
                 printMsg(errMsg);
-                throw new InvalidOperationException(errMsg);
+                throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_DELETED_ITEM);
             }
 
             ConcurrentHashMap<String, RMItem> itemSet = transaction.getAccessedItemSet();
@@ -507,17 +592,17 @@ public class TransactionManager {
 
             if (alreadyAccessedItem == null) {
                 ResourceManager resMan = resourceManagers.get(resManType);
-                int rmTID = resMan.start();
+                rmTID = resMan.start();
 //                alreadyAccessedItem = (Customer) resMan.getItem(rmTID, itemKey);
                 RMItem itemFromRM = resMan.getItem(rmTID, itemKey);
-                alreadyAccessedItem = (Customer) getCopyItem(itemFromRM);
+                alreadyAccessedItem = (Customer) getCopyOfItem(itemFromRM);
                 boolean commitStat = resMan.commit(rmTID);
 
                 if (!commitStat) {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to Query [" + resManType.getCodeString() +
                             "] data for item with key [" + itemKey + "] could not be committed.";
                     printMsg(errMsg);
-                    throw new RMTransactionFailedException(errMsg);
+                    throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
                 }
 
                 if (alreadyAccessedItem != null) {
@@ -527,7 +612,7 @@ public class TransactionManager {
                     errMsg = "TId [" + tId + "] Call to ResourceManger to access [" + resManType.getCodeString() + "]" +
                             " with key [" + itemKey + "] returned NULL. Cannot make reservations for this customer.";
                     printMsg(errMsg);
-                    throw new InvalidOperationException(errMsg);
+                    throw new TransactionManagerException(errMsg, ReqStatus.REQUEST_ON_NULL_ITEM);
                 }
             }
 
@@ -542,27 +627,39 @@ public class TransactionManager {
             responseNum = ReqStatus.SUCCESS.getStatusCode();
 
         } catch (DeadlockException e) {
-            e.printStackTrace();
-            //TODO:: Handle Deadlock and all Exception
+            errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
+
         } catch (RemoteException e) {
-            e.printStackTrace();
+            errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
+
         } catch (TransactionAbortedException e) {
-            e.printStackTrace();
-        } catch (RMTransactionFailedException e) {
-            e.printStackTrace();
+            errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
+                    "key [" + itemKey + "] could not be committed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
+
+        } catch (InvalidTransactionException e) {
+            errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
+            printMsg(errMsg);
+            throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
         return responseNum;
     }
 
 
     public boolean submitReserveItineraryOperation(int tId, int cId, Vector flightNumbers,
-                                                   String location, boolean bookCar, boolean bookHotel) {
+                                                   String location, boolean bookCar, boolean bookHotel)
+            throws TransactionManagerException {
         String errMsg;
         int responseVal = ReqStatus.FAILURE.getStatusCode();
         Customer customer = new Customer(cId);
         try {
             for (Object flightNumber : flightNumbers) {
-                int flNumber = (int) flightNumber;
+                int flNumber = Integer.parseInt((String) flightNumber);
                 Flight flightToBook = new Flight(flNumber, VALUE_NOT_SET, VALUE_NOT_SET);
                 responseVal = submitReserveOperation(tId, customer, RequestType.RESERVE_RESOURCE, flightToBook);
                 if (responseVal == ReqStatus.FAILURE.getStatusCode()) {
@@ -594,8 +691,9 @@ public class TransactionManager {
                     abort(tId);
                 }
             }
-        } catch (InvalidOperationException | InvalidTransactionException e) {
-            e.printStackTrace();
+        } catch (TransactionManagerException e) {
+            printMsg("(Itinerary-Req) Reserve request for some items of transaction [" + tId + "] failed.");
+            throw e;
         }
         return responseVal == ReqStatus.SUCCESS.getStatusCode();
     }
@@ -687,7 +785,7 @@ public class TransactionManager {
                 requestType == RequestType.QUERY_ROOM_PRICE;
     }
 
-    private RMItem getCopyItem(RMItem itemToCopy){
+    private RMItem getCopyOfItem(RMItem itemToCopy) {
         RMItem copyItem = null;
         if (itemToCopy instanceof Flight) {
             copyItem = new Flight((Flight) itemToCopy);
@@ -703,6 +801,27 @@ public class TransactionManager {
         }
         return copyItem;
     }
+
+
+    private ReservableItem getCopyOfReservedItem(ReservedItem itemToCopy) {
+        ReservableItem copyItem = null;
+        String itemKey = itemToCopy.getKey();
+        int count = itemToCopy.getCount();
+        int price = itemToCopy.getPrice();
+        String location = itemToCopy.getLocation();
+
+        if (itemKey.contains(FLIGHT_ITEM_KEY)) {
+            copyItem = new Flight(Integer.parseInt(location), count, price);
+
+        } else if (itemKey.contains(CAR_ITEM_KEY)) {
+            copyItem = new Car(location, count, price);
+
+        } else if (itemKey.contains(HOTEL_ITEM_KEY)) {
+            copyItem = new Hotel(location, count, price);
+        }
+        return copyItem;
+    }
+
 
     private void printMsg(String msg) {
         System.out.println("TM:: " + msg);

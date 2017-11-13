@@ -1,6 +1,5 @@
 package ResInterface;
 
-
 public class InvalidTransactionException extends Exception {
     private static final long serialVersionUID = 1923753363232071239L;
 
@@ -24,4 +23,5 @@ public class InvalidTransactionException extends Exception {
                                        boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
+
 }

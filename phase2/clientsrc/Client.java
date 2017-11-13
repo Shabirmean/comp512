@@ -113,10 +113,11 @@ public class Client {
                             System.out.println("Flight could not be added");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
-//                        String exMsg = e.getMessage();
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     break;
 
@@ -140,10 +141,12 @@ public class Client {
                             System.out.println("Cars could not be added");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     break;
 
@@ -167,10 +170,11 @@ public class Client {
                             System.out.println("Rooms could not be added");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -186,10 +190,11 @@ public class Client {
                         System.out.println("new customer id:" + customer);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -209,10 +214,11 @@ public class Client {
                             System.out.println("Flight could not be deleted");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -234,10 +240,11 @@ public class Client {
                             System.out.println("Cars could not be deleted");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -258,10 +265,11 @@ public class Client {
                             System.out.println("Rooms could not be deleted");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -281,10 +289,11 @@ public class Client {
                             System.out.println("Customer could not be deleted");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -302,10 +311,11 @@ public class Client {
                         System.out.println("Number of seats available:" + seats);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -323,10 +333,11 @@ public class Client {
                         System.out.println("number of Cars at this location:" + numCars);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -344,10 +355,11 @@ public class Client {
                         System.out.println("number of Rooms at this location:" + numRooms);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -365,10 +377,11 @@ public class Client {
                         System.out.println("Customer info:" + bill);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -385,11 +398,11 @@ public class Client {
                         price = rm.queryFlightPrice(Id, flightNum);
                         System.out.println("Price of a seat:" + price);
                     } catch (Exception e) {
-                        System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -407,10 +420,11 @@ public class Client {
                         System.out.println("Price of a car at this location:" + price);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -428,10 +442,11 @@ public class Client {
                         System.out.println("Price of Rooms at this location:" + price);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -453,10 +468,11 @@ public class Client {
                             System.out.println("Flight could not be reserved.");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -480,10 +496,11 @@ public class Client {
                             System.out.println("Car could not be reserved.");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -506,10 +523,11 @@ public class Client {
                             System.out.println("Room could not be reserved.");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
@@ -541,6 +559,8 @@ public class Client {
                             System.out.println("Itinerary could not be reserved.");
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
@@ -571,14 +591,15 @@ public class Client {
                         System.out.println("new customer id:" + Cid);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
-                case 23:  //new Customer given id
+                case 23:  //start transaction
                     if (arguments.size() != 1) {
                         obj.wrongNumber();
                         break;
@@ -589,14 +610,15 @@ public class Client {
                         System.out.println("New Transaction id:" + transactionId);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
-                case 24:  //new Customer given id
+                case 24:  //commit transaction
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
@@ -613,14 +635,15 @@ public class Client {
 
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 
-                case 25:  //new Customer given id
+                case 25:  //abort transaction
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
@@ -632,10 +655,34 @@ public class Client {
                         System.out.println("Abort request sent for transaction:" + Id);
                     } catch (Exception e) {
                         System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
+                    }
+                    break;
+
+                case 26:  //shutdown all
+                    if (arguments.size() != 1) {
+                        obj.wrongNumber();
+                        break;
+                    }
+                    System.out.println("Calling shutdown of servers....");
+                    try {
+                        boolean shutdown = rm.shutdown();
+                        if (shutdown) {
+                            System.out.println("All servers were shutdown successfully!");
+                        } else {
+                            System.out.println("Shutdown request failed.");
+                        }
+                    } catch (Exception e) {
+                        System.out.print("EXCEPTION: ");
+                        String exMsg = e.getMessage();
+                        System.out.println(exMsg);
+//                        String exMsg = e.getMessage();
+//                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
+//                        System.out.println(e.getMessage());
                     }
                     break;
 
@@ -709,6 +756,8 @@ public class Client {
             return 24;
         else if (argument.compareToIgnoreCase("abort") == 0)
             return 25;
+        else if (argument.compareToIgnoreCase("shutdown") == 0)
+            return 26;
         else
             return 666;
 
