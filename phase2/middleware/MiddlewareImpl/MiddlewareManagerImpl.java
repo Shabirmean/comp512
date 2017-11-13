@@ -418,7 +418,6 @@ public class MiddlewareManagerImpl implements Middleware {
     }
 
 
-    //TODO:: Handle Cutomer Related Requests
     // Returns data structure containing customer reservation info. Returns null if the
     //  customer doesn't exist. Returns empty RMHashtable if customer exists but has no
     //  reservations.

@@ -73,7 +73,6 @@ public class ResourceManagerImpl implements ResourceManager {
         }, 0, 5 * 1000);
     }
 
-    // TODO:: Need to have TM to ensure valide ResInterface.transactions
     @Override
     public int start() throws RemoteException {
         int newTId;
@@ -214,7 +213,6 @@ public class ResourceManagerImpl implements ResourceManager {
         // Read customer object if it exists (and read lock it)
 //        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
 
-        //TODO:: Remove customer related stuff
 //        if (cust == null) {
 //            Trace.warn("RM::reserveCar" +
 //                    "( " + id + ", " + customerID + ", " + key + ", " + location + ") failed--customer doesn't

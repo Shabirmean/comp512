@@ -57,7 +57,6 @@ public class TPHashTable
 
         vectSlot = (Vector) vect.elementAt( hashSlot );
 
-        //TODO:: Redundant loop
         XObj xobj2;
         int size = vectSlot.size();
         for ( int i = (size - 1); i >= 0; i-- ) {

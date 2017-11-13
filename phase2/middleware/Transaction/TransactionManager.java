@@ -287,7 +287,6 @@ public class TransactionManager {
 
             alreadyAccessedItem = (ReservableItem) itemSet.get(itemKey);
             if (isAddOperation(requestType)) {
-                //TODO:: Check if item exists
                 String itemUniqueAttrib = resourceItem.getLocation();
                 int itemCount = resourceItem.getCount();
                 int itemPrice = resourceItem.getPrice();
@@ -311,7 +310,6 @@ public class TransactionManager {
                 responseNum = ReqStatus.SUCCESS.getStatusCode();
 
             } else if (isDeleteOperation(requestType)) {
-                //TODO:: Check if item has reservations
                 if (alreadyAccessedItem.getReserved() == 0) {
                     itemSet.remove(itemKey);
                     transaction.getCorrespondingDeleteList(resManType).add(itemKey);
@@ -351,7 +349,6 @@ public class TransactionManager {
                 responseNum = alreadyAccessedItem.getPrice();
             }
         } catch (DeadlockException e) {
-            //TODO:: Print Deadlock message in Lock manager
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + resourceItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
             throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
@@ -742,7 +739,7 @@ public class TransactionManager {
 
 
     private int isReadOWrite(RequestType requestType) {
-        int readOWrite = VALUE_NOT_SET; //TODO:: Need to add for reserveItinerary
+        int readOWrite = VALUE_NOT_SET;
 
         if (requestType == RequestType.ADD_FLIGHT || requestType == RequestType.DELETE_FLIGHT ||
                 requestType == RequestType.ADD_CARS || requestType == RequestType.DELETE_CARS ||

@@ -255,7 +255,6 @@ public class LockManager {
     }
 
 
-    //TODO:: Look for deadlock
     private void WaitLock(DataObj dataObj) throws DeadlockException {
         // Check timestamp or add a new one.
         // Will always add new timestamp for each new lock request since
@@ -327,6 +326,7 @@ public class LockManager {
                 waitTable.remove(waitObj);
             }
         }
+        System.out.println("LM:: Deadlock on item-" + waitObj.getDataName());
         throw new DeadlockException(waitObj.getXId(), "Sleep timeout...deadlock.");
     }
 }
