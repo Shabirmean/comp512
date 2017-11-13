@@ -30,7 +30,7 @@ public class MiddlewareManagerImpl implements Middleware {
     }
 
     public static void main(String args[]) {
-        System.out.println("#########" + System.getProperty("java.class.path"));
+//        System.out.println("#########" + System.getProperty("java.class.path"));
         // Figure out where server is running
         String server = "localhost";
         String carserver = "";
@@ -45,13 +45,18 @@ public class MiddlewareManagerImpl implements Middleware {
             server = server + ":" + args[0];
             port = Integer.parseInt(args[0]);
         } else if (args.length == 4) {
-            server = server + ":" + args[0];
+//            server = server + ":" + args[0];
 //            port = Integer.parseInt(args[0]);
-            carserver = args[0];
-            hotelserver = args[1];
-            flightserver = args[2];
+            server = args[0];
+            carserver = args[1];
+            hotelserver = args[2];
+            flightserver = args[3];
         }
-
+        
+        System.out.println("Middleware: " + server + ":" + port);
+        System.out.println("Car Manager: " + carserver + ":" + carport);
+        System.out.println("Hotel Manager: " + hotelserver + ":" + hotelport);
+        System.out.println("Flight Manager: " + flightserver + ":" + flightport);
 //        server = server + ":" + args[0];
 //        port = Integer.parseInt(args[0]);
 //        carserver = "localhost";
