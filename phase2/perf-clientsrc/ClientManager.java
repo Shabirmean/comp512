@@ -16,10 +16,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ClientManager {
     static Middleware rm = null;
     static ArrayList<String> locations = new ArrayList<>();
+    static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-        Scanner scanner = new Scanner(System.in);
+
 
 //        Client obj = new Client();
         Vector arguments;
@@ -119,35 +120,41 @@ public class ClientManager {
     static void randomReadFromRM(int rmType, int loopCount) {
         int locSize = locations.size();
         long lStartTime, lEndTime, respTime;
+        int checkSec = 1;
+        long secToMicro = 1000000;
         long avRTime = 0;
 
         avRTime = getAverageResponseTime(rmType);
         System.out.println("#### Average Time: " + avRTime);
 
-        long avgBuffer = avRTime / 10;
-        System.out.println("#### Average Buffer: " + avgBuffer);
+        System.out.println("Load (# of Transaction per second: ): ");
+        int load = scanner.nextInt();
 
-        avgBuffer += avRTime;
-        System.out.println("#### Average Buffer + Time: " + avgBuffer);
+        long microPerT = secToMicro / load;
+        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
 
-        int checkSec = 1;
-        long secToMicro = 1000000;
-        int numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
-        System.out.println("#### Num of Transactions: " + numOfTransactions);
-
-        while (numOfTransactions <= 0) {
-            numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
-            checkSec++;
-        }
-
-        long balanceSec = (checkSec * secToMicro) - (numOfTransactions * avgBuffer);
-        long balancePerT = (int) (balanceSec / numOfTransactions);
-        System.out.println("#### balanceSec: " + balanceSec);
-        System.out.println("#### balancePerT: " + balancePerT);
-
-        long timePerT = avgBuffer + balancePerT;
-        System.out.println("#### Time Per Transaction: " + timePerT);
-        System.out.println("#### No of Transaction: " + numOfTransactions + " per " + checkSec + "-seconds");
+//        long avgBuffer = avRTime / 10;
+//        System.out.println("#### Average Buffer: " + avgBuffer);
+//
+//        avgBuffer += avRTime;
+//        System.out.println("#### Average Buffer + Time: " + avgBuffer);
+//
+//        int numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
+//        System.out.println("#### Num of Transactions: " + numOfTransactions);
+//
+//        while (numOfTransactions <= 0) {
+//            numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
+//            checkSec++;
+//        }
+//
+//        long balanceSec = (checkSec * secToMicro) - (numOfTransactions * avgBuffer);
+//        long balancePerT = (int) (balanceSec / numOfTransactions);
+//        System.out.println("#### balanceSec: " + balanceSec);
+//        System.out.println("#### balancePerT: " + balancePerT);
+//
+//        long timePerT = avgBuffer + balancePerT;
+//        System.out.println("#### Time Per Transaction: " + timePerT);
+//        System.out.println("#### No of Transaction: " + numOfTransactions + " per " + checkSec + "-seconds");
 
         try {
             switch (rmType) {
@@ -179,10 +186,11 @@ public class ClientManager {
                         long respTInMS = respTime / 1000;
 //                        System.out.println("Elapsed time in microseconds: " + respTInMS);
 //                        System.out.println("");
-                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
-                        long sleepTime = timePerT - respTInMS;
+//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
-                            Thread.sleep(sleepTime);
+                            waitBeforeNextT(sleepTime);
                         }
                     }
                     break;
@@ -213,10 +221,11 @@ public class ClientManager {
                         long respTInMS = respTime / 1000;
 //                        System.out.println("Elapsed time in microseconds: " + respTInMS);
 //                        System.out.println("");
-                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
-                        long sleepTime = timePerT - respTInMS;
+//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
-                            Thread.sleep(sleepTime);
+                            waitBeforeNextT(sleepTime);
                         }
                     }
                     break;
@@ -248,10 +257,11 @@ public class ClientManager {
                         long respTInMS = respTime / 1000;
 //                        System.out.println("Elapsed time in microseconds: " + respTInMS);
 //                        System.out.println("");
-                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
-                        long sleepTime = timePerT - respTInMS;
+//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
-                            Thread.sleep(sleepTime);
+                            waitBeforeNextT(sleepTime);
                         }
                     }
                     break;
@@ -273,11 +283,10 @@ public class ClientManager {
                         long respTInMS = respTime / 1000;
 //                        System.out.println("Elapsed time in microseconds: " + respTInMS);
 //                        System.out.println("");
-                        System.out.println("Iter: " + start + " - " + respTInMS + "micro-sec.");
-                        long sleepTime = timePerT - respTInMS;
+//                        System.out.println("Iter: " + start + " - " + respTInMS + "micro-sec.");
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
-                            System.out.println("Sleeping for " + sleepTime);
-//                            Thread.sleep(sleepTime);
                             waitBeforeNextT(sleepTime);
                         }
                     }
@@ -294,7 +303,7 @@ public class ClientManager {
         long end = 0;
         do {
             end = System.nanoTime();
-        } while (start + interval >= end);
+        } while (start + (interval * 1000) >= end);
 //        System.out.println(end - start);
     }
 
