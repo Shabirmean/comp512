@@ -273,10 +273,12 @@ public class ClientManager {
                         long respTInMS = respTime / 1000;
 //                        System.out.println("Elapsed time in microseconds: " + respTInMS);
 //                        System.out.println("");
-                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        System.out.println("Iter: " + start + " - " + respTInMS + "micro-sec.");
                         long sleepTime = timePerT - respTInMS;
                         if (sleepTime > 0) {
-                            Thread.sleep(sleepTime);
+                            System.out.println("Sleeping for " + sleepTime);
+//                            Thread.sleep(sleepTime);
+                            waitBeforeNextT(sleepTime);
                         }
                     }
                     break;
@@ -286,6 +288,15 @@ public class ClientManager {
         }
     }
 
+    static void waitBeforeNextT(long interval) {
+//        final long INTERVAL = 100;
+        long start = System.nanoTime();
+        long end = 0;
+        do {
+            end = System.nanoTime();
+        } while (start + interval >= end);
+//        System.out.println(end - start);
+    }
 
     static void addRandomResources(int rmType) {
         try {
