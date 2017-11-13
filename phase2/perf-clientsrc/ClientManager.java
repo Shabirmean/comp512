@@ -343,6 +343,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
+                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
                         avRTime += (respTime / 1000);
                     }
                     break;
@@ -367,6 +368,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
+                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
                         avRTime += (respTime / 1000);
                     }
                     break;
@@ -392,6 +394,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
+                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
                         avRTime += (respTime / 1000);
                     }
                     break;
@@ -407,6 +410,7 @@ public class ClientManager {
                         rm.commit(tId);
                         lEndTime = System.nanoTime();
                         respTime = lEndTime - lStartTime;
+                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
                         avRTime += (respTime / 1000);
                     }
                     break;
