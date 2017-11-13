@@ -129,6 +129,7 @@ public class ClientManager {
         int checkSec = 1;
         long secToMicro = 1000000;
         int numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
+        System.out.println("Num of Transactions: " + numOfTransactions);
 
         while (numOfTransactions <= 0) {
             numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
@@ -137,6 +138,9 @@ public class ClientManager {
 
         long balanceSec = (checkSec * secToMicro) - (numOfTransactions * avgBuffer);
         long balancePerT = (int) (balanceSec / numOfTransactions);
+
+        System.out.println("balanceSec: " + balanceSec);
+        System.out.println("balancePerT: " + balancePerT);
 
         long timePerT = avgBuffer + balancePerT;
         System.out.println("#### Time Per T: " + timePerT);
