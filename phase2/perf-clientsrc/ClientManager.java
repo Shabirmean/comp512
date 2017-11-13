@@ -343,7 +343,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
-                        avRTime += respTime;
+                        avRTime += (respTime / 1000);
                     }
                     break;
                 case 1:
@@ -367,7 +367,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
-                        avRTime += respTime;
+                        avRTime += (respTime / 1000);
                     }
                     break;
                 case 2:
@@ -392,7 +392,7 @@ public class ClientManager {
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
                         }
-                        avRTime += respTime;
+                        avRTime += (respTime / 1000);
                     }
                     break;
                 case 3:
@@ -407,7 +407,7 @@ public class ClientManager {
                         rm.commit(tId);
                         lEndTime = System.nanoTime();
                         respTime = lEndTime - lStartTime;
-                        avRTime += respTime;
+                        avRTime += (respTime / 1000);
                     }
                     break;
             }
