@@ -75,6 +75,7 @@ public class MWResourceManager implements ResourceManager {
 
     // Writes a data item
     public void writeData(int id, String key, RMItem value) {
+        Trace.info("MW-RM::writeData(" + id + ", " + key + ") called");
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
@@ -122,10 +123,10 @@ public class MWResourceManager implements ResourceManager {
 //    }
 
     public RMItem getItem(int id, String key) throws RemoteException {
-        Trace.info("RM::getItem(" + id + ", " + key + ") called");
+        Trace.info("MW-RM::getItem(" + id + ", " + key + ") called");
         RMItem curObj = (RMItem) readData(id, key);
         if (curObj == null) {
-            Trace.info("RM::getItem(" + id + ", " + key + ") returns NULL item");
+            Trace.info("MW-RM::getItem(" + id + ", " + key + ") returns NULL item");
         }
         return curObj;
     }

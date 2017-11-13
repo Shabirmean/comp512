@@ -129,6 +129,7 @@ public class ResourceManagerImpl implements ResourceManager {
 
     // Writes a data item
     public void writeData(int id, String key, RMItem value) {
+        Trace.info("RM::writeData(" + id + ", " + key + ") called");
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
