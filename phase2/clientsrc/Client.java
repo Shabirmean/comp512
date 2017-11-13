@@ -564,7 +564,6 @@ public class Client {
 //                        String exMsg = e.getMessage();
 //                        System.out.println(exMsg.substring(exMsg.lastIndexOf(":")));
 //                        System.out.println(e.getMessage());
-                        e.printStackTrace();
                     }
                     break;
 

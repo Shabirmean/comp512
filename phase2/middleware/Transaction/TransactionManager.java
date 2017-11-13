@@ -1,8 +1,7 @@
 package Transaction;
 
-import LockManager.LockManager;
 import LockManager.DeadlockException;
-import MiddlewareImpl.MiddlewareManagerImpl;
+import LockManager.LockManager;
 import ResImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;

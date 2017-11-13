@@ -41,22 +41,22 @@ public class MiddlewareManagerImpl implements Middleware {
         int hotelport = 1101;
         int flightport = 1102;
 
-//        if (args.length == 1) {
-//            server = server + ":" + args[0];
+        if (args.length == 1) {
+            server = server + ":" + args[0];
+            port = Integer.parseInt(args[0]);
+        } else if (args.length == 4) {
+            server = server + ":" + args[0];
 //            port = Integer.parseInt(args[0]);
-//        } else if (args.length == 4) {
-//            server = server + ":" + args[0];
-//            port = Integer.parseInt(args[0]);
-//            carserver = args[1];
-//            hotelserver = args[2];
-//            flightserver = args[3];
-//        }
+            carserver = args[0];
+            hotelserver = args[1];
+            flightserver = args[2];
+        }
 
-        server = server + ":" + args[0];
-        port = Integer.parseInt(args[0]);
-        carserver = "localhost";
-        hotelserver = "localhost";
-        flightserver = "localhost";
+//        server = server + ":" + args[0];
+//        port = Integer.parseInt(args[0]);
+//        carserver = "localhost";
+//        hotelserver = "localhost";
+//        flightserver = "localhost";
 
         // else if (args.length != 0 &&  args.length != 1) {
         //     System.err.println ("Wrong usage");

@@ -40,8 +40,4 @@ public enum RequestType {
         return this.reqCode;
     }
 
-//    public class MessageStatus{
-//        public static final int RM_SERVER_FAIL_STATUS = 0;
-//        public static final int RM_SERVER_SUCCESS_STATUS = 1;
-//    }
 }
