@@ -125,6 +125,8 @@ public class ClientManager {
         System.out.println("#### Average Time: " + avRTime);
         long avgBuffer = avRTime / 10;
         System.out.println("#### Average Buffer: " + avgBuffer);
+        avgBuffer += avRTime;
+        System.out.println("#### Average Buffer + Time: " + avgBuffer);
 
         int checkSec = 1;
         long secToMicro = 1000000;
