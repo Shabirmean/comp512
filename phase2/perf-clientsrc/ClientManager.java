@@ -123,15 +123,17 @@ public class ClientManager {
 
         avRTime = getAverageResponseTime(rmType);
         System.out.println("#### Average Time: " + avRTime);
+
         long avgBuffer = avRTime / 10;
         System.out.println("#### Average Buffer: " + avgBuffer);
+
         avgBuffer += avRTime;
         System.out.println("#### Average Buffer + Time: " + avgBuffer);
 
         int checkSec = 1;
         long secToMicro = 1000000;
         int numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
-        System.out.println("Num of Transactions: " + numOfTransactions);
+        System.out.println("#### Num of Transactions: " + numOfTransactions);
 
         while (numOfTransactions <= 0) {
             numOfTransactions = (int) ((checkSec * secToMicro) / avgBuffer);
@@ -140,23 +142,17 @@ public class ClientManager {
 
         long balanceSec = (checkSec * secToMicro) - (numOfTransactions * avgBuffer);
         long balancePerT = (int) (balanceSec / numOfTransactions);
-
-        System.out.println("balanceSec: " + balanceSec);
-        System.out.println("balancePerT: " + balancePerT);
+        System.out.println("#### balanceSec: " + balanceSec);
+        System.out.println("#### balancePerT: " + balancePerT);
 
         long timePerT = avgBuffer + balancePerT;
-        System.out.println("#### Time Per T: " + timePerT);
-        System.out.println("#### No of T: " + numOfTransactions);
-
-        System.exit(0);
-
+        System.out.println("#### Time Per Transaction: " + timePerT);
+        System.out.println("#### No of Transaction: " + numOfTransactions + " per " + checkSec + "-seconds");
 
         try {
             switch (rmType) {
                 case 0:
                     //get average response time first
-
-
                     for (int start = 0; start < loopCount; start++) {
                         int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
@@ -169,7 +165,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Car: " + location + " returned count " + count);
+//                            System.out.println("Car: " + location + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -177,11 +173,17 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Car: " + location + " returned price " + count);
+//                            System.out.println("Car: " + location + " returned price " + count);
                         }
 //                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
-                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
-                        System.out.println("");
+                        long respTInMS = respTime / 1000;
+//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
+//                        System.out.println("");
+                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        long sleepTime = timePerT - respTInMS;
+                        if (sleepTime > 0) {
+                            Thread.sleep(sleepTime);
+                        }
                     }
                     break;
                 case 1:
@@ -197,7 +199,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Hotel: " + location + " returned count " + count);
+//                            System.out.println("Hotel: " + location + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -205,11 +207,17 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Hotel: " + location + " returned price " + count);
+//                            System.out.println("Hotel: " + location + " returned price " + count);
                         }
 //                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
-                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
-                        System.out.println("");
+                        long respTInMS = respTime / 1000;
+//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
+//                        System.out.println("");
+                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        long sleepTime = timePerT - respTInMS;
+                        if (sleepTime > 0) {
+                            Thread.sleep(sleepTime);
+                        }
                     }
                     break;
                 case 2:
@@ -226,7 +234,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Flight: " + locHashCode + " returned count " + count);
+//                            System.out.println("Flight: " + locHashCode + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -234,11 +242,17 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                            System.out.println("Flight: " + locHashCode + " returned price " + count);
+//                            System.out.println("Flight: " + locHashCode + " returned price " + count);
                         }
 //                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
-                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
-                        System.out.println("");
+                        long respTInMS = respTime / 1000;
+//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
+//                        System.out.println("");
+                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        long sleepTime = timePerT - respTInMS;
+                        if (sleepTime > 0) {
+                            Thread.sleep(sleepTime);
+                        }
                     }
                     break;
                 case 3:
@@ -254,10 +268,16 @@ public class ClientManager {
                         lEndTime = System.nanoTime();
                         respTime = lEndTime - lStartTime;
 
-                        System.out.println("Customer: " + locHashCode + " info " + info);
+//                        System.out.println("Customer: " + locHashCode + " info " + info);
 //                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
-                        System.out.println("Elapsed time in microseconds: " + respTime / 1000);
-                        System.out.println("");
+                        long respTInMS = respTime / 1000;
+//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
+//                        System.out.println("");
+                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        long sleepTime = timePerT - respTInMS;
+                        if (sleepTime > 0) {
+                            Thread.sleep(sleepTime);
+                        }
                     }
                     break;
             }
