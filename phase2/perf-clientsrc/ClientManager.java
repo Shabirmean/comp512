@@ -1308,10 +1308,6 @@ public class ClientManager {
         int locSize = locations.size();
         long lStartTime, lEndTime, respTime;
         long secToMicro = 1000000;
-
-        long microPerT = secToMicro / load;
-        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
-
         long respTInMS = 0;
 
         try {
