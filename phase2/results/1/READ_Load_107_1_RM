@@ -1,0 +1,225 @@
+Successful
+Connected to Middleware
+Randomly chosen RM for test: FLIGHT
+Adding some random values to be conduct write operations.
+Added Flight: -318709626 - #84 - $669
+Added Flight: -1137222031 - #65 - $113
+Added Flight: 504204893 - #54 - $533
+Added Flight: -973067621 - #68 - $514
+Added Flight: 1012229402 - #55 - $821
+Added Flight: 949541931 - #57 - $433
+Added Flight: 101815405 - #9 - $298
+Added Flight: -747385589 - #37 - $458
+Added Flight: 464059829 - #73 - $330
+Added Flight: -1097131496 - #20 - $302
+Added Flight: -887780828 - #15 - $864
+Added Flight: -820070772 - #40 - $406
+Added Flight: 1846315375 - #16 - $400
+Added Flight: -124210254 - #1 - $285
+Added Flight: 95468108 - #55 - $962
+Added Flight: 579843043 - #44 - $301
+Elapsed time in microseconds: 5549
+Elapsed time in microseconds: 5179
+Elapsed time in microseconds: 5824
+Elapsed time in microseconds: 5796
+Elapsed time in microseconds: 5732
+Elapsed time in microseconds: 7849
+Elapsed time in microseconds: 6990
+Elapsed time in microseconds: 6960
+Elapsed time in microseconds: 6768
+Elapsed time in microseconds: 8830
+Elapsed time in microseconds: 6881
+Elapsed time in microseconds: 5809
+Elapsed time in microseconds: 5849
+Elapsed time in microseconds: 5837
+Elapsed time in microseconds: 9966
+Elapsed time in microseconds: 6224
+Elapsed time in microseconds: 7000
+Elapsed time in microseconds: 6489
+Elapsed time in microseconds: 6792
+Elapsed time in microseconds: 7014
+Elapsed time in microseconds: 6918
+Elapsed time in microseconds: 9981
+Elapsed time in microseconds: 6426
+Elapsed time in microseconds: 8485
+Elapsed time in microseconds: 5164
+Elapsed time in microseconds: 5143
+Elapsed time in microseconds: 5370
+Elapsed time in microseconds: 6725
+Elapsed time in microseconds: 5457
+Elapsed time in microseconds: 5244
+Elapsed time in microseconds: 5050
+Elapsed time in microseconds: 5224
+Elapsed time in microseconds: 5102
+Elapsed time in microseconds: 5497
+Elapsed time in microseconds: 5431
+Elapsed time in microseconds: 5576
+Elapsed time in microseconds: 6054
+Elapsed time in microseconds: 5203
+Elapsed time in microseconds: 7144
+Elapsed time in microseconds: 5617
+Elapsed time in microseconds: 5260
+Elapsed time in microseconds: 5098
+Elapsed time in microseconds: 5360
+Elapsed time in microseconds: 5985
+Elapsed time in microseconds: 6299
+Elapsed time in microseconds: 6080
+Elapsed time in microseconds: 5254
+Elapsed time in microseconds: 5476
+Elapsed time in microseconds: 5870
+Elapsed time in microseconds: 7219
+Elapsed time in microseconds: 7553
+Elapsed time in microseconds: 7295
+Elapsed time in microseconds: 5433
+Elapsed time in microseconds: 5336
+Elapsed time in microseconds: 7435
+Elapsed time in microseconds: 5542
+Elapsed time in microseconds: 5699
+Elapsed time in microseconds: 11248
+Elapsed time in microseconds: 5925
+Elapsed time in microseconds: 5986
+Elapsed time in microseconds: 9710
+Elapsed time in microseconds: 5448
+Elapsed time in microseconds: 5474
+Elapsed time in microseconds: 5258
+Elapsed time in microseconds: 6528
+Elapsed time in microseconds: 5561
+Elapsed time in microseconds: 6357
+Elapsed time in microseconds: 6149
+Elapsed time in microseconds: 6020
+Elapsed time in microseconds: 8397
+Elapsed time in microseconds: 9054
+Elapsed time in microseconds: 6417
+Elapsed time in microseconds: 6084
+Elapsed time in microseconds: 9419
+Elapsed time in microseconds: 7173
+Elapsed time in microseconds: 6028
+Elapsed time in microseconds: 6907
+Elapsed time in microseconds: 7866
+Elapsed time in microseconds: 8302
+Elapsed time in microseconds: 6681
+Elapsed time in microseconds: 6804
+Elapsed time in microseconds: 8414
+Elapsed time in microseconds: 6498
+Elapsed time in microseconds: 6730
+Elapsed time in microseconds: 6303
+Elapsed time in microseconds: 7221
+Elapsed time in microseconds: 5781
+Elapsed time in microseconds: 7394
+Elapsed time in microseconds: 6970
+Elapsed time in microseconds: 6351
+Elapsed time in microseconds: 10583
+Elapsed time in microseconds: 5710
+Elapsed time in microseconds: 5657
+Elapsed time in microseconds: 5282
+Elapsed time in microseconds: 5451
+Elapsed time in microseconds: 7569
+Elapsed time in microseconds: 5363
+Elapsed time in microseconds: 6681
+Elapsed time in microseconds: 6759
+Elapsed time in microseconds: 5878
+#### Average response time on 100 loops is 6517 micro-secs
+#### Average Time: 6517
+Load (# of Transaction per second: ): #### Time Per Transaction (micro-seconds): 9345
+0,5580
+1,8806
+2,6656
+3,6445
+4,6188
+5,7513
+6,6326
+7,6111
+8,6745
+9,6666
+10,6410
+11,10131
+12,7153
+13,7319
+14,9241
+15,5529
+16,7089
+17,13218
+18,7027
+19,6528
+20,7721
+21,7082
+22,6894
+23,7103
+24,6781
+25,7791
+26,6513
+27,9503
+28,7460
+29,6412
+30,6735
+31,6373
+32,6704
+33,6184
+34,6344
+35,5986
+36,7149
+37,7487
+38,6166
+39,6346
+40,7856
+41,6700
+42,6607
+43,7035
+44,6168
+45,6106
+46,6200
+47,6674
+48,7177
+49,7840
+50,7420
+51,9575
+52,6321
+53,7055
+54,6549
+55,9887
+56,7520
+57,7809
+58,6149
+59,7202
+60,6273
+61,7615
+62,7889
+63,6787
+64,7920
+65,6064
+66,6843
+67,7084
+68,7101
+69,6119
+70,5875
+71,6249
+72,5968
+73,7471
+74,7805
+75,6322
+76,7170
+77,7246
+78,9814
+79,8678
+80,7193
+81,6246
+82,7488
+83,6273
+84,8287
+85,6242
+86,7890
+87,8162
+88,5616
+89,5877
+90,6292
+91,14490
+92,5629
+93,7847
+94,7627
+95,7127
+96,6631
+97,6430
+98,6431
+99,6218
+Average RT for load-107 on 100-loops is 7155 micro-secs
+Loops ran: 100

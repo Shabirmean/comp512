@@ -1,0 +1,22 @@
+Successful
+Connected to Middleware
+Randomly chosen RM for test: CUSTOMER
+Adding some random values to be conduct write operations.
+Elapsed time in microseconds: 8343
+Elapsed time in microseconds: 4638
+Elapsed time in microseconds: 2874
+Elapsed time in microseconds: 2764
+Elapsed time in microseconds: 2956
+Elapsed time in microseconds: 3523
+Elapsed time in microseconds: 2806
+Elapsed time in microseconds: 2673
+Elapsed time in microseconds: 2739
+Elapsed time in microseconds: 2711
+Elapsed time in microseconds: 5872
+#### Average response time on 100 loops is 418 micro-secs
+#### Average Time: 418
+Load (# of Transaction per second: ): #### Time Per Transaction (micro-seconds): 8928
+0,7231
+1,5452
+Average RT for load-112 on 100-loops is 126 micro-secs
+Loops ran: 2

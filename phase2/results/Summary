@@ -1,0 +1,130 @@
+1 RM Read (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,7137, 100
+4,7466, 100
+8,13347, 100
+16,6743, 100
+32,6740, 100
+64,3557, 100
+96,6770, 100
+104,9735, 100
+106,7469, 100
+107,7155, 100
+128,6178, 100
+256,5666, 100
+512,7117, 100
+
+
+
+Multiple RM Read (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,5948, 100
+4,5879, 100
+8,5618, 100
+16,5881, 100
+32,6172, 100
+64,5668, 100
+96,5901, 100
+104,5736, 100
+106,5795, 100
+107,5810, 100
+128,5296, 100
+256,4913, 100
+512,5056, 100
+
+
+
+1 RM WRITE (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,9393, 100
+4,9382, 100
+8,9026, 100
+16,9598, 81
+32,9404, 100
+64,8894, 100
+96,8389, 15
+104,9098, 69
+106,8296, 89
+107,8000, 56
+128,7518, 61
+256,7309, 100
+512,7309, 73
+
+
+
+Multiple RM WRITE (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,14473, 100
+4,16978, 100
+8,10226, 100
+16,13203, 100
+32,12164, 100
+64,9179, 100
+96,18521, 100
+104,15984, 100
+106,16379, 100
+107,9322, 100
+128,17841, 100
+256,16693, 100
+512,7108, 100
+
+
+1 RM RED & WRITE (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,19351, 28
+4,17669, 100
+8,21343, 75
+16,17495, 32
+32,20081, 85
+64,19942, 84
+96,16388, 65
+104,16546, 57
+106,17670, 35
+107,20177, 100
+128,15733, 48
+256,17256, 39
+512,16262, 45
+
+
+
+Multiple RM RED & WRITE (micro-secs)
+---------
+Load, RTT, Iterations
+
+2,30514, 29
+4,71451, 5
+8,62079, 8
+16,50642, 20
+32,25619, 7
+64,90717, 3
+96,16610, 28
+104,23874, 25
+106,62504, 18
+107,71254, 12
+128,43372, 15
+256,31609, 32
+512,105662, 12
+
+
+
+Conclusions:
+	The RTT reduces significantly comparing requests to a single RM against multiple RMs
+		Ex: RTT in single RM-Read is higher than multiple RM-Read
+			RTT in single RM-Write is higher than multiple RM-Write
+
+	In the case of a mix of Read & Write involved transactions the client seems to come to a exhausted scenario soon where the middleware is able to handle the requests. Hence, they seems to crash sooner.
+
+	Comparing Read & Write mixed transaction in 1-RM and Multiple-RM, the 1-RM seems to perform better.
+
+
+

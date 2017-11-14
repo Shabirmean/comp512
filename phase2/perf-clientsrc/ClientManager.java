@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -83,6 +84,7 @@ public class ClientManager {
 
 
         if (distributed) {
+            ConcurrentHashMap<Integer, Long> clientAverages = new ConcurrentHashMap<>();
 
             for (int rmO = 0; rmO < 4; rmO++) {
                 addRandomResources(rmO);
@@ -97,39 +99,47 @@ public class ClientManager {
             int clientCounter = 0;
             long millisPerT = 1000 / load;
             int interval = clients / load;
-            long iterInterval = interval * 1000;
-//            long intervalCount = 0;
+            long iterIntervalMS = interval * 1000 * 1000;
             long allIters = 0;
 
-            for (int times = 0; times < loopCount; times++) {
-                for (Timer timer : clientTimers) {
-                    long delay = (clientCounter * 1000) / millisPerT;
-                    int finalClientCounter = clientCounter;
+            for (Timer timer : clientTimers) {
+//                long delay = (clientCounter * 1000) / millisPerT;
+                long delay = ((interval * 1000) / clients) * clientCounter;
+                int finalClientCounter = clientCounter;
 //                timer.scheduleAtFixedRate(new TimerTask() {
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            long timeNow = randomReadAndWriteFromMultipleRM(finalClientCounter, false);
-                            synchronized (Lock) {
-                                averageTime += timeNow;
-                            }
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        long clientAverage = 0;
+                        for (int tCount = 0; tCount < loopCount; tCount++) {
+                                long timeTaken = randomReadAndWriteFromMultipleRM();
+                                long sleepTime = iterIntervalMS - timeTaken;
+                                if (sleepTime > 0) {
+                                    waitBeforeNextT(sleepTime);
+                                }
+                                clientAverage += timeTaken;
                         }
-//                }, delay, iterInterval);
-                    }, delay);
-                    clientCounter++;
-                }
-                averageTime /= ((clientCounter + 1) / (times + 1));
-                allIters += averageTime;
+                        clientAverage /= loopCount;
+                        System.out.println("Client-" + finalClientCounter + " had average of " +
+                                clientAverage + "micro-secs");
+                        clientAverages.put(finalClientCounter, clientAverage);
+                    }
+                }, delay);
+                clientCounter++;
             }
 
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+            while(clientAverages.size() != clients){
+
             }
 
-            System.out.println("Total Average (micro-seconds): " + (allIters / loopCount));
-
+            long totalAverage = 0;
+            for (Long cavrg : clientAverages.values()){
+                totalAverage += cavrg;
+            }
+            totalAverage /= clients;
+            System.out.println("Total Average (micro-seconds): " + totalAverage + " for " + clients +
+                    " at load " + load + " per second");
         } else {
             switch (testType) {
                 case 1:
@@ -1294,7 +1304,7 @@ public class ClientManager {
     }
 
 
-    static long randomReadAndWriteFromMultipleRM(int clientNum, boolean mean) {
+    static long randomReadAndWriteFromMultipleRM() {
         int locSize = locations.size();
         long lStartTime, lEndTime, respTime;
         long secToMicro = 1000000;
@@ -1302,11 +1312,9 @@ public class ClientManager {
         long microPerT = secToMicro / load;
         System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
 
-        long averageT4Load = 0;
-        int start = 0;
+        long respTInMS = 0;
 
         try {
-//            for (start = 0; start < loopCount; start++) {
             int noOfOps = ThreadLocalRandom.current().nextInt(0, 10);
             List<Boolean> opVector = getOpVector(noOfOps);
 
@@ -1467,23 +1475,14 @@ public class ClientManager {
             rm.commit(tId);
             lEndTime = System.nanoTime();
             respTime = lEndTime - lStartTime;
+            respTInMS = respTime / 1000;
 
-            long respTInMS = respTime / 1000;
-            averageT4Load += respTInMS;
-//                System.out.println(start + "," + respTInMS);  // in microseconds
-//            long sleepTime = microPerT - respTInMS;
-//            if (sleepTime > 0) {
-//                waitBeforeNextT(sleepTime);
-//            }
-//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-//        averageT4Load /= start;
-        System.out.println(clientNum + " - average RT for load-" + load + " is " + averageT4Load + " micro-secs");
-//        System.out.println("Loops ran: " + start);
-        return averageT4Load;
+//        System.out.println(clientNum + " - average RT for load-" + load + " is " + respTInMS + " micro-secs");
+        return respTInMS;
     }
 
     private static long getAverageResponseTime(int rmType) {
