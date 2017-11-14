@@ -19,6 +19,12 @@ public class ClientManager {
     private static int testType;
     private static int loopCount;
     private static int load;
+    private static boolean distributed = false;
+    private static int clients;
+
+    private static long averageTime = 0;
+    private static final Object Lock = new Object();
+
 
     public static void main(String[] args) {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -48,7 +54,10 @@ public class ClientManager {
             load = Integer.parseInt(args[3]);
 //            System.out.println("Usage: java Client [rmihost [rmiport]]");
 //            System.exit(1);
+            distributed = Boolean.parseBoolean(args[4]);
+            clients = Integer.parseInt(args[5]);
         }
+
 
         try {
             Registry registry = LocateRegistry.getRegistry(server, port);
@@ -72,58 +81,106 @@ public class ClientManager {
         generateLocationList();
         int rmType;
 
-        switch (testType) {
-            case 1:
-                rmType = ThreadLocalRandom.current().nextInt(0, 4);
-                System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
-                System.out.println("Adding some random values to be conduct read operations.");
-                addRandomResources(rmType);
-                randomReadFromRM(rmType, loopCount);
-                break;
-            case 2:
-                System.out.println("Adding some random values to be conduct read operations.");
-                for (int rmO = 0; rmO < 4; rmO++) {
-                    addRandomResources(rmO);
-                }
-                randomReadFromMultipleRM(loopCount);
-                break;
-            case 3:
-                // Customer Ommitted
-                rmType = ThreadLocalRandom.current().nextInt(0, 3);
-                System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
-                for (int rmO = 0; rmO < 4; rmO++) {
-                    addRandomResources(rmO);
-                }
-                randomWriteToRM(rmType, loopCount);
-                break;
-            case 4:
-                for (int rmO = 0; rmO < 4; rmO++) {
-                    addRandomResources(rmO);
-                }
-                randomWriteToMultipleRMs(loopCount);
-                break;
-            case 5:
-                rmType = ThreadLocalRandom.current().nextInt(0, 3);
-                System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
-                for (int rmO = 0; rmO < 4; rmO++) {
-                    addRandomResources(rmO);
-                }
-                randomReadAndWriteFromRM(rmType, loopCount);
-                break;
-            case 6:
-                for (int rmO = 0; rmO < 4; rmO++) {
-                    addRandomResources(rmO);
-                }
-                randomReadAndWriteFromMultipleRM(loopCount);
-                break;
-            case 0:
-                break;
-            default:
-                System.out.println("Invalid test type.");
-                System.exit(0);
-                break;
-        }
 
+        if (distributed) {
+
+            for (int rmO = 0; rmO < 4; rmO++) {
+                addRandomResources(rmO);
+            }
+
+            ArrayList<Timer> clientTimers = new ArrayList<Timer>();
+            for (int count = 0; count < clients; count++) {
+                Timer transactionTimer = new Timer();
+                clientTimers.add(transactionTimer);
+            }
+
+            int clientCounter = 0;
+            long millisPerT = 1000 / load;
+            int interval = clients / load;
+            long iterInterval = interval * 1000;
+//            long intervalCount = 0;
+            long allIters = 0;
+            
+            for (int times = 0; times < loopCount; times++) {
+                for (Timer timer : clientTimers) {
+                    long delay = (clientCounter * 1000) / millisPerT;
+                    int finalClientCounter = clientCounter;
+//                timer.scheduleAtFixedRate(new TimerTask() {
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            long timeNow = randomReadAndWriteFromMultipleRM(finalClientCounter, false);
+                            synchronized (Lock) {
+                                averageTime += timeNow;
+                            }
+                        }
+//                }, delay, iterInterval);
+                    }, delay);
+                    clientCounter++;
+                }
+                averageTime /= ((clientCounter + 1) / (times + 1));
+                allIters += averageTime;
+            }
+
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("Total Average (micro-seconds): " + (allIters / loopCount));
+
+        } else {
+            switch (testType) {
+                case 1:
+                    rmType = ThreadLocalRandom.current().nextInt(0, 4);
+                    System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
+                    System.out.println("Adding some random values to be conduct read operations.");
+                    addRandomResources(rmType);
+                    randomReadFromRM(rmType, loopCount);
+                    break;
+                case 2:
+                    System.out.println("Adding some random values to be conduct read operations.");
+                    for (int rmO = 0; rmO < 4; rmO++) {
+                        addRandomResources(rmO);
+                    }
+                    randomReadFromMultipleRM(loopCount);
+                    break;
+                case 3:
+                    // Customer Ommitted
+                    rmType = ThreadLocalRandom.current().nextInt(0, 3);
+                    System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
+                    for (int rmO = 0; rmO < 4; rmO++) {
+                        addRandomResources(rmO);
+                    }
+                    randomWriteToRM(rmType, loopCount);
+                    break;
+                case 4:
+                    for (int rmO = 0; rmO < 4; rmO++) {
+                        addRandomResources(rmO);
+                    }
+                    randomWriteToMultipleRMs(loopCount);
+                    break;
+                case 5:
+                    rmType = ThreadLocalRandom.current().nextInt(0, 3);
+                    System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
+                    for (int rmO = 0; rmO < 4; rmO++) {
+                        addRandomResources(rmO);
+                    }
+                    randomReadAndWriteFromRM(rmType, loopCount);
+                    break;
+                case 6:
+                    for (int rmO = 0; rmO < 4; rmO++) {
+                        addRandomResources(rmO);
+                    }
+                    randomReadAndWriteFromMultipleRM(loopCount);
+                    break;
+                default:
+                    System.out.println("Invalid test type.");
+                    System.exit(0);
+                    break;
+            }
+        }
 
     }
 
@@ -1236,6 +1293,198 @@ public class ClientManager {
         }
     }
 
+
+    static long randomReadAndWriteFromMultipleRM(int clientNum, boolean mean) {
+        int locSize = locations.size();
+        long lStartTime, lEndTime, respTime;
+        long secToMicro = 1000000;
+
+        long microPerT = secToMicro / load;
+        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
+
+        long averageT4Load = 0;
+        int start = 0;
+
+        try {
+//            for (start = 0; start < loopCount; start++) {
+            int noOfOps = ThreadLocalRandom.current().nextInt(0, 10);
+            List<Boolean> opVector = getOpVector(noOfOps);
+
+            lStartTime = System.nanoTime();
+            int tId = rm.start();
+            for (boolean opType : opVector) {
+                int rmType = ThreadLocalRandom.current().nextInt(0, 4);
+                switch (rmType) {
+                    case 0: {
+                        if (opType) {
+                            int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                            String location = locations.get(readLocIndex);
+
+                            if (priceOCount == 0) {
+                                rm.queryCars(tId, location);
+                            } else {
+                                rm.queryCarsPrice(tId, location);
+                            }
+                        } else {
+                            int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            String location = rgen.nextString();
+
+                            if (add_delete_reserve == 0) {
+                                locations.add(location);
+                                rm.addCars(tId, location, count, price);
+                            } else if (add_delete_reserve == 1) {
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(readLocIndex);
+                                rm.deleteCars(tId, location);
+                                locations.remove(location);
+                            } else {
+                                int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(resLocationIn);
+                                String customer = locations.get(cusLocationIn);
+                                rm.reserveCar(tId, customer.hashCode(), location);
+                            }
+                        }
+                        break;
+                    }
+
+                    case 1: {
+                        if (opType) {
+                            int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                            String location = locations.get(readLocIndex);
+
+                            if (priceOCount == 0) {
+                                rm.queryRooms(tId, location);
+                            } else {
+                                rm.queryRoomsPrice(tId, location);
+                            }
+                        } else {
+                            int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            String location = rgen.nextString();
+
+                            if (add_delete_reserve == 0) {
+                                locations.add(location);
+                                rm.addRooms(tId, location, count, price);
+                            } else if (add_delete_reserve == 1) {
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(readLocIndex);
+                                rm.deleteRooms(tId, location);
+                                locations.remove(location);
+                            } else {
+                                int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(resLocationIn);
+                                String customer = locations.get(cusLocationIn);
+                                rm.reserveRoom(tId, customer.hashCode(), location);
+                            }
+                        }
+                        break;
+                    }
+
+                    case 2: {
+                        if (opType) {
+                            int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                            String location = locations.get(readLocIndex);
+
+                            if (priceOCount == 0) {
+                                rm.queryFlight(tId, location.hashCode());
+                            } else {
+                                rm.queryFlightPrice(tId, location.hashCode());
+                            }
+                        } else {
+                            int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            String location = rgen.nextString();
+
+                            if (add_delete_reserve == 0) {
+                                locations.add(location);
+                                rm.addFlight(tId, location.hashCode(), count, price);
+                            } else if (add_delete_reserve == 1) {
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(readLocIndex);
+                                rm.deleteFlight(tId, location.hashCode());
+                                locations.remove(location);
+                            } else {
+                                int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(resLocationIn);
+                                String customer = locations.get(cusLocationIn);
+                                rm.reserveFlight(tId, customer.hashCode(), location.hashCode());
+                            }
+                        }
+                        break;
+                    }
+
+                    case 3: {
+                        if (opType) {
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                            String location = locations.get(readLocIndex);
+                            rm.queryCustomerInfo(tId, location.hashCode());
+                        } else {
+                            int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                            String location = rgen.nextString();
+
+                            if (add_delete_reserve == 0) {
+                                locations.add(location);
+                                rm.newCustomer(tId, location.hashCode());
+                            } else if (add_delete_reserve == 1) {
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(readLocIndex);
+                                rm.deleteCustomer(tId, location.hashCode());
+                                locations.remove(location);
+                            } else {
+                                int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                location = locations.get(resLocationIn);
+                                String customer = locations.get(cusLocationIn);
+
+                                int twoPercent = (int) (0.1 * locations.size());
+                                int randomFlightC = ThreadLocalRandom.current().nextInt(0, twoPercent);
+                                Vector<String> flightNumbers = new Vector<>();
+                                for (int i = 0; i < randomFlightC; i++) {
+                                    int randLoc = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    String flNUm = Integer.toString(locations.get(randLoc).hashCode());
+                                    flightNumbers.addElement(flNUm);
+                                }
+                                boolean boolCar = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+                                boolean boolRoom = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+                                rm.itinerary(tId, customer.hashCode(), flightNumbers, location, boolCar, boolRoom);
+                            }
+                        }
+                        break;
+                    }
+                }
+
+            }
+            rm.commit(tId);
+            lEndTime = System.nanoTime();
+            respTime = lEndTime - lStartTime;
+
+            long respTInMS = respTime / 1000;
+            averageT4Load += respTInMS;
+//                System.out.println(start + "," + respTInMS);  // in microseconds
+//            long sleepTime = microPerT - respTInMS;
+//            if (sleepTime > 0) {
+//                waitBeforeNextT(sleepTime);
+//            }
+//            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+//        averageT4Load /= start;
+        System.out.println(clientNum + " - average RT for load-" + load + " is " + averageT4Load + " micro-secs");
+//        System.out.println("Loops ran: " + start);
+        return averageT4Load;
+    }
 
     private static long getAverageResponseTime(int rmType) {
         int locSize = locations.size();

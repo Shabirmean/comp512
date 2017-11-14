@@ -11,6 +11,8 @@ project=$1
 testType=$2
 loopCount=$3
 load=$4
+distrib=$5
+clients=$6
 
 
 # "[1] - Read on one RM\n" +
@@ -97,5 +99,5 @@ if [ "$project" = "p" ]; then
     		# port="22000"
 	# fi
 
-	java -Djava.security.policy=java.policy ClientManager cs-24.cs.mcgill.ca $testType $loopCount $load
+	java -Djava.security.policy=java.policy ClientManager cs-24.cs.mcgill.ca $testType $loopCount $load $distrib $clients
 fi
