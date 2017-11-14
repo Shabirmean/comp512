@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ClientManager {
     private static Middleware rm = null;
     private static ArrayList<String> locations = new ArrayList<>();
+    private static RandomString rgen = new RandomString(8, ThreadLocalRandom.current());
     //    static Scanner scanner = new Scanner(System.in);
     private static int testType;
     private static int loopCount;
@@ -71,10 +72,7 @@ public class ClientManager {
         }
 
         generateLocationList();
-//        listTransactionTypes();
-//        int testType = scanner.nextInt();
         int rmType;
-//        int loopCount;
 
         switch (testType) {
             case 1:
@@ -92,6 +90,13 @@ public class ClientManager {
                 randomReadFromMultipleRM(loopCount);
                 break;
             case 3:
+                // Customer Ommitted
+                rmType = ThreadLocalRandom.current().nextInt(0, 3);
+                System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
+                for (int rmO = 0; rmO < 4; rmO++) {
+                    addRandomResources(rmO);
+                }
+                randomWriteToRM(rmType, loopCount);
                 break;
             case 4:
                 break;
@@ -370,6 +375,226 @@ public class ClientManager {
         System.out.println("Loops ran: " + start);
     }
 
+
+
+
+    static void randomWriteToRM(int rmType, int loopCount) {
+//        ArrayList<String> randomStuff = new ArrayList<>();
+
+        long lStartTime, lEndTime, respTime = 0;
+        long secToMicro = 1000000;
+        long microPerT = secToMicro / load;
+        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
+
+        long averageT4Load = 0;
+        int start = 0;
+        try {
+            switch (rmType) {
+                case 0:
+                    //get average response time first
+                    for (start = 0; start < loopCount; start++) {
+                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                        int count = ThreadLocalRandom.current().nextInt(1, 100);
+                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                        String location = rgen.nextString();
+
+                        if (add_delete_reserve == 0) {
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addCars(tId, location, count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1){
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteCars(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveCar(tId, customer.hashCode(), location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+
+                        long respTInMS = respTime / 1000;
+                        averageT4Load += respTInMS;
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
+                        if (sleepTime > 0) {
+                            waitBeforeNextT(sleepTime);
+                        }
+                    }
+                    break;
+                case 1:
+                    for (start = 0; start < loopCount; start++) {
+                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                        int count = ThreadLocalRandom.current().nextInt(1, 100);
+                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                        String location = rgen.nextString();
+
+                        if (add_delete_reserve == 0) {
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addRooms(tId, location, count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1){
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteRooms(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveRoom(tId, customer.hashCode(), location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+
+                        long respTInMS = respTime / 1000;
+                        averageT4Load += respTInMS;
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
+                        if (sleepTime > 0) {
+                            waitBeforeNextT(sleepTime);
+                        }
+                    }
+                    break;
+                case 2:
+                    for (start = 0; start < loopCount; start++) {
+                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                        int count = ThreadLocalRandom.current().nextInt(1, 100);
+                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                        String location = rgen.nextString();
+
+                        if (add_delete_reserve == 0) {
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addFlight(tId, location.hashCode(), count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1){
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteFlight(tId, location.hashCode());
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveFlight(tId, customer.hashCode(), location.hashCode());
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+
+                        long respTInMS = respTime / 1000;
+                        averageT4Load += respTInMS;
+                        System.out.println(start + "," + respTInMS);  // in microseconds
+                        long sleepTime = microPerT - respTInMS;
+                        if (sleepTime > 0) {
+                            waitBeforeNextT(sleepTime);
+                        }
+                    }
+                    break;
+//                case 3:
+//                    for (start = 0; start < loopCount; start++) {
+//                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+//                        int count = ThreadLocalRandom.current().nextInt(1, 100);
+//                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
+//                        String location = rgen.nextString();
+//
+//                        if (add_delete_reserve == 0) {
+//                            locations.add(location);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.addCars(tId, location, count, price);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                        } else if (add_delete_reserve == 1){
+//                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            location = locations.get(readLocIndex);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.deleteCars(tId, location);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                            locations.remove(location);
+//                        } else {
+//                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            location = locations.get(resLocationIn);
+//                            String customer = locations.get(cusLocationIn);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.reserveCar(tId, customer.hashCode(), location);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                        }
+//
+//                        long respTInMS = respTime / 1000;
+//                        averageT4Load += respTInMS;
+//                        System.out.println(start + "," + respTInMS);  // in microseconds
+//                        long sleepTime = microPerT - respTInMS;
+//                        if (sleepTime > 0) {
+//                            waitBeforeNextT(sleepTime);
+//                        }
+//                    }
+//                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        averageT4Load /= loopCount;
+        System.out.println(
+                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
+        System.out.println("Loops ran: " + start);
+    }
+
+
+
+
+
+
     static void waitBeforeNextT(long interval) {
 //        final long INTERVAL = 100;
         long start = System.nanoTime();
@@ -545,22 +770,26 @@ public class ClientManager {
 
 
     private static void generateLocationList() {
-        locations.add("montreal");
-        locations.add("toronto");
-        locations.add("vancouver");
-        locations.add("sanfransico");
-        locations.add("paloalto");
-        locations.add("colombo");
-        locations.add("kandy");
-        locations.add("shanghai");
-        locations.add("melbourne");
-        locations.add("london");
-        locations.add("sydney");
-        locations.add("venice");
-        locations.add("newyork");
-        locations.add("canbarra");
-        locations.add("delhi");
-        locations.add("frankfurt");
+        for (int all = 0; all < 1000; all++) {
+            String newLoc = rgen.nextString();
+            locations.add(newLoc);
+        }
+//        locations.add("montreal");
+//        locations.add("toronto");
+//        locations.add("vancouver");
+//        locations.add("sanfransico");
+//        locations.add("paloalto");
+//        locations.add("colombo");
+//        locations.add("kandy");
+//        locations.add("shanghai");
+//        locations.add("melbourne");
+//        locations.add("london");
+//        locations.add("sydney");
+//        locations.add("venice");
+//        locations.add("newyork");
+//        locations.add("canbarra");
+//        locations.add("delhi");
+//        locations.add("frankfurt");
     }
 
     public enum ResourceManagerType {
