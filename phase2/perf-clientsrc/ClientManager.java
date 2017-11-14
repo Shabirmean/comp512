@@ -14,9 +14,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @SuppressWarnings("Duplicates")
 public class ClientManager {
-    static Middleware rm = null;
-    static ArrayList<String> locations = new ArrayList<>();
-    static Scanner scanner = new Scanner(System.in);
+    private static Middleware rm = null;
+    private static ArrayList<String> locations = new ArrayList<>();
+//    static Scanner scanner = new Scanner(System.in);
+    private static int testType;
+    private static int loopCount;
+    private static int load;
 
     public static void main(String[] args) {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -37,12 +40,15 @@ public class ClientManager {
         if (args.length > 0) {
             server = args[0];
         }
-        if (args.length > 1) {
-            port = Integer.parseInt(args[1]);
-        }
+//        if (args.length > 1) {
+//            port = Integer.parseInt(args[1]);
+//        }
         if (args.length > 2) {
-            System.out.println("Usage: java Client [rmihost [rmiport]]");
-            System.exit(1);
+            testType = Integer.parseInt(args[1]);
+            loopCount = Integer.parseInt(args[2]);
+            load = Integer.parseInt(args[3]);
+//            System.out.println("Usage: java Client [rmihost [rmiport]]");
+//            System.exit(1);
         }
 
         try {
@@ -65,10 +71,10 @@ public class ClientManager {
         }
 
         generateLocationList();
-        listTransactionTypes();
-        int testType = scanner.nextInt();
+//        listTransactionTypes();
+//        int testType = scanner.nextInt();
         int rmType;
-        int loopCount;
+//        int loopCount;
 
         switch (testType) {
             case 1:
@@ -78,7 +84,7 @@ public class ClientManager {
                 addRandomResources(rmType);
 
                 System.out.print("How many loops to do READ for: ");
-                loopCount = scanner.nextInt();
+//                loopCount = scanner.nextInt();
                 randomReadFromRM(rmType, loopCount);
 
 
@@ -127,8 +133,8 @@ public class ClientManager {
         avRTime = getAverageResponseTime(rmType);
         System.out.println("#### Average Time: " + avRTime);
 
-        System.out.println("Load (# of Transaction per second: ): ");
-        int load = scanner.nextInt();
+        System.out.print("Load (# of Transaction per second: ): ");
+//        int load = scanner.nextInt();
 
         long microPerT = secToMicro / load;
         System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
