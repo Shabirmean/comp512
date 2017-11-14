@@ -3,7 +3,7 @@
 testType=$1
 
 
-if [ "$project" = "1" ]; then
+if [ "$testType" = "1" ]; then
   	sh run.sh p 1 100 2 > results/1/READ_Load_2_1_RM
 	sh run.sh p 1 100 4 > results/1/READ_Load_4_1_RM
 	sh run.sh p 1 100 8 > results/1/READ_Load_8_1_RM
@@ -13,7 +13,7 @@ if [ "$project" = "1" ]; then
 	sh run.sh p 1 100 128 > results/1/READ_Load_128_1_RM
 fi
 
-if [ "$project" = "2" ]; then
+if [ "$testType" = "2" ]; then
   	sh run.sh p 2 100 2 > results/2/READ_Load_2_M_RM
 	sh run.sh p 2 100 4 > results/2/READ_Load_4_M_RM
 	sh run.sh p 2 100 8 > results/2/READ_Load_8_M_RM
