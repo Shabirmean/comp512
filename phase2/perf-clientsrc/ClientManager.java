@@ -111,6 +111,10 @@ public class ClientManager {
                 randomReadAndWriteFromRM(rmType, loopCount);
                 break;
             case 6:
+                for (int rmO = 0; rmO < 4; rmO++) {
+                    addRandomResources(rmO);
+                }
+                randomReadAndWriteFromMultipleRM(loopCount);
                 break;
             case 0:
                 break;
@@ -234,13 +238,12 @@ public class ClientManager {
                 waitBeforeNextT(sleepTime);
             }
         }
-        averageT4Load /= loopCount;
+        averageT4Load /= start;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
 
     }
-
 
     static void randomReadAndWriteFromRM(int rmType, int loopCount) {
         int locSize = locations.size();
@@ -430,11 +433,206 @@ public class ClientManager {
             e.printStackTrace();
         }
 
-        averageT4Load /= loopCount;
+        averageT4Load /= start;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
     }
+
+
+    static void randomReadAndWriteFromMultipleRM(int loopCount) {
+        int locSize = locations.size();
+        long lStartTime, lEndTime, respTime;
+        long secToMicro = 1000000;
+
+        long microPerT = secToMicro / load;
+        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
+
+        long averageT4Load = 0;
+        int start = 0;
+
+        try {
+            for (start = 0; start < loopCount; start++) {
+                int noOfOps = ThreadLocalRandom.current().nextInt(0, 10);
+                List<Boolean> opVector = getOpVector(noOfOps);
+
+                lStartTime = System.nanoTime();
+                int tId = rm.start();
+                for (boolean opType : opVector) {
+                    int rmType = ThreadLocalRandom.current().nextInt(0, 4);
+                    switch (rmType) {
+                        case 0: {
+                            if (opType) {
+                                int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                                String location = locations.get(readLocIndex);
+
+                                if (priceOCount == 0) {
+                                    rm.queryCars(tId, location);
+                                } else {
+                                    rm.queryCarsPrice(tId, location);
+                                }
+                            } else {
+                                int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                                int count = ThreadLocalRandom.current().nextInt(1, 100);
+                                int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                                String location = rgen.nextString();
+
+                                if (add_delete_reserve == 0) {
+                                    locations.add(location);
+                                    rm.addCars(tId, location, count, price);
+                                } else if (add_delete_reserve == 1) {
+                                    int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(readLocIndex);
+                                    rm.deleteCars(tId, location);
+                                    locations.remove(location);
+                                } else {
+                                    int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(resLocationIn);
+                                    String customer = locations.get(cusLocationIn);
+                                    rm.reserveCar(tId, customer.hashCode(), location);
+                                }
+                            }
+                            break;
+                        }
+
+                        case 1: {
+                            if (opType) {
+                                int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                                String location = locations.get(readLocIndex);
+
+                                if (priceOCount == 0) {
+                                    rm.queryRooms(tId, location);
+                                } else {
+                                    rm.queryRoomsPrice(tId, location);
+                                }
+                            } else {
+                                int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                                int count = ThreadLocalRandom.current().nextInt(1, 100);
+                                int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                                String location = rgen.nextString();
+
+                                if (add_delete_reserve == 0) {
+                                    locations.add(location);
+                                    rm.addRooms(tId, location, count, price);
+                                } else if (add_delete_reserve == 1) {
+                                    int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(readLocIndex);
+                                    rm.deleteRooms(tId, location);
+                                    locations.remove(location);
+                                } else {
+                                    int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(resLocationIn);
+                                    String customer = locations.get(cusLocationIn);
+                                    rm.reserveRoom(tId, customer.hashCode(), location);
+                                }
+                            }
+                            break;
+                        }
+
+                        case 2: {
+                            if (opType) {
+                                int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                                String location = locations.get(readLocIndex);
+
+                                if (priceOCount == 0) {
+                                    rm.queryFlight(tId, location.hashCode());
+                                } else {
+                                    rm.queryFlightPrice(tId, location.hashCode());
+                                }
+                            } else {
+                                int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                                int count = ThreadLocalRandom.current().nextInt(1, 100);
+                                int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                                String location = rgen.nextString();
+
+                                if (add_delete_reserve == 0) {
+                                    locations.add(location);
+                                    rm.addFlight(tId, location.hashCode(), count, price);
+                                } else if (add_delete_reserve == 1) {
+                                    int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(readLocIndex);
+                                    rm.deleteFlight(tId, location.hashCode());
+                                    locations.remove(location);
+                                } else {
+                                    int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(resLocationIn);
+                                    String customer = locations.get(cusLocationIn);
+                                    rm.reserveFlight(tId, customer.hashCode(), location.hashCode());
+                                }
+                            }
+                            break;
+                        }
+
+                        case 3: {
+                            if (opType) {
+                                int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
+                                String location = locations.get(readLocIndex);
+                                rm.queryCustomerInfo(tId, location.hashCode());
+                            } else {
+                                int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+                                String location = rgen.nextString();
+
+                                if (add_delete_reserve == 0) {
+                                    locations.add(location);
+                                    rm.newCustomer(tId, location.hashCode());
+                                } else if (add_delete_reserve == 1) {
+                                    int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(readLocIndex);
+                                    rm.deleteCustomer(tId, location.hashCode());
+                                    locations.remove(location);
+                                } else {
+                                    int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                    location = locations.get(resLocationIn);
+                                    String customer = locations.get(cusLocationIn);
+
+                                    int twoPercent = (int) (0.1 * locations.size());
+                                    int randomFlightC = ThreadLocalRandom.current().nextInt(0, twoPercent);
+                                    Vector<String> flightNumbers = new Vector<>();
+                                    for (int i = 0; i < randomFlightC; i++) {
+                                        int randLoc = ThreadLocalRandom.current().nextInt(0, locations.size());
+                                        String flNUm = Integer.toString(locations.get(randLoc).hashCode());
+                                        flightNumbers.addElement(flNUm);
+                                    }
+                                    boolean boolCar = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+                                    boolean boolRoom = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+                                    rm.itinerary(tId, customer.hashCode(), flightNumbers, location, boolCar, boolRoom);
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                }
+                rm.commit(tId);
+                lEndTime = System.nanoTime();
+                respTime = lEndTime - lStartTime;
+
+                long respTInMS = respTime / 1000;
+                averageT4Load += respTInMS;
+                System.out.println(start + "," + respTInMS);  // in microseconds
+                long sleepTime = microPerT - respTInMS;
+                if (sleepTime > 0) {
+                    waitBeforeNextT(sleepTime);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        averageT4Load /= start;
+        System.out.println(
+                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
+        System.out.println("Loops ran: " + start);
+    }
+
 
     static void randomReadFromRM(int rmType, int loopCount) {
         int locSize = locations.size();
@@ -572,12 +770,11 @@ public class ClientManager {
             e.printStackTrace();
         }
 
-        averageT4Load /= loopCount;
+        averageT4Load /= start;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
     }
-
 
     static void randomWriteToMultipleRMs(int loopCount) {
         long lStartTime, lEndTime, respTime = 0;
@@ -759,12 +956,11 @@ public class ClientManager {
             }
         }
 
-        averageT4Load /= loopCount;
+        averageT4Load /= start;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
     }
-
 
     static void randomWriteToRM(int rmType, int loopCount) {
 //        ArrayList<String> randomStuff = new ArrayList<>();
@@ -972,12 +1168,11 @@ public class ClientManager {
             e.printStackTrace();
         }
 
-        averageT4Load /= loopCount;
+        averageT4Load /= start;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
     }
-
 
     static void waitBeforeNextT(long interval) {
 //        final long INTERVAL = 100;
@@ -1180,10 +1375,10 @@ public class ClientManager {
         return intVal == 0;
     }
 
-    private static List<Boolean> getOpVector(int noOfOps){
+    private static List<Boolean> getOpVector(int noOfOps) {
         List<Boolean> flags = new ArrayList<Boolean>();
-        for(int i = 0; i < noOfOps/2; i++) flags.add(true);
-        for(int i = 0; i < noOfOps/2; i++) flags.add(false);
+        for (int i = 0; i < noOfOps / 2; i++) flags.add(true);
+        for (int i = 0; i < noOfOps / 2; i++) flags.add(false);
         Collections.shuffle(flags);
         return flags;
     }
@@ -1239,7 +1434,4 @@ public class ClientManager {
         }
 
     }
-
-
-
 }
