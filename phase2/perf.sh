@@ -27,6 +27,19 @@ if [ "$testType" = "2" ]; then
 	sh run.sh p 2 100 128 > results/2/READ_Load_128_M_RM
 fi
 
+if [ "$testType" = "3" ]; then
+  	sh run.sh p 3 100 2 > results/3/WRITE_Load_2_1_RM
+	sh run.sh p 3 100 4 > results/3/WRITE_Load_4_1_RM
+	sh run.sh p 3 100 8 > results/3/WRITE_Load_8_1_RM
+	sh run.sh p 3 100 16 > results/3/WRITE_Load_16_1_RM
+	sh run.sh p 3 100 32 > results/3/WRITE_Load_32_1_RM
+	sh run.sh p 3 100 64 > results/3/WRITE_Load_64_1_RM
+	sh run.sh p 3 100 96 > results/3/WRITE_Load_96_1_RM
+	sh run.sh p 3 100 104 > results/3/WRITE_Load_104_1_RM
+	sh run.sh p 3 100 106 > results/3/WRITE_Load_106_1_RM
+	sh run.sh p 3 100 107 > results/3/WRITE_Load_107_1_RM
+	sh run.sh p 3 100 128 > results/3/WRITE_Load_108_1_RM
+fi
 
 
 
