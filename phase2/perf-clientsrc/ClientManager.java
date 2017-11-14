@@ -161,6 +161,7 @@ public class ClientManager {
 //        long timePerT = avgBuffer + balancePerT;
 //        System.out.println("#### Time Per Transaction: " + timePerT);
 //        System.out.println("#### No of Transaction: " + numOfTransactions + " per " + checkSec + "-seconds");
+        long averageT4Load = 0;
 
         try {
             switch (rmType) {
@@ -178,7 +179,6 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Car: " + location + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -186,13 +186,9 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Car: " + location + " returned price " + count);
                         }
-//                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
                         long respTInMS = respTime / 1000;
-//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
-//                        System.out.println("");
-//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        averageT4Load += respTInMS;
                         System.out.println(start + "," + respTInMS);  // in microseconds
                         long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
@@ -213,7 +209,6 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Hotel: " + location + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -221,13 +216,9 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Hotel: " + location + " returned price " + count);
                         }
-//                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
                         long respTInMS = respTime / 1000;
-//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
-//                        System.out.println("");
-//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        averageT4Load += respTInMS;
                         System.out.println(start + "," + respTInMS);  // in microseconds
                         long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
@@ -249,7 +240,6 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Flight: " + locHashCode + " returned count " + count);
                         } else {
                             lStartTime = System.nanoTime();
                             int tId = rm.start();
@@ -257,13 +247,9 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-//                            System.out.println("Flight: " + locHashCode + " returned price " + count);
                         }
-//                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
                         long respTInMS = respTime / 1000;
-//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
-//                        System.out.println("");
-//                        System.out.println("Iter: " + start + " - " + respTInMS + "ms.");
+                        averageT4Load += respTInMS;
                         System.out.println(start + "," + respTInMS);  // in microseconds
                         long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
@@ -284,12 +270,8 @@ public class ClientManager {
                         lEndTime = System.nanoTime();
                         respTime = lEndTime - lStartTime;
 
-//                        System.out.println("Customer: " + locHashCode + " info " + info);
-//                        System.out.println("Elapsed time in milliseconds: " + respTime / 1000000);
                         long respTInMS = respTime / 1000;
-//                        System.out.println("Elapsed time in microseconds: " + respTInMS);
-//                        System.out.println("");
-//                        System.out.println("Iter: " + start + " - " + respTInMS + "micro-sec.");
+                        averageT4Load += respTInMS;
                         System.out.println(start + "," + respTInMS);  // in microseconds
                         long sleepTime = microPerT - respTInMS;
                         if (sleepTime > 0) {
@@ -301,6 +283,10 @@ public class ClientManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        averageT4Load /= loopCount;
+        System.out.println(
+                "Average RT for load-"+ load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
     }
 
     static void waitBeforeNextT(long interval) {
