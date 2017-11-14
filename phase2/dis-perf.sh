@@ -2,19 +2,48 @@
 
 testType=$1
 
-sh run.sh p 6 100 2 true 0 > results/6/RW_Load_2_M_RM
-sh run.sh p 6 100 4 true 0 > results/6/RW_Load_4_M_RM
-sh run.sh p 6 100 8 true 0 > results/6/RW_Load_8_M_RM
-sh run.sh p 6 100 16 true 0 > results/6/RW_Load_16_M_RM
-sh run.sh p 6 100 32 true 0 > results/6/RW_Load_32_M_RM
-sh run.sh p 6 100 64 true 0 > results/6/RW_Load_64_M_RM
-sh run.sh p 6 100 96 true 0 > results/6/RW_Load_96_M_RM
-sh run.sh p 6 100 104 true 0 > results/6/RW_Load_104_M_RM
-sh run.sh p 6 100 106 true 0 > results/6/RW_Load_106_M_RM
-sh run.sh p 6 100 107 true 0 > results/6/RW_Load_107_M_RM
-sh run.sh p 6 100 128 true 0 > results/6/RW_Load_128_M_RM
-sh run.sh p 6 100 256 true 0 > results/6/RW_Load_256_M_RM
-sh run.sh p 6 100 512 true 0 > results/6/RW_Load_512_M_RM
+sh run.sh p 6 50 2 true 5 > results/7/DISTRIB_5_2
+sh run.sh p 6 50 5 true 5 > results/7/DISTRIB_5_5
+sh run.sh p 6 50 10 true 5 > results/7/DISTRIB_5_10
+sh run.sh p 6 50 20 true 5 > results/7/DISTRIB_5_20
+sh run.sh p 6 50 25 true 5 > results/7/DISTRIB_5_25
+sh run.sh p 6 50 40 true 5 > results/7/DISTRIB_5_40
+sh run.sh p 6 50 100 true 5 > results/7/DISTRIB_5_100
+sh run.sh p 6 50 150 true 5 > results/7/DISTRIB_5_150
+sh run.sh p 6 50 500 true 5 > results/7/DISTRIB_5_500
+
+sh run.sh p 6 50 2 true 10 > results/7/DISTRIB_10_2
+sh run.sh p 6 50 5 true 10 > results/7/DISTRIB_10_5
+sh run.sh p 6 50 10 true 10 > results/7/DISTRIB_10_10
+sh run.sh p 6 50 20 true 10 > results/7/DISTRIB_10_20
+sh run.sh p 6 50 25 true 10 > results/7/DISTRIB_10_25
+sh run.sh p 6 50 40 true 10 > results/7/DISTRIB_10_40
+sh run.sh p 6 50 100 true 10 > results/7/DISTRIB_10_100
+sh run.sh p 6 50 150 true 10 > results/7/DISTRIB_10_150
+sh run.sh p 6 50 500 true 10 > results/7/DISTRIB_10_500
+
+sh run.sh p 6 50 2 true 20 > results/7/DISTRIB_20_2
+sh run.sh p 6 50 5 true 20 > results/7/DISTRIB_20_5
+sh run.sh p 6 50 10 true 20 > results/7/DISTRIB_20_10
+sh run.sh p 6 50 20 true 20 > results/7/DISTRIB_20_20
+sh run.sh p 6 50 25 true 20 > results/7/DISTRIB_20_25
+sh run.sh p 6 50 40 true 20 > results/7/DISTRIB_20_40
+sh run.sh p 6 50 100 true 20 > results/7/DISTRIB_20_100
+sh run.sh p 6 50 150 true 20 > results/7/DISTRIB_20_150
+sh run.sh p 6 50 500 true 20 > results/7/DISTRIB_20_500
+
+sh run.sh p 6 50 2 true 25 > results/7/DISTRIB_25_2
+sh run.sh p 6 50 5 true 25 > results/7/DISTRIB_25_5
+sh run.sh p 6 50 10 true 25 > results/7/DISTRIB_25_10
+sh run.sh p 6 50 20 true 25 > results/7/DISTRIB_25_20
+sh run.sh p 6 50 25 true 25 > results/7/DISTRIB_25_25
+sh run.sh p 6 50 40 true 25 > results/7/DISTRIB_25_40
+sh run.sh p 6 50 100 true 25 > results/7/DISTRIB_25_100
+sh run.sh p 6 50 150 true 25 > results/7/DISTRIB_25_150
+sh run.sh p 6 50 500 true 25 > results/7/DISTRIB_25_500
+
+
+
 
 
 

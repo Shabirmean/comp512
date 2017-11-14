@@ -100,7 +100,7 @@ public class ClientManager {
             long iterInterval = interval * 1000;
 //            long intervalCount = 0;
             long allIters = 0;
-            
+
             for (int times = 0; times < loopCount; times++) {
                 for (Timer timer : clientTimers) {
                     long delay = (clientCounter * 1000) / millisPerT;
