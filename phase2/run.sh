@@ -8,7 +8,18 @@ fi
 
 DIR=$(pwd)
 project=$1
+testType=$2
+loopCount=$3
+load=$4
 
+
+# "[1] - Read on one RM\n" +
+#                         "[2] - Read on multiple RM\n" +
+#                         "[3] - Write on one RM\n" +
+#                         "[4] - Write on multiple RM\n" +
+#                         "[5] - R/W on one RM\n" +
+#                         "[6] - R/W on multiple RM\n" +
+#                         "[0] - quit\n\n>");
 
 if [ "$project" = "s" ]; then
   	cd resourcemanagers
@@ -86,5 +97,5 @@ if [ "$project" = "p" ]; then
     		# port="22000"
 	# fi
 
-	java -Djava.security.policy=java.policy ClientManager cs-24.cs.mcgill.ca
+	java -Djava.security.policy=java.policy ClientManager cs-24.cs.mcgill.ca $testType $loopCount $load
 fi
