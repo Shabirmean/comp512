@@ -82,12 +82,8 @@ public class ClientManager {
                 System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
                 System.out.println("Adding some random values to be conduct write operations.");
                 addRandomResources(rmType);
-
-                System.out.print("How many loops to do READ for: ");
-//                loopCount = scanner.nextInt();
+//                System.out.print("How many loops to do READ for: ");
                 randomReadFromRM(rmType, loopCount);
-
-
                 break;
             case 2:
                 break;
@@ -122,6 +118,14 @@ public class ClientManager {
                         "[0] - quit\n\n>");
     }
 
+
+
+    static void randomReadFromMultipleRM(int loopCount) {
+        for(int start = 0; start < loopCount; start++){
+
+        }
+
+    }
 
     static void randomReadFromRM(int rmType, int loopCount) {
         int locSize = locations.size();
@@ -162,12 +166,12 @@ public class ClientManager {
 //        System.out.println("#### Time Per Transaction: " + timePerT);
 //        System.out.println("#### No of Transaction: " + numOfTransactions + " per " + checkSec + "-seconds");
         long averageT4Load = 0;
-
+        int start = 0;
         try {
             switch (rmType) {
                 case 0:
                     //get average response time first
-                    for (int start = 0; start < loopCount; start++) {
+                    for (start = 0; start < loopCount; start++) {
                         int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
                         String location = locations.get(readLocIndex);
@@ -197,7 +201,7 @@ public class ClientManager {
                     }
                     break;
                 case 1:
-                    for (int start = 0; start < loopCount; start++) {
+                    for (start = 0; start < loopCount; start++) {
                         int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
                         String location = locations.get(readLocIndex);
@@ -227,7 +231,7 @@ public class ClientManager {
                     }
                     break;
                 case 2:
-                    for (int start = 0; start < loopCount; start++) {
+                    for (start = 0; start < loopCount; start++) {
                         int priceOCount = ThreadLocalRandom.current().nextInt(0, 2);
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
                         String location = locations.get(readLocIndex);
@@ -258,7 +262,7 @@ public class ClientManager {
                     }
                     break;
                 case 3:
-                    for (int start = 0; start < loopCount; start++) {
+                    for (start = 0; start < loopCount; start++) {
                         int readLocIndex = ThreadLocalRandom.current().nextInt(0, locSize);
                         String location = locations.get(readLocIndex);
                         int locHashCode = location.hashCode();
@@ -287,6 +291,7 @@ public class ClientManager {
         averageT4Load /= loopCount;
         System.out.println(
                 "Average RT for load-"+ load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
+        System.out.println("Loops ran: " + start);
     }
 
     static void waitBeforeNextT(long interval) {
