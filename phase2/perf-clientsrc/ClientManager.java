@@ -80,12 +80,16 @@ public class ClientManager {
             case 1:
                 rmType = ThreadLocalRandom.current().nextInt(0, 4);
                 System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
-                System.out.println("Adding some random values to be conduct write operations.");
+                System.out.println("Adding some random values to be conduct read operations.");
                 addRandomResources(rmType);
-//                System.out.print("How many loops to do READ for: ");
                 randomReadFromRM(rmType, loopCount);
                 break;
             case 2:
+                System.out.println("Adding some random values to be conduct read operations.");
+                for (int rmO = 0; rmO < 4; rmO++) {
+                    addRandomResources(rmO);
+                }
+                randomReadFromMultipleRM(loopCount);
                 break;
             case 3:
                 break;
