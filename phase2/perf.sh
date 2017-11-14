@@ -38,7 +38,26 @@ if [ "$testType" = "3" ]; then
 	sh run.sh p 3 100 104 > results/3/WRITE_Load_104_1_RM
 	sh run.sh p 3 100 106 > results/3/WRITE_Load_106_1_RM
 	sh run.sh p 3 100 107 > results/3/WRITE_Load_107_1_RM
-	sh run.sh p 3 100 128 > results/3/WRITE_Load_108_1_RM
+	sh run.sh p 3 100 128 > results/3/WRITE_Load_128_1_RM
+	sh run.sh p 3 100 256 > results/3/WRITE_Load_256_1_RM
+	sh run.sh p 3 100 512 > results/3/WRITE_Load_512_1_RM
+fi
+
+
+if [ "$testType" = "4" ]; then
+  	sh run.sh p 4 100 2 > results/4/WRITE_Load_2_M_RM
+	sh run.sh p 4 100 4 > results/4/WRITE_Load_4_M_RM
+	sh run.sh p 4 100 8 > results/4/WRITE_Load_8_M_RM
+	sh run.sh p 4 100 16 > results/4/WRITE_Load_16_M_RM
+	sh run.sh p 4 100 32 > results/4/WRITE_Load_32_M_RM
+	sh run.sh p 4 100 64 > results/4/WRITE_Load_64_M_RM
+	sh run.sh p 4 100 96 > results/4/WRITE_Load_96_M_RM
+	sh run.sh p 4 100 104 > results/4/WRITE_Load_104_M_RM
+	sh run.sh p 4 100 106 > results/4/WRITE_Load_106_M_RM
+	sh run.sh p 4 100 107 > results/4/WRITE_Load_107_M_RM
+	sh run.sh p 4 100 128 > results/4/WRITE_Load_128_M_RM
+	sh run.sh p 4 100 256 > results/4/WRITE_Load_256_M_RM
+	sh run.sh p 4 100 512 > results/4/WRITE_Load_512_M_RM
 fi
 
 

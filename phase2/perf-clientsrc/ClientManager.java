@@ -99,6 +99,10 @@ public class ClientManager {
                 randomWriteToRM(rmType, loopCount);
                 break;
             case 4:
+                for (int rmO = 0; rmO < 4; rmO++) {
+                    addRandomResources(rmO);
+                }
+                randomReadFromMultipleRM(loopCount);
                 break;
             case 5:
                 break;
@@ -376,6 +380,195 @@ public class ClientManager {
     }
 
 
+    static void randomWriteToMultipleRMs(int loopCount) {
+        long lStartTime, lEndTime, respTime = 0;
+        long secToMicro = 1000000;
+
+        long microPerT = secToMicro / load;
+        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
+        long averageT4Load = 0;
+        int start = 0;
+
+        for (start = 0; start < loopCount; start++) {
+            int rmType = ThreadLocalRandom.current().nextInt(0, 4);
+            int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+            String location = rgen.nextString();
+
+            try {
+                switch (rmType) {
+                    case 0: {
+                        //get average response time first
+                        if (add_delete_reserve == 0) {
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addCars(tId, location, count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1) {
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteCars(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveCar(tId, customer.hashCode(), location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        break;
+                    }
+                    case 1: {
+                        if (add_delete_reserve == 0) {
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addRooms(tId, location, count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1) {
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteRooms(tId, location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveRoom(tId, customer.hashCode(), location);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        if (add_delete_reserve == 0) {
+                            int count = ThreadLocalRandom.current().nextInt(1, 100);
+                            int price = ThreadLocalRandom.current().nextInt(100, 1000);
+                            locations.add(location);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.addFlight(tId, location.hashCode(), count, price);
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        } else if (add_delete_reserve == 1) {
+                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(readLocIndex);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.deleteFlight(tId, location.hashCode());
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                            locations.remove(location);
+                        } else {
+                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            location = locations.get(resLocationIn);
+                            String customer = locations.get(cusLocationIn);
+                            lStartTime = System.nanoTime();
+                            int tId = rm.start();
+                            rm.reserveFlight(tId, customer.hashCode(), location.hashCode());
+                            rm.commit(tId);
+                            lEndTime = System.nanoTime();
+                            respTime = lEndTime - lStartTime;
+                        }
+                        break;
+                    }
+//                case 3:
+//                    for (start = 0; start < loopCount; start++) {
+//                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
+//                        int count = ThreadLocalRandom.current().nextInt(1, 100);
+//                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
+//                        String location = rgen.nextString();
+//
+//                        if (add_delete_reserve == 0) {
+//                            locations.add(location);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.addCars(tId, location, count, price);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                        } else if (add_delete_reserve == 1){
+//                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            location = locations.get(readLocIndex);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.deleteCars(tId, location);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                            locations.remove(location);
+//                        } else {
+//                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+//                            location = locations.get(resLocationIn);
+//                            String customer = locations.get(cusLocationIn);
+//                            lStartTime = System.nanoTime();
+//                            int tId = rm.start();
+//                            rm.reserveCar(tId, customer.hashCode(), location);
+//                            rm.commit(tId);
+//                            lEndTime = System.nanoTime();
+//                            respTime = lEndTime - lStartTime;
+//                        }
+//
+//                        long respTInMS = respTime / 1000;
+//                        averageT4Load += respTInMS;
+//                        System.out.println(start + "," + respTInMS);  // in microseconds
+//                        long sleepTime = microPerT - respTInMS;
+//                        if (sleepTime > 0) {
+//                            waitBeforeNextT(sleepTime);
+//                        }
+//                    }
+//                    break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            long respTInMS = respTime / 1000;
+            averageT4Load += respTInMS;
+            System.out.println(start + "," + respTInMS);  // in microseconds
+            long sleepTime = microPerT - respTInMS;
+            if (sleepTime > 0) {
+                waitBeforeNextT(sleepTime);
+            }
+        }
+
+
+        averageT4Load /= loopCount;
+        System.out.println(
+                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
+        System.out.println("Loops ran: " + start);
+    }
 
 
     static void randomWriteToRM(int rmType, int loopCount) {
@@ -406,7 +599,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                        } else if (add_delete_reserve == 1){
+                        } else if (add_delete_reserve == 1) {
                             int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
                             location = locations.get(readLocIndex);
                             lStartTime = System.nanoTime();
@@ -453,7 +646,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                        } else if (add_delete_reserve == 1){
+                        } else if (add_delete_reserve == 1) {
                             int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
                             location = locations.get(readLocIndex);
                             lStartTime = System.nanoTime();
@@ -500,7 +693,7 @@ public class ClientManager {
                             rm.commit(tId);
                             lEndTime = System.nanoTime();
                             respTime = lEndTime - lStartTime;
-                        } else if (add_delete_reserve == 1){
+                        } else if (add_delete_reserve == 1) {
                             int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
                             location = locations.get(readLocIndex);
                             lStartTime = System.nanoTime();
@@ -589,10 +782,6 @@ public class ClientManager {
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
         System.out.println("Loops ran: " + start);
     }
-
-
-
-
 
 
     static void waitBeforeNextT(long interval) {
