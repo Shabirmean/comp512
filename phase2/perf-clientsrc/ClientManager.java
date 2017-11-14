@@ -103,6 +103,12 @@ public class ClientManager {
                 randomWriteToMultipleRMs(loopCount);
                 break;
             case 5:
+                rmType = ThreadLocalRandom.current().nextInt(0, 3);
+                System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
+                for (int rmO = 0; rmO < 4; rmO++) {
+                    addRandomResources(rmO);
+                }
+                randomReadAndWriteFromRM(rmType, loopCount);
                 break;
             case 6:
                 break;

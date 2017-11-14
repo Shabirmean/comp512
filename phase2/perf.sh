@@ -68,4 +68,21 @@ if [ "$testType" = "4" ]; then
 fi
 
 
+if [ "$testType" = "5" ]; then
+  	sh run.sh p 5 100 2 > results/5/RW_Load_2_1_RM
+	sh run.sh p 5 100 4 > results/5/RW_Load_4_1_RM
+	sh run.sh p 5 100 8 > results/5/RW_Load_8_1_RM
+	sh run.sh p 5 100 16 > results/5/RW_Load_16_1_RM
+	sh run.sh p 5 100 32 > results/5/RW_Load_32_1_RM
+	sh run.sh p 5 100 64 > results/5/RW_Load_64_1_RM
+	sh run.sh p 5 100 96 > results/5/RW_Load_96_1_RM
+	sh run.sh p 5 100 104 > results/5/RW_Load_104_1_RM
+	sh run.sh p 5 100 106 > results/5/RW_Load_106_1_RM
+	sh run.sh p 5 100 107 > results/5/RW_Load_107_1_RM
+	sh run.sh p 5 100 128 > results/5/RW_Load_128_1_RM
+	sh run.sh p 5 100 256 > results/5/RW_Load_256_1_RM
+	sh run.sh p 5 100 512 > results/5/RW_Load_512_1_RM
+fi
+
+
 
