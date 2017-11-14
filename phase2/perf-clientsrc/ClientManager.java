@@ -102,7 +102,7 @@ public class ClientManager {
                 for (int rmO = 0; rmO < 4; rmO++) {
                     addRandomResources(rmO);
                 }
-                randomReadFromMultipleRM(loopCount);
+                randomWriteToMultipleRMs(loopCount);
                 break;
             case 5:
                 break;
@@ -502,53 +502,50 @@ public class ClientManager {
                         }
                         break;
                     }
-//                case 3:
-//                    for (start = 0; start < loopCount; start++) {
-//                        int add_delete_reserve = ThreadLocalRandom.current().nextInt(0, 3);
-//                        int count = ThreadLocalRandom.current().nextInt(1, 100);
-//                        int price = ThreadLocalRandom.current().nextInt(100, 1000);
-//                        String location = rgen.nextString();
-//
-//                        if (add_delete_reserve == 0) {
-//                            locations.add(location);
-//                            lStartTime = System.nanoTime();
-//                            int tId = rm.start();
-//                            rm.addCars(tId, location, count, price);
-//                            rm.commit(tId);
-//                            lEndTime = System.nanoTime();
-//                            respTime = lEndTime - lStartTime;
-//                        } else if (add_delete_reserve == 1){
-//                            int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
-//                            location = locations.get(readLocIndex);
-//                            lStartTime = System.nanoTime();
-//                            int tId = rm.start();
-//                            rm.deleteCars(tId, location);
-//                            rm.commit(tId);
-//                            lEndTime = System.nanoTime();
-//                            respTime = lEndTime - lStartTime;
-//                            locations.remove(location);
-//                        } else {
-//                            int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
-//                            int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
-//                            location = locations.get(resLocationIn);
-//                            String customer = locations.get(cusLocationIn);
-//                            lStartTime = System.nanoTime();
-//                            int tId = rm.start();
-//                            rm.reserveCar(tId, customer.hashCode(), location);
-//                            rm.commit(tId);
-//                            lEndTime = System.nanoTime();
-//                            respTime = lEndTime - lStartTime;
-//                        }
-//
-//                        long respTInMS = respTime / 1000;
-//                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-//                        long sleepTime = microPerT - respTInMS;
-//                        if (sleepTime > 0) {
-//                            waitBeforeNextT(sleepTime);
-//                        }
-//                    }
-//                    break;
+                case 3:
+                    if (add_delete_reserve == 0) {
+                        locations.add(location);
+                        lStartTime = System.nanoTime();
+                        int tId = rm.start();
+                        rm.newCustomer(tId, location.hashCode());
+                        rm.commit(tId);
+                        lEndTime = System.nanoTime();
+                        respTime = lEndTime - lStartTime;
+                    } else if (add_delete_reserve == 1) {
+                        int readLocIndex = ThreadLocalRandom.current().nextInt(0, locations.size());
+                        location = locations.get(readLocIndex);
+                        lStartTime = System.nanoTime();
+                        int tId = rm.start();
+                        rm.deleteCustomer(tId, location.hashCode());
+                        rm.commit(tId);
+                        lEndTime = System.nanoTime();
+                        respTime = lEndTime - lStartTime;
+                        locations.remove(location);
+                    } else {
+                        int resLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                        int cusLocationIn = ThreadLocalRandom.current().nextInt(0, locations.size());
+                        location = locations.get(resLocationIn);
+                        String customer = locations.get(cusLocationIn);
+
+                        int twoPercent = (int) (0.1 * locations.size());
+                        int randomFlightC = ThreadLocalRandom.current().nextInt(0, twoPercent);
+                        Vector<String> flightNumbers = new Vector<>();
+                        for (int i = 0; i < randomFlightC; i++) {
+                            int randLoc = ThreadLocalRandom.current().nextInt(0, locations.size());
+                            String flNUm = Integer.toString(locations.get(randLoc).hashCode());
+                            flightNumbers.addElement(flNUm);
+                        }
+                        boolean boolCar = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+                        boolean boolRoom = boolVal(ThreadLocalRandom.current().nextInt(0, 1));
+
+                        lStartTime = System.nanoTime();
+                        int tId = rm.start();
+                        rm.itinerary(tId, customer.hashCode(), flightNumbers, location, boolCar, boolRoom);
+                        rm.commit(tId);
+                        lEndTime = System.nanoTime();
+                        respTime = lEndTime - lStartTime;
+                    }
+                    break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -562,7 +559,6 @@ public class ClientManager {
                 waitBeforeNextT(sleepTime);
             }
         }
-
 
         averageT4Load /= loopCount;
         System.out.println(
@@ -979,6 +975,10 @@ public class ClientManager {
 //        locations.add("canbarra");
 //        locations.add("delhi");
 //        locations.add("frankfurt");
+    }
+
+    private static boolean boolVal(int intVal){
+        return intVal == 0;
     }
 
     public enum ResourceManagerType {
