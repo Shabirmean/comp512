@@ -333,11 +333,15 @@ public class TransactionManager {
 
             } else if (requestType == RequestType.UNRESERVE_RESOURCE) {
                 int reservedCountOfItem = alreadyAccessedItem.getReserved();
-                int reservedByCustomer = resourceItem.getCount();
+                int reservedByCustomer = resourceItem.getReserved();
                 alreadyAccessedItem.setReserved(reservedCountOfItem - reservedByCustomer);
-                alreadyAccessedItem.setCount(resourceItem.getCount() + reservedByCustomer);
+                alreadyAccessedItem.setCount(alreadyAccessedItem.getCount() + reservedByCustomer);
                 transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                responseNum = alreadyAccessedItem.getReserved();
+                responseNum = alreadyAccessedItem.getCount();
+
+                Trace.info("TM::deleteCustomer(" + tId + ") had reserved " + resourceItem.getKey() +
+                        " " + reservedByCustomer + " times, which is now updated to be reserved " +
+                        alreadyAccessedItem.getReserved() + " times and is now available " + responseNum + " times");
 
             } else if (requestType == RequestType.RESERVE_RESOURCE) {
                 String location = alreadyAccessedItem.getLocation();
@@ -498,11 +502,11 @@ public class TransactionManager {
                                 reserveditem.getKey() + " " + reserveditem.getCount() + " times");
 
                         ReservableItem reservableItem = getCopyOfReservedItem(reserveditem);
-                        int newReserveCount = submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservableItem);
-                        int newCount = reservableItem.getCount() + (reservableItem.getReserved() - newReserveCount);
-                        Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
-                                reserveditem.getKey() + "which is now updated to be reserved" + newReserveCount +
-                                " times and is now available " + newCount + " times");
+                        int newCount = submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservableItem);
+//                        int newReserved = reservableItem.getCount() + (reservableItem.getReserved() - newReserved);
+//                        Trace.info("TM::deleteCustomer(" + tId + ", " + customerId + ") has reserved " +
+//                                reserveditem.getKey() + " which is now updated to be reserved " + newReserved +
+//                                " times and is now available " + newCount + " times");
                     }
 
                     itemSet.remove(itemKey);
@@ -630,15 +634,18 @@ public class TransactionManager {
             }
 
             int reservedItemPrice = submitOperation(tId, RequestType.RESERVE_RESOURCE, resourceItem);
-            String resourceKey = resourceItem.getKey();
-            String resourceLoc = resourceItem.getLocation();
-            alreadyAccessedItem = (Customer) itemSet.get(itemKey);
-            alreadyAccessedItem.reserve(resourceKey, resourceLoc, reservedItemPrice);
-            Trace.info("TM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
-                    resourceLoc + ") succeeded");
-            transaction.getCorrespondingWriteList(resManType).add(itemKey);
-            responseNum = ReqStatus.SUCCESS.getStatusCode();
-
+            if (reservedItemPrice == ReqStatus.FAILURE.getStatusCode()) {
+                responseNum = ReqStatus.FAILURE.getStatusCode();
+            } else {
+                String resourceKey = resourceItem.getKey();
+                String resourceLoc = resourceItem.getLocation();
+                alreadyAccessedItem = (Customer) itemSet.get(itemKey);
+                alreadyAccessedItem.reserve(resourceKey, resourceLoc, reservedItemPrice);
+                Trace.info("TM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
+                        resourceLoc + ") succeeded");
+                transaction.getCorrespondingWriteList(resManType).add(itemKey);
+                responseNum = ReqStatus.SUCCESS.getStatusCode();
+            }
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
@@ -827,18 +834,21 @@ public class TransactionManager {
     private ReservableItem getCopyOfReservedItem(ReservedItem itemToCopy) {
         ReservableItem copyItem = null;
         String itemKey = itemToCopy.getKey();
-        int count = itemToCopy.getCount();
-        int price = itemToCopy.getPrice();
         String location = itemToCopy.getLocation();
+
+        int count = 0;                          // count is ZERO since it's a Reserved item
+        int reserved = itemToCopy.getCount();
+        int price = itemToCopy.getPrice();
 
         if (itemKey.contains(FLIGHT_ITEM_KEY)) {
             copyItem = new Flight(Integer.parseInt(location), count, price);
-
+            copyItem.setReserved(reserved);
         } else if (itemKey.contains(CAR_ITEM_KEY)) {
             copyItem = new Car(location, count, price);
-
+            copyItem.setReserved(reserved);
         } else if (itemKey.contains(HOTEL_ITEM_KEY)) {
             copyItem = new Hotel(location, count, price);
+            copyItem.setReserved(reserved);
         }
         return copyItem;
     }
