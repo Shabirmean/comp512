@@ -344,10 +344,14 @@ public class TransactionManager {
                 Trace.info("TM::reserveItem( " + tId + ", " + itemKey + ", " + location + " ) called");
                 int currentCount = alreadyAccessedItem.getCount();
                 int currentReservd = alreadyAccessedItem.getReserved();
-                alreadyAccessedItem.setCount(currentCount - 1);
-                alreadyAccessedItem.setReserved(currentReservd + 1);
-                transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                responseNum = alreadyAccessedItem.getPrice();
+                if (currentCount == 0) {
+                    responseNum = ReqStatus.FAILURE.getStatusCode();
+                } else {
+                    alreadyAccessedItem.setCount(currentCount - 1);
+                    alreadyAccessedItem.setReserved(currentReservd + 1);
+                    transaction.getCorrespondingWriteList(resManType).add(itemKey);
+                    responseNum = alreadyAccessedItem.getPrice();
+                }
             }
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + resourceItem.getKey() + "] on DEADLOCK.";
@@ -679,7 +683,8 @@ public class TransactionManager {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + flightToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    abort(tId);
+                    throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
+//                    abort(tId);
                 }
             }
 
@@ -690,7 +695,8 @@ public class TransactionManager {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + carToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    abort(tId);
+                    throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
+//                    abort(tId);
                 }
             }
 
@@ -701,7 +707,8 @@ public class TransactionManager {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + hotelToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    abort(tId);
+                    throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
+//                    abort(tId);
                 }
             }
         } catch (TransactionManagerException e) {

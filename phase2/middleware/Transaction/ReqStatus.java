@@ -18,7 +18,8 @@ public enum ReqStatus {
     COMMIT_OR_ABORT_TO_RM_THROWED_ERROR(19),
     SHUTDOWN_TO_RM_THROWED_ERROR(20),
     SHUTDOWN_AT_TM_MIGHT_BE_PARTIAL(21),
-    ACTIVE_TRANSACTIONS_EXIST(22);
+    ACTIVE_TRANSACTIONS_EXIST(22),
+    RESERVE_ITEM_ZERO(23);
 
     private final int statusCode;
     private String status;
@@ -70,6 +71,9 @@ public enum ReqStatus {
                 break;
             case 22:
                 this.status = "ACTIVE_TRANSACTIONS_EXIST";
+                break;
+            case 23:
+                this.status = "RESERVE_ITEM_ZERO";
                 break;
         }
 
