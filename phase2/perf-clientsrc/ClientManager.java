@@ -113,13 +113,17 @@ public class ClientManager {
                         long clientAverage = 0;
                         int successfulLoops = 0;
                         int failedCount = 0;
+                        int deadLocks = 0;
 
                         for (int tCount = 0; tCount < loopCount; tCount++) {
                             long tSendTime = System.nanoTime();
                             long timeTaken = randomReadAndWriteForDistribClients();
                             long tEndTime = System.nanoTime();
 
-                            if (timeTaken == -1) {
+                            if (timeTaken == -1 || timeTaken == -2) {
+                                if (timeTaken == -1) {
+                                    deadLocks++;
+                                }
                                 timeTaken = tSendTime - tEndTime;
                                 timeTaken /= 1000;
                                 failedCount++;
@@ -136,7 +140,7 @@ public class ClientManager {
                         }
                         clientAverage /= successfulLoops;
                         System.out.println("Client-" + finalClientCounter + " - " + clientAverage + " micro-secs " +
-                                "[Passed " + successfulLoops + "/" + loopCount + "]");
+                                "[Passed " + successfulLoops + "/" + loopCount + "], Deadlocks-" + deadLocks);
                         clientAverages.put(finalClientCounter, clientAverage);
                     }
                 }, delay);
@@ -233,6 +237,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int start;
         int successfulLoops = 0;
+        int deadLocks = 0;
         boolean failed = false;
 
         for (start = 0; start < loopCount; start++) {
@@ -313,6 +318,9 @@ public class ClientManager {
                 }
             } catch (Exception e) {
 //                e.printStackTrace();
+                if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                    deadLocks++;
+                }
                 lEndTime = System.nanoTime();
                 respTime = lEndTime - lStartTime;
                 failed = true;
@@ -333,8 +341,8 @@ public class ClientManager {
         }
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
     static void randomReadAndWriteFromRM(int rmType, int loopCount) {
@@ -353,6 +361,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int start = 0;
         int successfulLoops = 0;
+        int deadLocks = 0;
         boolean failed = false;
         lStartTime = System.nanoTime();
 
@@ -405,6 +414,9 @@ public class ClientManager {
                         rm.commit(tId);
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
                     lEndTime = System.nanoTime();
@@ -470,6 +482,9 @@ public class ClientManager {
                         rm.commit(tId);
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
                     lEndTime = System.nanoTime();
@@ -536,6 +551,9 @@ public class ClientManager {
                         rm.commit(tId);
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
                     lEndTime = System.nanoTime();
@@ -561,8 +579,8 @@ public class ClientManager {
 
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
     static void randomReadAndWriteFromMultipleRM(int loopCount) {
@@ -576,6 +594,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int successfulLoops = 0;
         boolean failed = false;
+        int deadLocks = 0;
         int start = 0;
 
 //        try {
@@ -742,6 +761,9 @@ public class ClientManager {
                 rm.commit(tId);
             } catch (Exception e) {
 //                e.printStackTrace();
+                if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                    deadLocks++;
+                }
                 failed = true;
             }
 
@@ -767,8 +789,8 @@ public class ClientManager {
 
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
 
@@ -788,6 +810,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int successfulLoops = 0;
         boolean failed = false;
+        int deadLocks = 0;
         int start = 0;
 //        try {
         switch (rmType) {
@@ -812,6 +835,9 @@ public class ClientManager {
                         }
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -854,6 +880,9 @@ public class ClientManager {
                         }
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -896,6 +925,9 @@ public class ClientManager {
 
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -931,6 +963,9 @@ public class ClientManager {
 
                     } catch (Exception e) {
 //                        e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -958,8 +993,8 @@ public class ClientManager {
 
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
     static void randomWriteToMultipleRMs(int loopCount) {
@@ -971,6 +1006,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int successfulLoops = 0;
         boolean failed = false;
+        int deadLocks = 0;
         int start = 0;
 
         for (start = 0; start < loopCount; start++) {
@@ -1133,6 +1169,9 @@ public class ClientManager {
                 }
             } catch (Exception e) {
 //                e.printStackTrace();
+                if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                    deadLocks++;
+                }
                 lEndTime = System.nanoTime();
                 respTime = lEndTime - lStartTime;
                 failed = true;
@@ -1155,8 +1194,8 @@ public class ClientManager {
 
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
     static void randomWriteToRM(int rmType, int loopCount) {
@@ -1170,6 +1209,7 @@ public class ClientManager {
         long averageT4Load = 0;
         int successfulLoops = 0;
         boolean failed = false;
+        int deadLocks = 0;
         int start = 0;
 //        try {
         switch (rmType) {
@@ -1214,6 +1254,9 @@ public class ClientManager {
                         }
                     } catch (Exception e) {
 //                            e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -1273,6 +1316,9 @@ public class ClientManager {
                         }
                     } catch (Exception e) {
 //                            e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -1333,6 +1379,9 @@ public class ClientManager {
 
                     } catch (Exception e) {
 //                            e.printStackTrace();
+                        if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                            deadLocks++;
+                        }
                         failed = true;
                     }
 
@@ -1360,8 +1409,8 @@ public class ClientManager {
 
         averageT4Load /= successfulLoops;
         System.out.println(
-                "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Successful loops ran: " + successfulLoops);
+                "Average RTT:: load-" + load + ", loops-" + loopCount + ", time-" + averageT4Load + " micro-secs");
+        System.out.println("Successful loops ran: " + successfulLoops + "/" + loopCount + ", Deadlocks-" + deadLocks);
     }
 
     static void waitBeforeNextT(long interval) {
@@ -1600,7 +1649,11 @@ public class ClientManager {
 //            lEndTime = System.nanoTime();
 //            respTime = lEndTime - lStartTime;
 //            respTInMS = respTime / 1000;
-            respTInMS = -1;
+            if (e.getMessage().contains("DEADLOCK_ENCOUNTERED")) {
+                respTInMS = -1;
+            } else {
+                respTInMS = -2;
+            }
         }
 
 //        System.out.println(clientNum + " - average RT for load-" + load + " is " + respTInMS + " micro-secs");
