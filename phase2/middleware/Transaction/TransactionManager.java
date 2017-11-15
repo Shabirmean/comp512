@@ -128,10 +128,12 @@ public class TransactionManager {
         } catch (RemoteException e) {
             errMsg = "An error occurred with transaction [" + rmTId + "] on RM [" + rmNow + "] at middleware.";
             printMsg(errMsg);
+            abort(transId);
             throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
         } catch (InvalidTransactionException | TransactionAbortedException e) {
             errMsg = "TId [" + transId + "] Call to abort transaction [" + rmTId + "] at RM [" + rmNow + "] failed.";
             printMsg(errMsg);
+            abort(transId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
 
@@ -350,22 +352,26 @@ public class TransactionManager {
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + resourceItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
 
         } catch (RemoteException e) {
             errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
 
         } catch (TransactionAbortedException e) {
             errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
                     "key [" + itemKey + "] could not be committed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
 
         } catch (InvalidTransactionException e) {
             errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
 
         }
@@ -514,22 +520,26 @@ public class TransactionManager {
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
 
         } catch (RemoteException e) {
             errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
 
         } catch (TransactionAbortedException e) {
             errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
                     "key [" + itemKey + "] could not be committed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
 
         } catch (InvalidTransactionException e) {
             errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
 
@@ -537,6 +547,9 @@ public class TransactionManager {
     }
 
 
+    //TODO:: Handle DEALock scenario only evict one transaction and not both
+    //TODO:: Handle scenario for itinerary call with no items
+    //TODO:: Handle scenario where changes reflected on resource but not customer.
     @SuppressWarnings("Duplicates")
     public int submitReserveOperation(int tId, Customer customerItem, RequestType requestType,
                                       ReservableItem resourceItem) throws TransactionManagerException {
@@ -625,22 +638,26 @@ public class TransactionManager {
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.DEADLOCK_MET);
 
         } catch (RemoteException e) {
             errMsg = "An error occurred with transaction [" + rmTID + "] on RM [" + rmType + "] at middleware.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.MW_RM_COMMUNICATION_FAILED);
 
         } catch (TransactionAbortedException e) {
             errMsg = "TId [" + tId + "] Call to commit at RM [" + rmType + "] data for item with " +
                     "key [" + itemKey + "] could not be committed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_TO_RM_FAILED);
 
         } catch (InvalidTransactionException e) {
             errMsg = "TId [" + tId + "] Call to abort transaction [" + rmTID + "] at RM [" + rmType + "] failed.";
             printMsg(errMsg);
+            abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
         return responseNum;
@@ -689,6 +706,7 @@ public class TransactionManager {
             }
         } catch (TransactionManagerException e) {
             printMsg("(Itinerary-Req) Reserve request for some items of transaction [" + tId + "] failed.");
+            abort(tId);
             throw e;
         }
         return responseVal == ReqStatus.SUCCESS.getStatusCode();
