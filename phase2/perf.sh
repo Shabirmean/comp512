@@ -99,3 +99,19 @@ if [ "$testType" = "6" ]; then
 	sh run.sh p 6 100 256 false 0 > results/6/RW_Load_256_M_RM
 	sh run.sh p 6 100 512 false 0 > results/6/RW_Load_512_M_RM
 fi
+
+
+if [ "$testType" = "7" ]; then
+  	sh run.sh p 7 20 1 true 10 > results/distrib/Ten_1
+	sh run.sh p 7 20 2 true 10 > results/distrib/Ten_2
+	sh run.sh p 7 20 5 true 10 > results/distrib/Ten_5
+	sh run.sh p 7 20 10 true 10 > results/distrib/Ten_10
+	sh run.sh p 7 20 1 true 20 > results/distrib/Twenty_1
+	sh run.sh p 7 20 2 true 20 > results/distrib/Twenty_2
+	sh run.sh p 7 20 5 true 20 > results/distrib/Twenty_5
+	sh run.sh p 7 20 10 true 20 > results/distrib/Twenty_10
+	sh run.sh p 7 20 1 true 50 > results/distrib/Fifty_1
+	sh run.sh p 7 20 2 true 50 > results/distrib/Fifty_2
+	sh run.sh p 7 20 5 true 50 > results/distrib/Fifty_5
+	sh run.sh p 7 20 10 true 50 > results/distrib/Fifty_10
+fi

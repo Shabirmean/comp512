@@ -6,3 +6,4 @@ sh perf.sh 3
 sh perf.sh 4
 sh perf.sh 5
 sh perf.sh 6
+sh perf.sh 7
