@@ -111,17 +111,32 @@ public class ClientManager {
                     @Override
                     public void run() {
                         long clientAverage = 0;
+                        int successfulLoops = 0;
+                        int failedCount = 0;
+
                         for (int tCount = 0; tCount < loopCount; tCount++) {
-                            long timeTaken = randomReadAndWriteFromMultipleRM();
+                            long tSendTime = System.nanoTime();
+                            long timeTaken = randomReadAndWriteForDistribClients();
+                            long tEndTime = System.nanoTime();
+
+                            if (timeTaken == -1) {
+                                timeTaken = tSendTime - tEndTime;
+                                timeTaken /= 1000;
+                                failedCount++;
+                            } else {
+                                clientAverage += timeTaken;
+                                successfulLoops++;
+                            }
+
                             long sleepTime = iterIntervalMS - timeTaken;
                             if (sleepTime > 0) {
                                 waitBeforeNextT(sleepTime);
                             }
-                            clientAverage += timeTaken;
+
                         }
-                        clientAverage /= loopCount;
-                        System.out.println("Client-" + finalClientCounter + " had average of " +
-                                clientAverage + "micro-secs");
+                        clientAverage /= successfulLoops;
+                        System.out.println("Client-" + finalClientCounter + " - " + clientAverage + " micro-secs " +
+                                "[Passed " + successfulLoops + "/" + loopCount + "]");
                         clientAverages.put(finalClientCounter, clientAverage);
                     }
                 }, delay);
@@ -139,18 +154,18 @@ public class ClientManager {
             }
             totalAverage /= clients;
             System.out.println("Total Average (micro-seconds): " + totalAverage + " for " + clients +
-                    " at load " + load + " per second");
+                    " clients at a load " + load + " transactions per second");
         } else {
             switch (testType) {
                 case 1:
                     rmType = ThreadLocalRandom.current().nextInt(0, 4);
                     System.out.println("Randomly chosen RM for test: " + ResourceManagerType.getCodeString(rmType));
-                    System.out.println("Adding some random values to be conduct read operations.");
+//                    System.out.println("Adding some random values to be conduct read operations.");
                     addRandomResources(rmType);
                     randomReadFromRM(rmType, loopCount);
                     break;
                 case 2:
-                    System.out.println("Adding some random values to be conduct read operations.");
+//                    System.out.println("Adding some random values to be conduct read operations.");
                     for (int rmO = 0; rmO < 4; rmO++) {
                         addRandomResources(rmO);
                     }
@@ -217,6 +232,8 @@ public class ClientManager {
 
         long averageT4Load = 0;
         int start;
+        int successfulLoops = 0;
+        boolean failed = false;
 
         for (start = 0; start < loopCount; start++) {
             int rmType = ThreadLocalRandom.current().nextInt(0, 4);
@@ -298,21 +315,26 @@ public class ClientManager {
 //                e.printStackTrace();
                 lEndTime = System.nanoTime();
                 respTime = lEndTime - lStartTime;
+                failed = true;
             }
 
             respTInMS = respTime / 1000;
-            averageT4Load += respTInMS;
+            if (failed) {
+                failed = false;
+            } else {
+                averageT4Load += respTInMS;
+                successfulLoops++;
+            }
 //            System.out.println(start + "," + respTInMS);  // in microseconds
             long sleepTime = microPerT - respTInMS;
             if (sleepTime > 0) {
                 waitBeforeNextT(sleepTime);
             }
         }
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
-
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
 
     static void randomReadAndWriteFromRM(int rmType, int loopCount) {
@@ -330,7 +352,10 @@ public class ClientManager {
 
         long averageT4Load = 0;
         int start = 0;
+        int successfulLoops = 0;
+        boolean failed = false;
         lStartTime = System.nanoTime();
+
 //        try {
         switch (rmType) {
             case 0:
@@ -379,13 +404,19 @@ public class ClientManager {
 
                         rm.commit(tId);
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        failed = true;
                     }
                     lEndTime = System.nanoTime();
                     respTime = lEndTime - lStartTime;
-
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -438,13 +469,20 @@ public class ClientManager {
 
                         rm.commit(tId);
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        failed = true;
                     }
                     lEndTime = System.nanoTime();
                     respTime = lEndTime - lStartTime;
 
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -497,13 +535,21 @@ public class ClientManager {
 
                         rm.commit(tId);
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        failed = true;
                     }
                     lEndTime = System.nanoTime();
                     respTime = lEndTime - lStartTime;
 
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
+
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -513,12 +559,11 @@ public class ClientManager {
                 break;
         }
 
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
-
 
     static void randomReadAndWriteFromMultipleRM(int loopCount) {
         int locSize = locations.size();
@@ -529,6 +574,8 @@ public class ClientManager {
 //        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
 
         long averageT4Load = 0;
+        int successfulLoops = 0;
+        boolean failed = false;
         int start = 0;
 
 //        try {
@@ -693,37 +740,35 @@ public class ClientManager {
 
                 }
                 rm.commit(tId);
-                lEndTime = System.nanoTime();
-                respTime = lEndTime - lStartTime;
-
-                long respTInMS = respTime / 1000;
-                averageT4Load += respTInMS;
-//                System.out.println(start + "," + respTInMS);  // in microseconds
-                long sleepTime = microPerT - respTInMS;
-                if (sleepTime > 0) {
-                    waitBeforeNextT(sleepTime);
-                }
             } catch (Exception e) {
 //                e.printStackTrace();
-                lEndTime = System.nanoTime();
-                respTime = lEndTime - lStartTime;
+                failed = true;
+            }
 
-                long respTInMS = respTime / 1000;
+            lEndTime = System.nanoTime();
+            respTime = lEndTime - lStartTime;
+
+            long respTInMS = respTime / 1000;
+
+            if (failed) {
+                failed = false;
+            } else {
                 averageT4Load += respTInMS;
+                successfulLoops++;
+            }
 //                System.out.println(start + "," + respTInMS);  // in microseconds
-                long sleepTime = microPerT - respTInMS;
-                if (sleepTime > 0) {
-                    waitBeforeNextT(sleepTime);
-                }
+            long sleepTime = microPerT - respTInMS;
+            if (sleepTime > 0) {
+                waitBeforeNextT(sleepTime);
             }
         }
 //
 
 
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
 
 
@@ -741,6 +786,8 @@ public class ClientManager {
 //        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
 
         long averageT4Load = 0;
+        int successfulLoops = 0;
+        boolean failed = false;
         int start = 0;
 //        try {
         switch (rmType) {
@@ -763,27 +810,28 @@ public class ClientManager {
                             int count = rm.queryCarsPrice(tId, location);
                             rm.commit(tId);
                         }
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
-                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
                     } catch (Exception e) {
 //                        e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
-                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
+                        failed = true;
                     }
+
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
+                    long respTInMS = respTime / 1000;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
+
+//                        System.out.println(start + "," + respTInMS);  // in microseconds
+                    long sleepTime = microPerT - respTInMS;
+                    if (sleepTime > 0) {
+                        waitBeforeNextT(sleepTime);
+                    }
+
                 }
                 break;
             case 1:
@@ -804,27 +852,25 @@ public class ClientManager {
                             int count = rm.queryRoomsPrice(tId, location);
                             rm.commit(tId);
                         }
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
-                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
-
                     } catch (Exception e) {
 //                        e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
+                        failed = true;
+                    }
+
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
+                    long respTInMS = respTime / 1000;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
                         averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
+                    long sleepTime = microPerT - respTInMS;
+                    if (sleepTime > 0) {
+                        waitBeforeNextT(sleepTime);
                     }
                 }
                 break;
@@ -847,27 +893,26 @@ public class ClientManager {
                             int count = rm.queryFlightPrice(tId, locHashCode);
                             rm.commit(tId);
                         }
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
-                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
 
                     } catch (Exception e) {
 //                        e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
+                        failed = true;
+                    }
+
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
+                    long respTInMS = respTime / 1000;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
                         averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
+                    long sleepTime = microPerT - respTInMS;
+                    if (sleepTime > 0) {
+                        waitBeforeNextT(sleepTime);
                     }
                 }
                 break;
@@ -883,27 +928,26 @@ public class ClientManager {
                         int tId = rm.start();
                         String info = rm.queryCustomerInfo(tId, locHashCode);
                         rm.commit(tId);
-                        lEndTime = System.nanoTime();
 
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
-                        averageT4Load += respTInMS;
-//                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
                     } catch (Exception e) {
 //                        e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
-                        long respTInMS = respTime / 1000;
+                        failed = true;
+                    }
+
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
+                    long respTInMS = respTime / 1000;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
                         averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
-                        long sleepTime = microPerT - respTInMS;
-                        if (sleepTime > 0) {
-                            waitBeforeNextT(sleepTime);
-                        }
+                    long sleepTime = microPerT - respTInMS;
+                    if (sleepTime > 0) {
+                        waitBeforeNextT(sleepTime);
                     }
                 }
                 break;
@@ -912,10 +956,10 @@ public class ClientManager {
 //            e.printStackTrace();
 //        }
 
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
 
     static void randomWriteToMultipleRMs(int loopCount) {
@@ -925,6 +969,8 @@ public class ClientManager {
         long microPerT = secToMicro / load;
 //        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
         long averageT4Load = 0;
+        int successfulLoops = 0;
+        boolean failed = false;
         int start = 0;
 
         for (start = 0; start < loopCount; start++) {
@@ -1089,10 +1135,17 @@ public class ClientManager {
 //                e.printStackTrace();
                 lEndTime = System.nanoTime();
                 respTime = lEndTime - lStartTime;
+                failed = true;
             }
 
             long respTInMS = respTime / 1000;
-            averageT4Load += respTInMS;
+
+            if (failed) {
+                failed = false;
+            } else {
+                averageT4Load += respTInMS;
+                successfulLoops++;
+            }
 //            System.out.println(start + "," + respTInMS);  // in microseconds
             long sleepTime = microPerT - respTInMS;
             if (sleepTime > 0) {
@@ -1100,10 +1153,10 @@ public class ClientManager {
             }
         }
 
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
 
     static void randomWriteToRM(int rmType, int loopCount) {
@@ -1115,6 +1168,8 @@ public class ClientManager {
 //        System.out.println("#### Time Per Transaction (micro-seconds): " + microPerT);
 
         long averageT4Load = 0;
+        int successfulLoops = 0;
+        boolean failed = false;
         int start = 0;
 //        try {
         switch (rmType) {
@@ -1155,17 +1210,23 @@ public class ClientManager {
                             int tId = rm.start();
                             rm.reserveCar(tId, customer.hashCode(), location);
                             rm.commit(tId);
-                            lEndTime = System.nanoTime();
-                            respTime = lEndTime - lStartTime;
+
                         }
                     } catch (Exception e) {
 //                            e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
+                        failed = true;
                     }
 
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -1209,17 +1270,22 @@ public class ClientManager {
                             int tId = rm.start();
                             rm.reserveRoom(tId, customer.hashCode(), location);
                             rm.commit(tId);
-                            lEndTime = System.nanoTime();
-                            respTime = lEndTime - lStartTime;
                         }
                     } catch (Exception e) {
 //                            e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
+                        failed = true;
                     }
 
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -1263,18 +1329,23 @@ public class ClientManager {
                             int tId = rm.start();
                             rm.reserveFlight(tId, customer.hashCode(), location.hashCode());
                             rm.commit(tId);
-                            lEndTime = System.nanoTime();
-                            respTime = lEndTime - lStartTime;
                         }
 
                     } catch (Exception e) {
 //                            e.printStackTrace();
-                        lEndTime = System.nanoTime();
-                        respTime = lEndTime - lStartTime;
+                        failed = true;
                     }
 
+                    lEndTime = System.nanoTime();
+                    respTime = lEndTime - lStartTime;
                     long respTInMS = respTime / 1000;
-                    averageT4Load += respTInMS;
+
+                    if (failed) {
+                        failed = false;
+                    } else {
+                        averageT4Load += respTInMS;
+                        successfulLoops++;
+                    }
 //                        System.out.println(start + "," + respTInMS);  // in microseconds
                     long sleepTime = microPerT - respTInMS;
                     if (sleepTime > 0) {
@@ -1287,10 +1358,10 @@ public class ClientManager {
 //            e.printStackTrace();
 //        }
 
-        averageT4Load /= start;
+        averageT4Load /= successfulLoops;
         System.out.println(
                 "Average RT for load-" + load + " on " + loopCount + "-loops is " + averageT4Load + " micro-secs");
-        System.out.println("Loops ran: " + start);
+        System.out.println("Successful loops ran: " + successfulLoops);
     }
 
     static void waitBeforeNextT(long interval) {
@@ -1312,7 +1383,7 @@ public class ClientManager {
                         int count = ThreadLocalRandom.current().nextInt(1, 100);
                         int price = ThreadLocalRandom.current().nextInt(100, 1000);
                         rm.addCars(tId, location, count, price);
-                        System.out.println("Added Car: " + location + " - #" + count + " - $" + price);
+//                        System.out.println("Added Car: " + location + " - #" + count + " - $" + price);
                     }
                     rm.commit(tId);
                     break;
@@ -1323,7 +1394,7 @@ public class ClientManager {
                         int count = ThreadLocalRandom.current().nextInt(1, 100);
                         int price = ThreadLocalRandom.current().nextInt(100, 1000);
                         rm.addRooms(tId, location, count, price);
-                        System.out.println("Added Hotel: " + location + " - #" + count + " - $" + price);
+//                        System.out.println("Added Hotel: " + location + " - #" + count + " - $" + price);
                     }
                     rm.commit(tId);
                     break;
@@ -1334,7 +1405,7 @@ public class ClientManager {
                         int count = ThreadLocalRandom.current().nextInt(1, 100);
                         int price = ThreadLocalRandom.current().nextInt(100, 1000);
                         rm.addFlight(tId, location.hashCode(), count, price);
-                        System.out.println("Added Flight: " + location.hashCode() + " - #" + count + " - $" + price);
+//                        System.out.println("Added Flight: " + location.hashCode() + " - #" + count + " - $" + price);
                     }
                     rm.commit(tId);
                     break;
@@ -1343,7 +1414,7 @@ public class ClientManager {
                     int tId = rm.start();
                     for (String location : locations) {
                         rm.newCustomer(tId, location.hashCode());
-                        System.out.println("Added Customer: " + location.hashCode());
+//                        System.out.println("Added Customer: " + location.hashCode());
                     }
                     rm.commit(tId);
                     break;
@@ -1356,7 +1427,7 @@ public class ClientManager {
     }
 
 
-    static long randomReadAndWriteFromMultipleRM() {
+    static long randomReadAndWriteForDistribClients() {
         int locSize = locations.size();
         long lStartTime, lEndTime, respTime;
 //        long secToMicro = 1000000;
@@ -1526,9 +1597,10 @@ public class ClientManager {
 
         } catch (Exception e) {
 //            e.printStackTrace();
-            lEndTime = System.nanoTime();
-            respTime = lEndTime - lStartTime;
-            respTInMS = respTime / 1000;
+//            lEndTime = System.nanoTime();
+//            respTime = lEndTime - lStartTime;
+//            respTInMS = respTime / 1000;
+            respTInMS = -1;
         }
 
 //        System.out.println(clientNum + " - average RT for load-" + load + " is " + respTInMS + " micro-secs");
