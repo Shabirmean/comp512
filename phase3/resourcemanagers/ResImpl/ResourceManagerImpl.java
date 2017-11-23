@@ -4,73 +4,66 @@
 //
 package ResImpl;
 
+import ReplicationManager.RMReplicationManager;
+import ReplicationManager.ReplicaUpdate;
+import ReplicationManager.UpdatedItem;
 import ResInterface.ResourceManager;
 import ResInterface.InvalidTransactionException;
 import ResInterface.TransactionAbortedException;
 
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 @SuppressWarnings("ALL")
-public class ResourceManagerImpl implements ResourceManager {
-
+public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate {
     private RMHashtable m_itemHT = new RMHashtable();
     private List<Integer> transactionList = new ArrayList<Integer>();
+    private HashMap<Integer, ArrayList<UpdatedItem>> transactionUpdateMap = new HashMap<>();
     private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
     private static final Object countLock = new Object();
     private static boolean SHUTDOWN = false;
     private static final Timer shutdownTimer = new Timer();
+    private static RMReplicationManager replicationManager;
 
-    public ResourceManagerImpl() throws RemoteException {
+    public ResourceManagerImpl(RMReplicationManager repManager) throws RemoteException {
+        replicationManager = repManager;
+        initResourceManager();
     }
 
-    public static void main(String args[]) {
-        // Figure out where server is running
-        String server = "localhost";
-        int port = 1100;
 
-        if (args.length == 1) {
-            server = server + ":" + args[0];
-            port = Integer.parseInt(args[0]);
-        } else if (args.length != 0 && args.length != 1) {
-            System.err.println("Wrong usage");
-            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
-            System.exit(1);
-        }
-
-        try {
-            // create a new Server object
-            ResourceManagerImpl obj = new ResourceManagerImpl();
-            // dynamically generate the stub (client proxy)
-            ResourceManager rm = (ResourceManager) UnicastRemoteObject.exportObject(obj, 0);
-
-            // Bind the remote object's stub in the registry
-            Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("ShabirJianResourceManager", rm);
-
-            System.err.println("Server ready");
-        } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
-            e.printStackTrace();
-        }
-
-        // Create and install a security manager
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }
-
+    void initResourceManager() {
         shutdownTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (SHUTDOWN){
+                if (SHUTDOWN) {
                     System.exit(0);
                 }
             }
         }, 0, 5 * 1000);
+    }
+
+    @Override
+    public void updateReplica(ArrayList<UpdatedItem> updatedItemList) {
+        for (UpdatedItem item : updatedItemList) {
+            int tId = item.getTransactionId();
+            String itemKey = item.getItemKey();
+            RMItem itemVal = item.getItemVal();
+            if (itemVal == null) {
+                deleteItem(tId, itemKey);
+            } else {
+                writeData(tId, itemKey, itemVal);
+            }
+        }
+    }
+
+    @Override
+    public void setRMState(RMHashtable rmHashtable) {
+        this.m_itemHT = rmHashtable;
+    }
+
+    @Override
+    public RMHashtable getRMState() {
+        return m_itemHT;
     }
 
     @Override
@@ -80,6 +73,7 @@ public class ResourceManagerImpl implements ResourceManager {
             newTId = TRANSACTION_ID_COUNT++;
         }
         transactionList.add(newTId);
+        transactionUpdateMap.put(newTId, new ArrayList<>());
         return newTId;
     }
 
@@ -90,7 +84,12 @@ public class ResourceManagerImpl implements ResourceManager {
             return false;
         }
         transactionList.remove(transactionList.indexOf(transactionId));
-        return true;
+        boolean updated = replicationManager.updateReplicas(transactionUpdateMap.get(transactionId));
+        if (!updated) {
+            Trace.error("RM:: Replica update failed. RMs are in inconsistant state");
+        }
+        transactionUpdateMap.remove(transactionId);
+        return updated;
     }
 
     @Override
@@ -132,6 +131,7 @@ public class ResourceManagerImpl implements ResourceManager {
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
+        transactionUpdateMap.get(id).add(new UpdatedItem(id, key, value));
     }
 
     // Remove the item out of storage
@@ -153,6 +153,7 @@ public class ResourceManagerImpl implements ResourceManager {
         } else {
             if (curObj.getReserved() == 0) {
                 removeData(id, curObj.getKey());
+                transactionUpdateMap.get(id).add(new UpdatedItem(id, key, null));
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
                 return true;
             } else {
@@ -174,7 +175,7 @@ public class ResourceManagerImpl implements ResourceManager {
 //        return value;
 //    }
 
-    public ReservableItem getItem(int id, String key) throws RemoteException{
+    public ReservableItem getItem(int id, String key) throws RemoteException {
         Trace.info("RM::getItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         if (curObj == null) {
@@ -531,5 +532,4 @@ public class ResourceManagerImpl implements ResourceManager {
             throws RemoteException {
         return false;
     }
-
 }
