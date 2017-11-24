@@ -34,7 +34,7 @@ public class RMReplicationManager extends ReceiverAdapter {
     }
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("jgroups.bind_addr", "127.0.0.1");
+//        System.setProperty("jgroups.bind_addr", "127.0.0.1");
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         if (args.length == 1) {
