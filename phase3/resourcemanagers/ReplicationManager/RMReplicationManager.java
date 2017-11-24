@@ -45,7 +45,7 @@ public class RMReplicationManager extends ReceiverAdapter {
             replicaType += args[1];
         } else if (args.length != 0) {
             System.err.println("Wrong usage");
-            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
+            System.out.println("Usage: java ReplicationManager.RMReplicationManager [port]");
             System.exit(1);
         }
         new RMReplicationManager().start();
