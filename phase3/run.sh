@@ -34,21 +34,21 @@ if [ "$project" = "s" ]; then
 				# pkill -f rmiregistry
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1100 &
-				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1100
+				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1100 car
 	           	break;;
 
 	   	[Ff]* ) 
 				# pkill -f rmiregistry
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1101 &
-				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1102
+				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1102 flight
 				break;;
 
 		[Hh]* )	
 				# pkill -f rmiregistry
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1102 &
-				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1101
+				java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1101 hotel
 				break;;
 
 	   	* )     echo "Dude, just enter Car, Flight or Hotel, please."; continue;;

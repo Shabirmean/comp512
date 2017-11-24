@@ -2,7 +2,7 @@
 
 DIR=$(pwd)
 
-export CLASSPATH=$DIR/resourcemanagers:$DIR/middleware:$DIR/clientsrc:$DIR/lockmanager:$DIR/perf-clientsrc:$DIR/resourcemanagers/ResInterface.jar:$DIR/resourcemanagers/ResourceManager.jar:$DIR/lockmanager/LockManager.jar:$DIR/middleware/Middleware.jar
+export CLASSPATH=$DIR/jgroups-4.0.8.Final.jar:$DIR/resourcemanagers:$DIR/middleware:$DIR/clientsrc:$DIR/lockmanager:$DIR/perf-clientsrc:$DIR/resourcemanagers/ResInterface.jar:$DIR/resourcemanagers/RMReplicationManager.jar:$DIR/resourcemanagers/ResourceManager.jar:$DIR/lockmanager/LockManager.jar:$DIR/middleware/Middleware.jar
 
 cd $DIR/resourcemanagers
 echo "grant codeBase \"file:$DIR/resourcemanagers/\" {
@@ -11,6 +11,8 @@ echo "grant codeBase \"file:$DIR/resourcemanagers/\" {
 
 javac ResInterface/ResourceManager.java
 jar cvf ResInterface.jar ResInterface/*.class
+javac ReplicationManager/RMReplicationManager.java
+jar cvf RMReplicationManager.jar ReplicationManager/*.class
 javac ResImpl/ResourceManagerImpl.java
 jar cvf ResourceManager.jar ResImpl/*.class
 
