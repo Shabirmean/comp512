@@ -6,3 +6,5 @@ target
 *test
 *.class
 *.jar
+!jgroups-4.0.8.Final.jar
+!jgroups-4.0.8.Final-sources.jar
