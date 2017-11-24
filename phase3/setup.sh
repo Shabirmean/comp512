@@ -36,12 +36,12 @@ echo "grant codeBase \"file:$DIR/clientsrc/\" {
 
 javac Client.java
 
-cd $DIR/perf-clientsrc
-echo "grant codeBase \"file:$DIR/perf-clientsrc/\" {
-    permission java.security.AllPermission;
-};" > java.policy
+#cd $DIR/perf-clientsrc
+#echo "grant codeBase \"file:$DIR/perf-clientsrc/\" {
+#    permission java.security.AllPermission;
+#};" > java.policy
 
-javac ClientManager.java
+#javac ClientManager.java
 
 cd $DIR
 chmod -R 705 ./*

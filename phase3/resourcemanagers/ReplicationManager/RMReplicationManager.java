@@ -36,6 +36,7 @@ public class RMReplicationManager extends ReceiverAdapter {
     public static void main(String[] args) throws Exception {
 //        System.setProperty("jgroups.bind_addr", "127.0.0.1");
         System.setProperty("java.net.preferIPv4Stack", "true");
+//        System.setProperty("java.net.preferIPv6Addresses", "true");
 
         if (args.length == 1) {
             registryPort = Integer.parseInt(args[0]);
