@@ -20,26 +20,32 @@ public class TransactionManager {
     private static final String CAR_ITEM_KEY = "car";
     private static final String HOTEL_ITEM_KEY = "room";
     private static final String CUSTOMER_ITEM_KEY = "customer";
-    private static final Object countLock = new Object();
-    private static final Timer transactionTimer = new Timer();
-    private static final Timer shutdownTimer = new Timer();
+    private static final Object COUNT_LOCK = new Object();
+    private static final Timer TRANSACTION_TIMER = new Timer();
+    private static final Timer SHUTDOWN_TIMER = new Timer();
 
-    private static Integer TRANSACTION_ID_COUNT = 1001;
+    private static HashMap<String, String> rmConfigsMap;
+    private static Integer transactionIdCount = 1001;
     private static LockManager lockMan = new LockManager();
     private static HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
     private static ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
 
 
-    public TransactionManager(ResourceManager carManager, ResourceManager flightManager,
-                              ResourceManager hotelManager, ResourceManager customerManager) {
-        resourceManagers.put(ResourceManagerType.CAR, carManager);
-        resourceManagers.put(ResourceManagerType.FLIGHT, flightManager);
-        resourceManagers.put(ResourceManagerType.HOTEL, hotelManager);
-        resourceManagers.put(ResourceManagerType.CUSTOMER, customerManager);
+
+//    public TransactionManager(ResourceManager carManager, ResourceManager flightManager,
+//                              ResourceManager hotelManager, ResourceManager customerManager) {
+//        resourceManagers.put(ResourceManagerType.CAR, carManager);
+//        resourceManagers.put(ResourceManagerType.FLIGHT, flightManager);
+//        resourceManagers.put(ResourceManagerType.HOTEL, hotelManager);
+//        resourceManagers.put(ResourceManagerType.CUSTOMER, customerManager);
+//    }
+
+    public TransactionManager(HashMap<ResourceManagerType, ResourceManager> rmMap) {
+        resourceManagers = rmMap;
     }
 
     public void initTransactionManager() {
-        transactionTimer.scheduleAtFixedRate(new TimerTask() {
+        TRANSACTION_TIMER.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 int tiD = -1;
@@ -63,8 +69,8 @@ public class TransactionManager {
 
     public int start() throws RemoteException {
         int newTId;
-        synchronized (countLock) {
-            newTId = TRANSACTION_ID_COUNT++;
+        synchronized (COUNT_LOCK) {
+            newTId = transactionIdCount++;
         }
         Transaction newTrans = new Transaction(newTId);
         transMap.put(newTId, newTrans);
@@ -183,7 +189,7 @@ public class TransactionManager {
                     shutRMs = rmNow + ", ";
                 }
 
-                shutdownTimer.schedule(new TimerTask() {
+                SHUTDOWN_TIMER.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         System.exit(0);

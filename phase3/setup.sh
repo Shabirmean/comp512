@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DIR=$(pwd)
-
 export CLASSPATH=$DIR/jgroups-4.0.8.Final.jar:$DIR/resourcemanagers:$DIR/middleware:$DIR/clientsrc:$DIR/lockmanager:$DIR/perf-clientsrc:$DIR/resourcemanagers/ResInterface.jar:$DIR/resourcemanagers/RMReplicationManager.jar:$DIR/resourcemanagers/ResourceManager.jar:$DIR/lockmanager/LockManager.jar:$DIR/middleware/Middleware.jar
 
 cd $DIR/resourcemanagers

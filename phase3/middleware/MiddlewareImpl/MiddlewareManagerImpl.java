@@ -1,6 +1,7 @@
 package MiddlewareImpl;
 
 import MiddlewareInterface.Middleware;
+import Replication.MWReplicationManager;
 import ResImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
@@ -8,29 +9,27 @@ import ResInterface.TransactionAbortedException;
 import Transaction.ReqStatus;
 import Transaction.TransactionManager;
 import exception.TransactionManagerException;
+import util.MiddlewareConstants;
 import util.RequestType;
+import util.ResourceManagerType;
 
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class MiddlewareManagerImpl implements Middleware {
 
-    protected RMHashtable m_itemHT = new RMHashtable();
-    static TransactionManager transactionMan;
-    static ResourceManager cm = null;
-    static ResourceManager hm = null;
-    static ResourceManager fm = null;
+    private RMHashtable m_itemHT = new RMHashtable();
+    private static TransactionManager transactionMan;
+//    static ResourceManager cm = null;
+//    static ResourceManager hm = null;
+//    static ResourceManager fm = null;
 
     public MiddlewareManagerImpl() throws RemoteException {
     }
 
     public static void main(String args[]) {
-//        System.out.println("#########" + System.getProperty("java.class.path"));
         // Figure out where server is running
         String server = "localhost";
         String carserver = "";
@@ -45,82 +44,85 @@ public class MiddlewareManagerImpl implements Middleware {
             server = server + ":" + args[0];
             port = Integer.parseInt(args[0]);
         } else if (args.length == 4) {
-//            server = server + ":" + args[0];
-//            port = Integer.parseInt(args[0]);
             server = args[0];
             carserver = args[1];
-            hotelserver = args[2];
-            flightserver = args[3];
+            flightserver = args[2];
+            hotelserver = args[3];
         }
 
-        System.out.println("Middleware: " + server + ":" + port);
-        System.out.println("Car Manager: " + carserver + ":" + carport);
-        System.out.println("Hotel Manager: " + hotelserver + ":" + hotelport);
-        System.out.println("Flight Manager: " + flightserver + ":" + flightport);
-//        server = server + ":" + args[0];
-//        port = Integer.parseInt(args[0]);
-//        carserver = "localhost";
-//        hotelserver = "localhost";
-//        flightserver = "localhost";
+        String middlewareServerConfig = server + ":" + port;
+        String carServerConfig = carserver + ":" + carport;
+        String flightServerConfig = flightserver + ":" + flightport;
+        String hotelServerConfig = hotelserver + ":" + hotelport;
 
-        // else if (args.length != 0 &&  args.length != 1) {
-        //     System.err.println ("Wrong usage");
-        //     System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
-        //     System.exit(1);
-        // }
+        System.out.println("Middleware: " + middlewareServerConfig);
+        System.out.println("Car Manager: " + carServerConfig);
+        System.out.println("Hotel Manager: " + hotelServerConfig);
+        System.out.println("Flight Manager: " + flightServerConfig);
 
-        try {
-            // create a new Server object
-            MiddlewareManagerImpl obj = new MiddlewareManagerImpl();
-            // dynamically generate the stub (client proxy)
-            Middleware rm = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
-            // Bind the remote object's stub in the registry
-            Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("ShabirJianMiddleware", rm);
+        HashMap<String, String> rmConfigs = new HashMap<>();
+        rmConfigs.put(ResourceManagerType.CUSTOMER.getCodeString(), middlewareServerConfig);
+        rmConfigs.put(ResourceManagerType.CAR.getCodeString(), carServerConfig);
+        rmConfigs.put(ResourceManagerType.FLIGHT.getCodeString(), flightServerConfig);
+        rmConfigs.put(ResourceManagerType.HOTEL.getCodeString(), hotelServerConfig);
 
-            System.err.println("Server ready");
-            server = "localhost";
+        MWReplicationManager mwReplicationManager = new MWReplicationManager(rmConfigs);
+        HashMap<ResourceManagerType, ResourceManager> resourceManagers = mwReplicationManager.initReplicationManager();
+        transactionMan = new TransactionManager(resourceManagers);
+        transactionMan.initTransactionManager();
 
-            Registry carregistry = LocateRegistry.getRegistry(carserver, carport);
-            cm = (ResourceManager) carregistry.lookup("ShabirJianResourceManager");
-            if (cm != null) {
-                System.out.println("Successful");
-                System.out.println("Connected to CarManager");
-            } else {
-                System.out.println("Unsuccessful");
-            }
-
-            Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
-            hm = (ResourceManager) hotelregistry.lookup("ShabirJianResourceManager");
-            if (hm != null) {
-                System.out.println("Successful");
-                System.out.println("Connected to HotelManager");
-            } else {
-                System.out.println("Unsuccessful");
-            }
-
-            Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
-            fm = (ResourceManager) flightregistry.lookup("ShabirJianResourceManager");
-            if (fm != null) {
-                System.out.println("Successful");
-                System.out.println("Connected to FlightManager");
-            } else {
-                System.out.println("Unsuccessful");
-            }
-
-            MWResourceManager mw = new MWResourceManager();
-            transactionMan = new TransactionManager(cm, hm, fm, mw);
-            transactionMan.initTransactionManager();
-
-        } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
-            e.printStackTrace();
-        }
-
-        // Create and install a security manager
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }
+//        try {
+//            // create a new Server object
+//            MiddlewareManagerImpl obj = new MiddlewareManagerImpl();
+//            // dynamically generate the stub (client proxy)
+//            Middleware rm = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
+//            // Bind the remote object's stub in the registry
+//            Registry registry = LocateRegistry.getRegistry(port);
+//            registry.rebind("ShabirJianMiddleware", rm);
+//
+//            System.err.println("Server ready");
+//            server = "localhost";
+//
+//            Registry carregistry = LocateRegistry.getRegistry(carserver, carport);
+//            cm = (ResourceManager) carregistry.lookup("ShabirJianResourceManager");
+//            if (cm != null) {
+//                System.out.println("Successful");
+//                System.out.println("Connected to CarManager");
+//            } else {
+//                System.out.println("Unsuccessful");
+//            }
+//
+//            Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
+//            hm = (ResourceManager) hotelregistry.lookup("ShabirJianResourceManager");
+//            if (hm != null) {
+//                System.out.println("Successful");
+//                System.out.println("Connected to HotelManager");
+//            } else {
+//                System.out.println("Unsuccessful");
+//            }
+//
+//            Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
+//            fm = (ResourceManager) flightregistry.lookup("ShabirJianResourceManager");
+//            if (fm != null) {
+//                System.out.println("Successful");
+//                System.out.println("Connected to FlightManager");
+//            } else {
+//                System.out.println("Unsuccessful");
+//            }
+//
+//            MWResourceManager mw = new MWResourceManager();
+//            transactionMan = new TransactionManager(cm, hm, fm, mw);
+//            transactionMan.initTransactionManager();
+//
+//        } catch (Exception e) {
+//            System.err.println("Server exception: " + e.toString());
+//            e.printStackTrace();
+//        }
+//
+//        // Create and install a security manager
+////        if (System.getSecurityManager() == null) {
+////            System.setSecurityManager(new RMISecurityManager());
+////        }
     }
 
     @Override
@@ -236,6 +238,7 @@ public class MiddlewareManagerImpl implements Middleware {
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.ADD_FLIGHT, flightItem);
         } catch (TransactionManagerException e) {
+            e.printStackTrace();
             System.out.println("");
             throw new RemoteException(e.getReason().getStatus());
         }
@@ -267,6 +270,7 @@ public class MiddlewareManagerImpl implements Middleware {
         try {
             tManResponse = transactionMan.submitOperation(id, RequestType.ADD_ROOMS, hotelItem);
         } catch (TransactionManagerException e) {
+            e.printStackTrace();
             System.out.println("");
             throw new RemoteException(e.getReason().getStatus());
         }

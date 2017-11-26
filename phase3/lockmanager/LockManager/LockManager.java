@@ -44,7 +44,11 @@ public class LockManager {
             while (bConflict) {
                 synchronized (lockTable) {
                     // check if this lock request conflicts with existing locks
-                    bConflict = LockConflict(dataObj, bConvert);
+//                    try {
+                        bConflict = LockConflict(dataObj, bConvert);
+//                    } catch (RedundantLockRequestException e) {
+//                        e.printStackTrace();
+//                    }
                     if (!bConflict) {
                         // no lock conflict
                         synchronized (stampTable) {
@@ -85,7 +89,7 @@ public class LockManager {
                     WaitLock(dataObj);
                 }
             }
-        } catch (RedundantLockRequestException redundantlockrequest) {
+        } catch (RedundantLockRequestException e) {
             // just ignore the redundant lock request
             return true;
         }

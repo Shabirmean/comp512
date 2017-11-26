@@ -24,6 +24,11 @@ import java.util.Vector;
  */
 
 public interface ResourceManager extends Remote {
+    //TODO:: Use these and see
+    String MW_OBJECT_REG_ID = "ShabirJianMiddleware";
+    String CM_OBJECT_REG_ID = "ShabirJianRMCar";
+    String FM_OBJECT_REG_ID = "ShabirJianRMFlight";
+    String HM_OBJECT_REG_ID = "ShabirJianRMHotel";
 
     public void writeData(int id, String key, RMItem value) throws RemoteException;
 
