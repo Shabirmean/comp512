@@ -21,9 +21,9 @@ public class Customer extends RMItem {
 //        m_Reservations = (RMHashtable) copyCustomer.getReservations().clone();
         m_Reservations = new RMHashtable();
         m_Reservations.putAll(copyCustomer.getReservations());
-        for (Object key: copyCustomer.getReservations().keySet()) {
-            m_Reservations.put(key, copyCustomer.getReservations().get(key));
-        }
+//        for (Object key: copyCustomer.getReservations().keySet()) {
+//            m_Reservations.put(key, copyCustomer.getReservations().get(key));
+//        }
 
         m_nID = copyCustomer.m_nID;
     }
@@ -53,8 +53,8 @@ public class Customer extends RMItem {
         ReservedItem reservedItem = getReservedItem(key);
         if (reservedItem != null) {
             reservedItem.setCount(reservedItem.getCount() - 1);
+            m_Reservations.put(key, reservedItem);
         } // else
-        m_Reservations.put(reservedItem.getKey(), reservedItem);
     }
 
     public ReservedItem getReservedItem(String key) {
