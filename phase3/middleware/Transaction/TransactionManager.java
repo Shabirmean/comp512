@@ -575,7 +575,7 @@ public class TransactionManager implements Serializable {
         String rmType = "";
         String itemKey = "";
         int rmTID = -1;
-        int responseNum;
+        int responseNum = ReqStatus.FAILURE.getStatusCode();;
 
         try {
             Transaction transaction = transMap.get(tId);
@@ -643,19 +643,34 @@ public class TransactionManager implements Serializable {
                 }
             }
 
-            int reservedItemPrice = submitOperation(tId, RequestType.RESERVE_RESOURCE, resourceItem);
-            if (reservedItemPrice == ReqStatus.FAILURE.getStatusCode()) {
-                responseNum = ReqStatus.FAILURE.getStatusCode();
-            } else {
-                String resourceKey = resourceItem.getKey();
-                String resourceLoc = resourceItem.getLocation();
-                alreadyAccessedItem = (Customer) itemSet.get(itemKey);
-                alreadyAccessedItem.reserve(resourceKey, resourceLoc, reservedItemPrice);
-                Trace.info("TM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
-                        resourceLoc + ") succeeded");
-                transaction.getCorrespondingWriteList(resManType).add(itemKey);
-                responseNum = ReqStatus.SUCCESS.getStatusCode();
+            if (requestType == RequestType.RESERVE_RESOURCE) {
+                int reservedItemPrice = submitOperation(tId, RequestType.RESERVE_RESOURCE, resourceItem);
+                if (reservedItemPrice == ReqStatus.FAILURE.getStatusCode()) {
+                    responseNum = ReqStatus.FAILURE.getStatusCode();
+                } else {
+                    String resourceKey = resourceItem.getKey();
+                    String resourceLoc = resourceItem.getLocation();
+                    alreadyAccessedItem = (Customer) itemSet.get(itemKey);
+                    alreadyAccessedItem.reserve(resourceKey, resourceLoc, reservedItemPrice);
+                    Trace.info("TM::reserveItem( " + tId + ", " + customerId + ", " + resourceKey + ", " +
+                            resourceLoc + ") succeeded");
+                    transaction.getCorrespondingWriteList(resManType).add(itemKey);
+                    responseNum = ReqStatus.SUCCESS.getStatusCode();
+                }
+
+            } else if (requestType == RequestType.UNRESERVE_RESOURCE) {
+                int reservedItemPrice = submitOperation(tId, RequestType.UNRESERVE_RESOURCE, resourceItem);
+                if (reservedItemPrice == ReqStatus.FAILURE.getStatusCode()) {
+                    responseNum = ReqStatus.FAILURE.getStatusCode();
+                } else {
+                    String resourceKey = resourceItem.getKey();
+                    alreadyAccessedItem = (Customer) itemSet.get(itemKey);
+                    alreadyAccessedItem.unReserve(resourceKey);
+                    transaction.getCorrespondingWriteList(resManType).add(itemKey);
+                    responseNum = ReqStatus.SUCCESS.getStatusCode();
+                }
             }
+
         } catch (DeadlockException e) {
             errMsg = "TId [" + tId + "] failed its LOCK request on item [" + customerItem.getKey() + "] on DEADLOCK.";
             printMsg(errMsg);
@@ -686,12 +701,10 @@ public class TransactionManager implements Serializable {
     }
 
 
-    @SafeVarargs
-    private final void unReserveItems(int tId, Vector<ReservableItem>... items) throws TransactionManagerException {
-        for (Vector<ReservableItem> itemVector: items) {
-            for (ReservableItem reservedItem: itemVector) {
-                submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservedItem);
-            }
+    private void unReserveItems(int tId, Customer customer, Vector<ReservableItem> items)
+            throws TransactionManagerException {
+        for (ReservableItem reservedItem : items) {
+            submitReserveOperation(tId, customer, RequestType.UNRESERVE_RESOURCE, reservedItem);
         }
     }
 
@@ -713,7 +726,6 @@ public class TransactionManager implements Serializable {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to reserve " +
                             flightToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
                 } else {
                     flightToBook.setReserved(1);
@@ -728,7 +740,6 @@ public class TransactionManager implements Serializable {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + carToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
                 } else {
                     carToBook.setReserved(1);
@@ -743,7 +754,6 @@ public class TransactionManager implements Serializable {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + hotelToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
-                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
                 } else {
                     hotelToBook.setReserved(1);
@@ -754,6 +764,8 @@ public class TransactionManager implements Serializable {
             printMsg("(Itinerary-Req) Reserve request for some items of transaction [" + tId + "] failed.");
             if (!e.getReason().equals(ReqStatus.RESERVE_ITEM_ZERO)) {
                 abort(tId);
+            } else {
+                unReserveItems(tId, customer, bookedItems);
             }
             throw e;
         }
@@ -888,7 +900,7 @@ public class TransactionManager implements Serializable {
         return copyItem;
     }
 
-    public ReplicationObject getReplicationObject(){
+    public ReplicationObject getReplicationObject() {
         ReplicationObject newRepObj = new ReplicationObject();
         MWResourceManager customerManger = (MWResourceManager) resourceManagers.get(ResourceManagerType.CUSTOMER);
         newRepObj.setLockMan(this.lockMan);
@@ -898,7 +910,7 @@ public class TransactionManager implements Serializable {
         return newRepObj;
     }
 
-    public void updateState(ReplicationObject repObject){
+    public void updateState(ReplicationObject repObject) {
         lockMan = repObject.getLockMan();
         transactionIdCount = repObject.getTransactionIdCount();
         transMap = repObject.getTransMap();
