@@ -66,8 +66,8 @@ if [ "$project" = "m" ]; then
   	# sleep(2000)
   	# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1099 &
 	#java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-28.cs.mcgill.ca cs-27.cs.mcgill.ca
-	#java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ Replication.MWReplicationManager cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-28.cs.mcgill.ca cs-27.cs.mcgill.ca
-	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ Replication.MWReplicationManager 132.206.52.44 132.206.52.45 132.206.52.48 132.206.52.47
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ Replication.MWReplicationManager cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-28.cs.mcgill.ca cs-27.cs.mcgill.ca
+	#java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ Replication.MWReplicationManager 132.206.52.44 132.206.52.45 132.206.52.48 132.206.52.47
 fi
 
 

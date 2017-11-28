@@ -11,6 +11,7 @@ import util.MiddlewareConstants;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 /**
  * Created by shabirmean on 2017-11-24 with some hope.
@@ -34,12 +35,21 @@ public class RMClusterMember extends ReceiverAdapter {
     }
 
     public void start() throws Exception {
+        InetAddress[] newAddress = InetAddress.getAllByName(rmServerAdd);
+        for (InetAddress add : newAddress) {
+            System.out.println("############ " + add.getCanonicalHostName());
+            System.out.println("############ " + add.getHostAddress());
+            System.out.println("############ " + add.getHostName());
+            System.out.println("############ " + Arrays.toString(add.getAddress()));
+        }
+
+
         Protocol[] protocolStack;
         try {
             protocolStack = new Protocol[]{
                     new UDP()
 //                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(rmServerAdd))
-                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, rmServerAdd)
+                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(rmServerAdd))
                             .setValue(MiddlewareConstants.JGRP_MC_PORT, rmClusterPort),
                     new PING(),
                     new MERGE3(),
