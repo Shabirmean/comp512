@@ -686,23 +686,38 @@ public class TransactionManager implements Serializable {
     }
 
 
+    @SafeVarargs
+    private final void unReserveItems(int tId, Vector<ReservableItem>... items) throws TransactionManagerException {
+        for (Vector<ReservableItem> itemVector: items) {
+            for (ReservableItem reservedItem: itemVector) {
+                submitOperation(tId, RequestType.UNRESERVE_RESOURCE, reservedItem);
+            }
+        }
+    }
+
+
+    @SuppressWarnings("Duplicates")
     public boolean submitReserveItineraryOperation(int tId, int cId, Vector flightNumbers,
                                                    String location, boolean bookCar, boolean bookHotel)
             throws TransactionManagerException {
         String errMsg;
         int responseVal = ReqStatus.FAILURE.getStatusCode();
         Customer customer = new Customer(cId);
+        Vector<ReservableItem> bookedItems = new Vector<>();
         try {
             for (Object flightNumber : flightNumbers) {
                 int flNumber = Integer.parseInt((String) flightNumber);
                 Flight flightToBook = new Flight(flNumber, VALUE_NOT_SET, VALUE_NOT_SET);
                 responseVal = submitReserveOperation(tId, customer, RequestType.RESERVE_RESOURCE, flightToBook);
                 if (responseVal == ReqStatus.FAILURE.getStatusCode()) {
-                    errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
-                            "reserve " + flightToBook.getKey() + ". Aborting transaction...";
+                    errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to reserve " +
+                            flightToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
+                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
-//                    abort(tId);
+                } else {
+                    flightToBook.setReserved(1);
+                    bookedItems.add(flightToBook);
                 }
             }
 
@@ -713,8 +728,11 @@ public class TransactionManager implements Serializable {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + carToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
+                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
-//                    abort(tId);
+                } else {
+                    carToBook.setReserved(1);
+                    bookedItems.add(carToBook);
                 }
             }
 
@@ -725,13 +743,18 @@ public class TransactionManager implements Serializable {
                     errMsg = "[" + tId + "] Itinerary reservation failed whilst trying to " +
                             "reserve " + hotelToBook.getKey() + ". Aborting transaction...";
                     printMsg(errMsg);
+                    unReserveItems(tId, bookedItems);
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
-//                    abort(tId);
+                } else {
+                    hotelToBook.setReserved(1);
+                    bookedItems.add(hotelToBook)
                 }
             }
         } catch (TransactionManagerException e) {
             printMsg("(Itinerary-Req) Reserve request for some items of transaction [" + tId + "] failed.");
-            abort(tId);
+            if (!e.getReason().equals(ReqStatus.RESERVE_ITEM_ZERO)) {
+                abort(tId);
+            }
             throw e;
         }
         MWReplicationManager.updateReplicas(getReplicationObject());
