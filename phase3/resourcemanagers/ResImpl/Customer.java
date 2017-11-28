@@ -20,9 +20,10 @@ public class Customer extends RMItem {
         super();
 //        m_Reservations = (RMHashtable) copyCustomer.getReservations().clone();
         m_Reservations = new RMHashtable();
-        for (Object key: copyCustomer.getReservations().keySet()) {
-            m_Reservations.put(key, copyCustomer.getReservations().get(key));
-        }
+        m_Reservations.putAll(copyCustomer.getReservations());
+//        for (Object key: copyCustomer.getReservations().keySet()) {
+//            m_Reservations.put(key, copyCustomer.getReservations().get(key));
+//        }
 
         m_nID = copyCustomer.m_nID;
     }
