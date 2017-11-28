@@ -35,14 +35,8 @@ public class RMClusterMember extends ReceiverAdapter {
     }
 
     public void start() throws Exception {
-        InetAddress[] newAddress = InetAddress.getAllByName(rmServerAdd);
-        for (InetAddress add : newAddress) {
-            System.out.println("############ " + add.getCanonicalHostName());
-            System.out.println("############ " + add.getHostAddress());
-            System.out.println("############ " + add.getHostName());
-            System.out.println("############ " + Arrays.toString(add.getAddress()));
-        }
-
+        System.setProperty("jgroups.bind_addr", rmServerAdd);
+        System.setProperty("jgroups.udp.mcast_port", "" + rmClusterPort);
 
         Protocol[] protocolStack;
         try {
@@ -66,7 +60,8 @@ public class RMClusterMember extends ReceiverAdapter {
                     new FRAG2(),
                     new STATE_TRANSFER()};
 
-            channel = new JChannel(protocolStack).setReceiver(this).setName(mwRMNodeId);
+//            channel = new JChannel(protocolStack).setReceiver(this).setName(mwRMNodeId);
+            channel = new JChannel().setReceiver(this).setName(mwRMNodeId);
             channel.connect(clusterId);
 
             clusterCoordinator = channel.getView().getCoord();
