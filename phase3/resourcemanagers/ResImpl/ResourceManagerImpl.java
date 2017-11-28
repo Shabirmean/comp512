@@ -21,7 +21,7 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
 
     private RMHashtable m_itemHT = new RMHashtable();
     private List<Integer> transactionList = new ArrayList<Integer>();
-    private HashMap<Integer, ArrayList<UpdatedItem>> transactionUpdateMap = new HashMap<>();
+//    private HashMap<Integer, ArrayList<UpdatedItem>> transactionUpdateMap = new HashMap<>();
     private static Integer TRANSACTION_ID_COUNT = new Random().nextInt(10000);
     private static final Object countLock = new Object();
     private static boolean SHUTDOWN = false;
@@ -58,6 +58,29 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
         }
     }
 
+
+    @Override
+    public void updateReplica(UpdatedItem item) {
+        int tId = item.getTransactionId();
+        String itemKey = item.getItemKey();
+        RMItem itemVal = item.getItemVal();
+        boolean isEnd = item.isCommit();
+
+        if (itemKey == null && itemVal == null) {
+            if (isEnd) {
+                transactionList.remove(transactionList.indexOf(tId));
+            } else {
+                transactionList.add(tId);
+            }
+        } else {
+            if (itemVal == null) {
+                deleteUpdate(tId, itemKey);
+            } else {
+                writeUpdate(tId, itemKey, itemVal);
+            }
+        }
+    }
+
     @Override
     public void setRMState(RMHashtable rmHashtable) {
         this.m_itemHT = rmHashtable;
@@ -75,7 +98,8 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
             newTId = TRANSACTION_ID_COUNT++;
         }
         transactionList.add(newTId);
-        transactionUpdateMap.put(newTId, new ArrayList<>());
+        replicationManager.updateReplicas(new UpdatedItem(newTId, null, null, false));
+//        transactionUpdateMap.put(newTId, new ArrayList<>());
         return newTId;
     }
 
@@ -86,12 +110,14 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
             return false;
         }
         transactionList.remove(transactionList.indexOf(transactionId));
-        boolean updated = replicationManager.updateReplicas(transactionUpdateMap.get(transactionId));
-        if (!updated) {
-            Trace.error("RM:: Replica update failed. RMs are in inconsistant state");
-        }
-        transactionUpdateMap.remove(transactionId);
-        return updated;
+        replicationManager.updateReplicas(new UpdatedItem(transactionId, null, null, true));
+//        boolean updated = replicationManager.updateReplicas(transactionUpdateMap.get(transactionId));
+//        if (!updated) {
+//            Trace.error("RM:: Replica update failed. RMs are in inconsistant state");
+//        }
+//        transactionUpdateMap.remove(transactionId);
+//        return updated;
+        return true;
     }
 
     @Override
@@ -128,12 +154,40 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
     }
 
     // Writes a data item
+    private void writeUpdate(int id, String key, RMItem value) {
+        Trace.info("RM::writeUpdate(" + id + ", " + key + ") called");
+        synchronized (m_itemHT) {
+            m_itemHT.put(key, value);
+        }
+    }
+
+    private boolean deleteUpdate(int id, String key) {
+        Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
+        ReservableItem curObj = (ReservableItem) readData(id, key);
+        if (curObj == null) {
+            Trace.warn("RM::deleteItem(" + id + ", " + key + ") failed--item doesn't exist");
+            return false;
+        } else {
+            if (curObj.getReserved() == 0) {
+                removeData(id, curObj.getKey());
+                Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
+                return true;
+            } else {
+                Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers " +
+                        "reserved it");
+                return false;
+            }
+        }
+    }
+
+    // Writes a data item
     public void writeData(int id, String key, RMItem value) {
         Trace.info("RM::writeData(" + id + ", " + key + ") called");
         synchronized (m_itemHT) {
             m_itemHT.put(key, value);
         }
-        transactionUpdateMap.get(id).add(new UpdatedItem(id, key, value));
+        replicationManager.updateReplicas(new UpdatedItem(id, key, value, false));
+//        transactionUpdateMap.get(id).add(new UpdatedItem(id, key, value));
     }
 
     // Remove the item out of storage
@@ -155,7 +209,8 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
         } else {
             if (curObj.getReserved() == 0) {
                 removeData(id, curObj.getKey());
-                transactionUpdateMap.get(id).add(new UpdatedItem(id, key, null));
+                replicationManager.updateReplicas(new UpdatedItem(id, key, null, false));
+//                transactionUpdateMap.get(id).add(new UpdatedItem(id, key, null));
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
                 return true;
             } else {

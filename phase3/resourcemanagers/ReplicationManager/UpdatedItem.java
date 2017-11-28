@@ -14,34 +14,28 @@ public class UpdatedItem implements Serializable {
     private int transactionId;
     private String itemKey;
     private RMItem itemVal;
+    private boolean isCommit;
 
-    public UpdatedItem(int tId, String itemKey, RMItem itemVal){
+    public UpdatedItem(int tId, String itemKey, RMItem itemVal, boolean isEnd){
         this.transactionId = tId;
         this.itemKey = itemKey;
         this.itemVal = itemVal;
+        this.isCommit = isEnd;
     }
 
     public int getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(int transactionId) {
-        this.transactionId = transactionId;
-    }
-
     public String getItemKey() {
         return itemKey;
-    }
-
-    public void setItemKey(String itemKey) {
-        this.itemKey = itemKey;
     }
 
     public RMItem getItemVal() {
         return itemVal;
     }
 
-    public void setItemVal(RMItem itemVal) {
-        this.itemVal = itemVal;
+    public boolean isCommit() {
+        return isCommit;
     }
 }

@@ -35,19 +35,7 @@ public class TransactionManager implements Serializable {
     private ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
     private HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
 
-//    public TransactionManager(ResourceManager carManager, ResourceManager flightManager,
-//                              ResourceManager hotelManager, ResourceManager customerManager) {
-//        resourceManagers.put(ResourceManagerType.CAR, carManager);
-//        resourceManagers.put(ResourceManagerType.FLIGHT, flightManager);
-//        resourceManagers.put(ResourceManagerType.HOTEL, hotelManager);
-//        resourceManagers.put(ResourceManagerType.CUSTOMER, customerManager);
-//    }
-
     public TransactionManager() {
-    }
-
-    public void setResourceManagers(HashMap<ResourceManagerType, ResourceManager> rms) {
-        resourceManagers = rms;
     }
 
     public HashMap<ResourceManagerType, ResourceManager> getResourceManagers() {
@@ -94,8 +82,7 @@ public class TransactionManager implements Serializable {
         Transaction thisTransaction = transMap.get(transId);
         //noinspection Duplicates
         if (thisTransaction == null) {
-            errMsg = "TId [" + transId + "] No valid ResInterface.transactions found with the given " +
-                    "transactionId";
+            errMsg = "TId [" + transId + "] No valid ResInterface.transactions found with the given transactionId";
             printMsg(errMsg);
             throw new TransactionManagerException(errMsg, ReqStatus.INVALID_TRANSACTION_ID);
         } else {

@@ -27,10 +27,6 @@ public class MiddlewareManagerImpl implements Middleware {
         return transactionMan;
     }
 
-//    public void setTransactionMan(TransactionManager transactionMan) {
-//        this.transactionMan = transactionMan;
-//    }
-
     public void setMWState(ReplicationObject replicationObject) {
         this.transactionMan.updateState(replicationObject);
     }
@@ -38,63 +34,6 @@ public class MiddlewareManagerImpl implements Middleware {
     public ReplicationObject getMWState() {
         return transactionMan.getReplicationObject();
     }
-
-//    public static void main(String args[]) {
-//        // Figure out where server is running
-//        String server = "localhost";
-//        String carserver = "";
-//        String flightserver = "";
-//        String hotelserver = "";
-//        int port = 1099;
-//        int carport = 1100;
-//        int hotelport = 1101;
-//        int flightport = 1102;
-//
-//        if (args.length == 1) {
-//            server = server + ":" + args[0];
-//            port = Integer.parseInt(args[0]);
-//        } else if (args.length == 4) {
-//            server = args[0];
-//            carserver = args[1];
-//            flightserver = args[2];
-//            hotelserver = args[3];
-//        }
-//
-//        String middlewareServerConfig = server + ":" + port;
-//        String carServerConfig = carserver + ":" + carport;
-//        String flightServerConfig = flightserver + ":" + flightport;
-//        String hotelServerConfig = hotelserver + ":" + hotelport;
-//
-//        System.out.println("Middleware: " + middlewareServerConfig);
-//        System.out.println("Car Manager: " + carServerConfig);
-//        System.out.println("Hotel Manager: " + hotelServerConfig);
-//        System.out.println("Flight Manager: " + flightServerConfig);
-//
-//        HashMap<String, String> rmConfigs = new HashMap<>();
-//        rmConfigs.put(ResourceManagerType.CUSTOMER.getCodeString(), middlewareServerConfig);
-//        rmConfigs.put(ResourceManagerType.CAR.getCodeString(), carServerConfig);
-//        rmConfigs.put(ResourceManagerType.FLIGHT.getCodeString(), flightServerConfig);
-//        rmConfigs.put(ResourceManagerType.HOTEL.getCodeString(), hotelServerConfig);
-//
-//        final String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
-//        System.out.println("MW::Random UUID-" + uuid);
-//        MWReplicationManager mwClusterMember = new MWReplicationManager(uuid, server);
-//        try {
-////            String memberId = mwClusterMember.start();
-//            mwClusterMember.start();
-//            mwClusterMember.connectToReplicationServers(rmConfigs);
-//            transactionMan = rmClusterManager.transactionMan;
-////            rmClusterManager rmClusterManager = new rmClusterManager(rmConfigs, isClusterManager);
-////            HashMap<ResourceManagerType, ResourceManager> resourceManagers = rmClusterManager
-//// .connectToReplicationServers();
-////            transactionMan = new TransactionManager(resourceManagers);
-////            transactionMan.initTransactionManager();
-//
-//        } catch (Exception e) {
-//            //TODO:: Handle this please
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     public int start() throws RemoteException {

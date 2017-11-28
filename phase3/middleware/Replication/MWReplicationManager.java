@@ -43,21 +43,15 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     private static String mwServerAdd;
     private static boolean iAmMWMaster = false;
 
-//    public static MWRMClusterManager rmClusterManager;
-
     private static HashMap<String, String> rmConfigsMap;
     private static MiddlewareManagerImpl middlewareManager;
-//    private static HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
-    //private static ConcurrentHashMap<ResourceManagerType, RMClusterMember> clusterMembers = new ConcurrentHashMap<>();
 
     private MWReplicationManager(String uuid, String mwAddress) {
         myReplicaId += uuid;
         mwServerAdd = mwAddress;
     }
 
-
     public static void main(String args[]) {
-        // Figure out where server is running
         String server = "localhost";
         String carserver = "";
         String flightserver = "";
@@ -102,7 +96,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
         mwReplicationManager.start();
     }
 
-    //    public String start() throws Exception {
     public void start() {
         Protocol[] protocolStack;
         Address coordinator;
@@ -145,14 +138,10 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     changeClusterCoordinator();
                 }
             }
-//            eventLoop();
-//            channel.close();
         } catch (Exception e) {
             //TODO:: Handle this please
             e.printStackTrace();
         }
-//        return myReplicaId;
-//        return iAmMWMaster;
     }
 
 
@@ -164,7 +153,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
 
 
     @SuppressWarnings("Duplicates")
-//    public static boolean updateReplicas(TransactionManager updatedTManager) {
     public static void updateReplicas(ReplicationObject repObj) {
         try {
             Message msg = new Message(null, serializeObject(repObj));
@@ -175,9 +163,11 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     }
 
     public void receive(Message msg) {
-        System.out.println("MW::Replication message received from MW-leader: " + msg.getSrc());
-        ReplicationObject repObj = deserializeBytes(msg.getBuffer());
-        middlewareManager.setMWState(repObj);
+        if (!iAmMWMaster) {
+            System.out.println("MW::Replication message received from MW-leader: " + msg.getSrc());
+            ReplicationObject repObj = deserializeBytes(msg.getBuffer());
+            middlewareManager.setMWState(repObj);
+        }
     }
 
     public void viewAccepted(View newView) {
@@ -261,12 +251,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     @SuppressWarnings("Duplicates")
     private void changeClusterCoordinator() {
         View view = channel.getView();
-//        Address local_addr = channel.getAddress();
-//        Address coord = view.getMembersRaw()[0];
-//        if (!local_addr.equals(coord)) {
-//            System.err.println(CLUSTER_NAME + "-View can only be changed on coordinator");
-//            return false;
-//        }
         if (view.size() == 1) {
             System.err.println(CLUSTER_NAME + "-Coordinator cannot change as view only has a single member");
             return;
@@ -290,34 +274,26 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                 case CUSTOMER:
                     rmMCPort = MiddlewareConstants.MW_CLUSTER_PORT;
                     continue;
-//                    break;
                 case CAR:
                     rmMCPort = MiddlewareConstants.CAR_CLUSTER_PORT;
                     break;
                 case FLIGHT:
                     rmMCPort = MiddlewareConstants.FLIGHT_CLUSTER_PORT;
                     break;
-//                    continue;
                 case HOTEL:
                     rmMCPort = MiddlewareConstants.HOTEL_CLUSTER_PORT;
                     break;
-//                    continue;
             }
 
             RMClusterMember rmClusterMember = new RMClusterMember(rmName, rmAddress, rmMCPort);
-//            clusterMembers.put(rmType, rmClusterMember);
-
-//            if (iAmClusterHead) {
             Thread clusterJoiner = new Thread(() -> {
                 try {
                     rmClusterMember.start();
-                    //clusterMembers.put(rmType, rmClusterMember);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
             clusterJoiner.start();
-//            }
         }
     }
 
@@ -392,7 +368,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     System.out.println("MW:: Re-Connected to CarManager");
                 } else {
                     System.out.println("MW:: Re-Connecting to CarManager Unsuccessful");
-//                    return false;
                 }
                 middlewareManager.getTransactionMan().getResourceManagers().put(CAR, cm);
 
@@ -404,7 +379,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     System.out.println("MW:: Re-Connected to FlightManager");
                 } else {
                     System.out.println("MW:: Re-Connecting to FLightManager Unsuccessful");
-//                    return false;
                 }
                 middlewareManager.getTransactionMan().getResourceManagers().put(FLIGHT, fm);
 
@@ -416,15 +390,12 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     System.out.println("MW:: Re-Connected to HotelManager");
                 } else {
                     System.out.println("MW:: Re-Connecting to HotelrManager Unsuccessful");
-//                    return false;
                 }
                 middlewareManager.getTransactionMan().getResourceManagers().put(HOTEL, hm);
             }
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
-//            return false;
         }
-//        return true;
     }
 }

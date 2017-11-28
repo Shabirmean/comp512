@@ -30,11 +30,6 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
     private static boolean iAmMaster = false;
 
     public static void main(String[] args) throws Exception {
-//        System.setProperty("jgroups.bind_addr", "127.0.0.1");
-//        System.setProperty("java.net.preferIPv4Stack", "true");
-//        System.setProperty("java.net.preferIPv6Addresses", "true");
-//        System.setProperty("jgroups.udp.mcast_port", "12345");
-
         if (args.length == 1) {
             registryPort = Integer.parseInt(args[0]);
             clusterName += "ALL";
@@ -67,39 +62,14 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
                 changeClusterCoordinator();
             }
         }
-
-//        else if (coordinator.toString().equals(mwMemberPrefix)) {
-//            System.out.println("RM:: Middleware seems to be coordinator. Changing it.");
-//        }
-//        eventLoop();
-//        channel.close();
-    }
-
-    @SuppressWarnings("InfiniteLoopStatement")
-    private void eventLoop() {
-        System.out.println("RM::Connected to cluster [" + clusterName + "] with replica id-" + myReplicaId);
-//        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//        System.out.println("RM:: Replica initialized and waiting for update....");
-        while (true) {
-//            try {
-//                System.out.print("> ");
-//                System.out.flush();
-//                String line = in.readLine().toLowerCase();
-//                if (line.startsWith("quit") || line.startsWith("exit")) {
-//                    break;
-//                }
-//                line = "[" + myReplicaId + "] " + line;
-//                Message msg = new Message(null, line);
-//                channel.send(msg);
-//            } catch (Exception e) {
-//            }
-        }
     }
 
     @SuppressWarnings("Duplicates")
-    public boolean updateReplicas(ArrayList<UpdatedItem> updatedItemList) {
+//    public boolean updateReplicas(ArrayList<UpdatedItem> updatedItemList) {
+    public boolean updateReplicas(UpdatedItem updatedItem) {
         try {
-            Message msg = new Message(null, serializeObject(updatedItemList));
+//            Message msg = new Message(null, serializeObject(updatedItemList));
+            Message msg = new Message(null, serializeObject(updatedItem));
             channel.send(msg);
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,21 +92,18 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
             System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
         }
-
-        // Create and install a security manager
-//        if (System.getSecurityManager() == null) {
-//            System.setSecurityManager(new RMISecurityManager());
-//        }
         return registered;
     }
 
     public void receive(Message msg) {
-        System.out.println("RM::Replication message received from leader: " + msg.getSrc());
-        ArrayList<UpdatedItem> updatedItemList = deserializeBytes(msg.getBuffer());
-        resourceManager.updateReplica(updatedItemList);
-//        synchronized (REPLICATION_LOCK) {
-//
-//        }
+        if (!iAmMaster) {
+            System.out.println("RM::Replication message received from leader: " + msg.getSrc());
+//        ArrayList<UpdatedItem> updatedItemList = deserializeBytes(msg.getBuffer());
+//        resourceManager.updateReplica(updatedItemList);
+
+            UpdatedItem updatedItem = deserializeBytes(msg.getBuffer());
+            resourceManager.updateReplica(updatedItem);
+        }
     }
 
     public void viewAccepted(View new_view) {
@@ -168,13 +135,15 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
 
 
     @SuppressWarnings("Duplicates")
-    private byte[] serializeObject(ArrayList<UpdatedItem> updatedItemList) {
+//    private byte[] serializeObject(ArrayList<UpdatedItem> updatedItemList) {
+    private byte[] serializeObject(UpdatedItem updatedItem) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out;
         byte[] objectInBytes = null;
         try {
             out = new ObjectOutputStream(bos);
-            out.writeObject(updatedItemList);
+//            out.writeObject(updatedItemList);
+            out.writeObject(updatedItem);
             out.flush();
             objectInBytes = bos.toByteArray();
         } catch (IOException e) {
@@ -191,13 +160,16 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
 
 
     @SuppressWarnings({"unchecked", "Duplicates"})
-    private ArrayList<UpdatedItem> deserializeBytes(byte[] objectInBytes) {
-        ArrayList<UpdatedItem> updatedItemList = null;
+//    private ArrayList<UpdatedItem> deserializeBytes(byte[] objectInBytes) {
+    private UpdatedItem deserializeBytes(byte[] objectInBytes) {
+//        ArrayList<UpdatedItem> updatedItemList = null;
+        UpdatedItem updatedItem = null;
         ByteArrayInputStream bis = new ByteArrayInputStream(objectInBytes);
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
-            updatedItemList = (ArrayList<UpdatedItem>) in.readObject();
+//            updatedItemList = (ArrayList<UpdatedItem>) in.readObject();
+            updatedItem = (UpdatedItem) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -209,23 +181,17 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
                 // ignore close exception
             }
         }
-        return updatedItemList;
+//        return updatedItemList;
+        return updatedItem;
     }
 
     @SuppressWarnings("Duplicates")
     private void changeClusterCoordinator() {
         View view = channel.getView();
-//        Address local_addr = channel.getAddress();
-//        Address coord = view.getMembersRaw()[0];
-//        if (!local_addr.equals(coord)) {
-//            System.err.println(clusterName + "-View can only be changed on coordinator");
-//            return false;
-//        }
         if (view.size() == 1) {
             System.err.println(clusterName + "-Coordinator cannot change as view only has a single member");
             return;
         }
-
         List<Address> mbrs = new ArrayList<>(view.getMembers());
         long new_id = view.getViewId().getId() + 1;
         Address tmp_coord = mbrs.remove(0);

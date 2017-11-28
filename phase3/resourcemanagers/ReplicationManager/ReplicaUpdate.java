@@ -9,6 +9,7 @@ import java.util.ArrayList;
  */
 public interface ReplicaUpdate {
     void updateReplica(ArrayList<UpdatedItem> updatedItemList);
+    void updateReplica(UpdatedItem updatedItem);
     void setRMState(RMHashtable rmHashtable);
     RMHashtable getRMState();
 }

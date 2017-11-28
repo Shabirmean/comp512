@@ -108,9 +108,9 @@ public class Client extends ReceiverAdapter {
             Registry registry = LocateRegistry.getRegistry(this.mwServerAddress, this.mwRegistryPort);
             middleware = (Middleware) registry.lookup("ShabirJianMiddleware");
             if (middleware != null) {
-                System.out.println("-----------------------------------------------");
-                System.out.println("Successful");
-                System.out.println("Connected to Middleware");
+//                System.out.println("-----------------------------------------------");
+//                System.out.println("Successful");
+//                System.out.println("Connected to Middleware");
             } else {
                 System.out.println("Unsuccessful");
             }
@@ -118,7 +118,7 @@ public class Client extends ReceiverAdapter {
             System.err.println("ClientRunner exception: " + e.toString());
             e.printStackTrace();
         }
-        System.out.println("-----------------------------------------------");
+//        System.out.println("-----------------------------------------------");
 //        if (System.getSecurityManager() == null) {
 //            //System.setSecurityManager(new RMISecurityManager());
 //        }
