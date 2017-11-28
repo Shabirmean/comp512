@@ -38,7 +38,8 @@ public class RMClusterMember extends ReceiverAdapter {
         try {
             protocolStack = new Protocol[]{
                     new UDP()
-                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(rmServerAdd))
+//                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(rmServerAdd))
+                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, rmServerAdd)
                             .setValue(MiddlewareConstants.JGRP_MC_PORT, rmClusterPort),
                     new PING(),
                     new MERGE3(),
