@@ -747,7 +747,7 @@ public class TransactionManager implements Serializable {
                     throw new TransactionManagerException(errMsg, ReqStatus.RESERVE_ITEM_ZERO);
                 } else {
                     hotelToBook.setReserved(1);
-                    bookedItems.add(hotelToBook)
+                    bookedItems.add(hotelToBook);
                 }
             }
         } catch (TransactionManagerException e) {
