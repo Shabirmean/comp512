@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$(pwd)
-export CLASSPATH=$DIR/jgroups-4.0.8.Final.jar:$DIR/resourcemanagers:$DIR/middleware:$DIR/clientsrc:$DIR/lockmanager:$DIR/perf-clientsrc:$DIR/resourcemanagers/ResInterface.jar:$DIR/resourcemanagers/RMReplicationManager.jar:$DIR/resourcemanagers/ResourceManager.jar:$DIR/lockmanager/LockManager.jar:$DIR/middleware/Middleware.jar
+export CLASSPATH=$DIR/resourcemanagers:$DIR/middleware:$DIR/clientsrc:$DIR/lockmanager:$DIR/perf-clientsrc:$DIR/resourcemanagers/ResInterface.jar:$DIR/resourcemanagers/RMReplicationManager.jar:$DIR/resourcemanagers/ResourceManager.jar:$DIR/lockmanager/LockManager.jar:$DIR/middleware/Middleware.jar:$DIR/jgroups-4.0.8.Final.jar
 
 cd $DIR/resourcemanagers
 echo "grant codeBase \"file:$DIR/resourcemanagers/\" {
@@ -26,7 +26,9 @@ echo "grant codeBase \"file:$DIR/middleware/\" {
 
 javac MiddlewareInterface/Middleware.java 
 jar cvf Middleware.jar MiddlewareInterface/*.class
-javac MiddlewareImpl/MiddlewareManagerImpl.java 
+#javac MiddlewareImpl/MiddlewareManagerImpl.java 
+javac Replication/MWReplicationManager.java 
+
 
 cd $DIR/clientsrc
 echo "grant codeBase \"file:$DIR/clientsrc/\" {

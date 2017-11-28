@@ -1,6 +1,7 @@
 package util;
 
 public enum ResourceManagerType {
+
     CAR(0),
     HOTEL(1),
     FLIGHT(2),
@@ -11,7 +12,7 @@ public enum ResourceManagerType {
 
     ResourceManagerType(int rmCode) {
         this.rmCode = rmCode;
-        switch(this.rmCode){
+        switch (this.rmCode) {
             case 0:
                 this.rmCodeString = "CAR";
                 break;

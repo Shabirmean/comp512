@@ -2,10 +2,12 @@ package exception;
 
 import Transaction.ReqStatus;
 
+import java.io.Serializable;
+
 /**
  * Created by shabirmean on 2017-11-12 with some hope.
  */
-public class TransactionManagerException extends Exception{
+public class TransactionManagerException extends Exception implements Serializable {
     private static final long serialVersionUID = 1922753363232071239L;
     private ReqStatus reason;
 
@@ -31,7 +33,7 @@ public class TransactionManagerException extends Exception{
     }
 
     public TransactionManagerException(String message, Throwable cause,
-                                     boolean enableSuppression, boolean writableStackTrace) {
+                                       boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

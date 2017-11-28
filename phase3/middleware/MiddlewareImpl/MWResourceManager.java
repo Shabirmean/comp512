@@ -6,6 +6,7 @@ import ResInterface.ResourceManager;
 import ResInterface.InvalidTransactionException;
 import ResInterface.TransactionAbortedException;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.*;
 

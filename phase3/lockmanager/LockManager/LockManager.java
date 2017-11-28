@@ -1,9 +1,12 @@
 package LockManager;
 
+import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Vector;
 
-public class LockManager {
+public class LockManager implements Serializable {
+    private static final long serialVersionUID = 1421146759512286392L;
+
     public static final int READ = 0;
     public static final int WRITE = 1;
 
@@ -45,7 +48,7 @@ public class LockManager {
                 synchronized (lockTable) {
                     // check if this lock request conflicts with existing locks
 //                    try {
-                        bConflict = LockConflict(dataObj, bConvert);
+                    bConflict = LockConflict(dataObj, bConvert);
 //                    } catch (RedundantLockRequestException e) {
 //                        e.printStackTrace();
 //                    }
@@ -110,7 +113,7 @@ public class LockManager {
         synchronized (lockTable) {
             Vector vect = lockTable.elements(trxnQueryObj);
 
-            for (int a = 0; a < vect.size(); a++){
+            for (int a = 0; a < vect.size(); a++) {
                 System.out.println("LM:: Unlock Elem " + a + ": " + vect.elementAt(a));
             }
 
@@ -199,7 +202,7 @@ public class LockManager {
         DataObj dataObj2;
         int size = vect.size();
 
-        for (int a = 0; a < vect.size(); a++){
+        for (int a = 0; a < vect.size(); a++) {
             System.out.println("LM:: Lock Elem " + a + ": " + vect.elementAt(a));
         }
 

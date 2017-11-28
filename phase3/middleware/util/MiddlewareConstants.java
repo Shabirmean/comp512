@@ -14,7 +14,7 @@ public class MiddlewareConstants {
     public static final String FM_OBJECT_REG_ID = "ShabirJianResourceManager";
     public static final String HM_OBJECT_REG_ID = "ShabirJianResourceManager";
 
-    public static final int CUSTOMER_CLUSTER_PORT = 10998;
+    public static final int MW_CLUSTER_PORT = 10998;
     public static final int CAR_CLUSTER_PORT = 10999;
     public static final int FLIGHT_CLUSTER_PORT = 11000;
     public static final int HOTEL_CLUSTER_PORT = 11001;

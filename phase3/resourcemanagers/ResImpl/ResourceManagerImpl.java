@@ -11,11 +11,14 @@ import ResInterface.ResourceManager;
 import ResInterface.InvalidTransactionException;
 import ResInterface.TransactionAbortedException;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.*;
 
 @SuppressWarnings("ALL")
-public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate {
+public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Serializable {
+    private static final long serialVersionUID = 1400746759512286105L;
+
     private RMHashtable m_itemHT = new RMHashtable();
     private List<Integer> transactionList = new ArrayList<Integer>();
     private HashMap<Integer, ArrayList<UpdatedItem>> transactionUpdateMap = new HashMap<>();
@@ -29,7 +32,6 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate {
         replicationManager = repManager;
         initResourceManager();
     }
-
 
     void initResourceManager() {
         shutdownTimer.scheduleAtFixedRate(new TimerTask() {

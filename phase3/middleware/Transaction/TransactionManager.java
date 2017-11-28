@@ -2,6 +2,9 @@ package Transaction;
 
 import LockManager.DeadlockException;
 import LockManager.LockManager;
+import MiddlewareImpl.MWResourceManager;
+import Replication.MWReplicationManager;
+import Replication.ReplicationObject;
 import ResImpl.*;
 import ResInterface.InvalidTransactionException;
 import ResInterface.ResourceManager;
@@ -10,27 +13,27 @@ import exception.TransactionManagerException;
 import util.RequestType;
 import util.ResourceManagerType;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TransactionManager {
+public class TransactionManager implements Serializable {
+    private static final long serialVersionUID = 1400746759512286392L;
+
     public static final int VALUE_NOT_SET = -1;
-    private static final String FLIGHT_ITEM_KEY = "flight";
-    private static final String CAR_ITEM_KEY = "car";
-    private static final String HOTEL_ITEM_KEY = "room";
-    private static final String CUSTOMER_ITEM_KEY = "customer";
-    private static final Object COUNT_LOCK = new Object();
-    private static final Timer TRANSACTION_TIMER = new Timer();
-    private static final Timer SHUTDOWN_TIMER = new Timer();
+    private final String FLIGHT_ITEM_KEY = "flight";
+    private final String CAR_ITEM_KEY = "car";
+    private final String HOTEL_ITEM_KEY = "room";
+    private final String CUSTOMER_ITEM_KEY = "customer";
+    private final Object COUNT_LOCK = new Object();
+    private final Timer TRANSACTION_TIMER = new Timer();
+    private final Timer SHUTDOWN_TIMER = new Timer();
 
-    private static HashMap<String, String> rmConfigsMap;
-    private static Integer transactionIdCount = 1001;
-    private static LockManager lockMan = new LockManager();
-    private static HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
-    private static ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
-
-
+    private Integer transactionIdCount = 1001;
+    private LockManager lockMan = new LockManager();
+    private ConcurrentHashMap<Integer, Transaction> transMap = new ConcurrentHashMap<Integer, Transaction>();
+    private HashMap<ResourceManagerType, ResourceManager> resourceManagers = new HashMap<>();
 
 //    public TransactionManager(ResourceManager carManager, ResourceManager flightManager,
 //                              ResourceManager hotelManager, ResourceManager customerManager) {
@@ -40,8 +43,15 @@ public class TransactionManager {
 //        resourceManagers.put(ResourceManagerType.CUSTOMER, customerManager);
 //    }
 
-    public TransactionManager(HashMap<ResourceManagerType, ResourceManager> rmMap) {
-        resourceManagers = rmMap;
+    public TransactionManager() {
+    }
+
+    public void setResourceManagers(HashMap<ResourceManagerType, ResourceManager> rms) {
+        resourceManagers = rms;
+    }
+
+    public HashMap<ResourceManagerType, ResourceManager> getResourceManagers() {
+        return resourceManagers;
     }
 
     public void initTransactionManager() {
@@ -74,6 +84,7 @@ public class TransactionManager {
         }
         Transaction newTrans = new Transaction(newTId);
         transMap.put(newTId, newTrans);
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return newTId;
     }
 
@@ -148,6 +159,7 @@ public class TransactionManager {
         thisTransaction.clearAll();
         thisTransaction.setStatus(Transaction.TStatus.ENDED);
         transMap.remove(transId);
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return status;
     }
 
@@ -166,6 +178,7 @@ public class TransactionManager {
         thisTransaction.clearAll();
         thisTransaction.setStatus(Transaction.TStatus.ENDED);
         transMap.remove(transactionId);
+        MWReplicationManager.updateReplicas(getReplicationObject());
     }
 
 
@@ -205,6 +218,7 @@ public class TransactionManager {
             printMsg(errMsg);
             throw new TransactionManagerException(errMsg, ReqStatus.SHUTDOWN_TO_RM_THROWED_ERROR);
         }
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return rmShutdownStatus;
     }
 
@@ -390,6 +404,7 @@ public class TransactionManager {
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
 
         }
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return responseNum;
     }
 
@@ -558,6 +573,7 @@ public class TransactionManager {
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
 
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return response;
     }
 
@@ -678,6 +694,7 @@ public class TransactionManager {
             abort(tId);
             throw new TransactionManagerException(errMsg, ReqStatus.COMMIT_OR_ABORT_TO_RM_THROWED_ERROR);
         }
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return responseNum;
     }
 
@@ -730,6 +747,7 @@ public class TransactionManager {
             abort(tId);
             throw e;
         }
+        MWReplicationManager.updateReplicas(getReplicationObject());
         return responseVal == ReqStatus.SUCCESS.getStatusCode();
     }
 
@@ -860,6 +878,22 @@ public class TransactionManager {
         return copyItem;
     }
 
+    public ReplicationObject getReplicationObject(){
+        ReplicationObject newRepObj = new ReplicationObject();
+        MWResourceManager customerManger = (MWResourceManager) resourceManagers.get(ResourceManagerType.CUSTOMER);
+        newRepObj.setLockMan(this.lockMan);
+        newRepObj.setTransactionIdCount(this.transactionIdCount);
+        newRepObj.setTransMap(this.transMap);
+        newRepObj.setCustomerManager(customerManger);
+        return newRepObj;
+    }
+
+    public void updateState(ReplicationObject repObject){
+        lockMan = repObject.getLockMan();
+        transactionIdCount = repObject.getTransactionIdCount();
+        transMap = repObject.getTransMap();
+        resourceManagers.put(ResourceManagerType.CUSTOMER, repObject.getCustomerManager());
+    }
 
     private void printMsg(String msg) {
         System.out.println("TM:: " + msg);

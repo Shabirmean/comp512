@@ -17,16 +17,17 @@ import java.util.List;
 /**
  * Created by shabirmean on 2017-11-21 with some hope.
  */
-public class RMReplicationManager extends ReceiverAdapter {
-    public static final Object REPLICATION_LOCK = new Object();
+public class RMReplicationManager extends ReceiverAdapter implements Serializable {
+    private static final long serialVersionUID = 1400746759512286105L;
+
+    private static final Object REPLICATION_LOCK = new Object();
     private static ReplicaUpdate resourceManager;
     private static int registryPort;
     private static String myReplicaId;
-    private static String replicaType = "RM";
-    private static String mwMemberId = "MW:RM::";
-    private JChannel channel;
-    private boolean iAmMaster = false;
-
+    private static String clusterName = "RM";
+    private static String mwMemberPrefix = "MW:RM::";
+    private static JChannel channel;
+    private static boolean iAmMaster = false;
 
     public static void main(String[] args) throws Exception {
 //        System.setProperty("jgroups.bind_addr", "127.0.0.1");
@@ -36,11 +37,11 @@ public class RMReplicationManager extends ReceiverAdapter {
 
         if (args.length == 1) {
             registryPort = Integer.parseInt(args[0]);
-            replicaType += "ALL";
+            clusterName += "ALL";
         } else if (args.length == 2) {
             registryPort = Integer.parseInt(args[0]);
-            replicaType += args[1];
-            mwMemberId += args[1];
+            clusterName += args[1];
+            mwMemberPrefix += args[1];
         } else if (args.length != 0) {
             System.err.println("Wrong usage");
             System.out.println("Usage: java ReplicationManager.RMReplicationManager [port]");
@@ -52,8 +53,7 @@ public class RMReplicationManager extends ReceiverAdapter {
     private void start() throws Exception {
         resourceManager = new ResourceManagerImpl(this);
         channel = new JChannel().setReceiver(this);
-        channel.connect(replicaType);
-
+        channel.connect(clusterName);
         myReplicaId = channel.getAddressAsString();
 
         Address coordinator = channel.getView().getCoord();
@@ -61,24 +61,23 @@ public class RMReplicationManager extends ReceiverAdapter {
             iAmMaster = registerResourceManager();
             System.out.println("RM::I am serving as Master.");
         } else {
-            if (!coordinator.toString().equals(mwMemberId)) {
-                System.out.println("########Ran this");
+            if (!coordinator.toString().contains(mwMemberPrefix)) {
                 channel.getState(null, 10000);
             } else {
                 changeClusterCoordinator();
             }
         }
 
-//        else if (coordinator.toString().equals(mwMemberId)) {
+//        else if (coordinator.toString().equals(mwMemberPrefix)) {
 //            System.out.println("RM:: Middleware seems to be coordinator. Changing it.");
 //        }
-        eventLoop();
-        channel.close();
+//        eventLoop();
+//        channel.close();
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
     private void eventLoop() {
-        System.out.println("RM::Connected to cluster [" + replicaType + "] with replica id-" + myReplicaId);
+        System.out.println("RM::Connected to cluster [" + clusterName + "] with replica id-" + myReplicaId);
 //        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 //        System.out.println("RM:: Replica initialized and waiting for update....");
         while (true) {
@@ -97,6 +96,7 @@ public class RMReplicationManager extends ReceiverAdapter {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     public boolean updateReplicas(ArrayList<UpdatedItem> updatedItemList) {
         try {
             Message msg = new Message(null, serializeObject(updatedItemList));
@@ -141,15 +141,12 @@ public class RMReplicationManager extends ReceiverAdapter {
 
     public void viewAccepted(View new_view) {
         System.out.println("RM::View-" + new_view);
-        String coordinatorId = new_view.getCoord().toString(); // new_view.getCreator().toString()
-        System.out.println("#####" + coordinatorId);
-        System.out.println("#####" + myReplicaId);
-        System.out.println("#####" + iAmMaster);
+        String coordinatorId = new_view.getCoord().toString();
         if (coordinatorId.equals(myReplicaId) && !iAmMaster) {
             System.out.println("RM::I am an RM Leader!");
             System.out.println("RM::Registering with RMI registry.....");
             iAmMaster = registerResourceManager();
-        } else if (coordinatorId.equals(mwMemberId) && new_view.getMembersRaw()[1].toString().equals(myReplicaId)) {
+        } else if (coordinatorId.contains(mwMemberPrefix) && new_view.getMembersRaw()[1].toString().equals(myReplicaId)) {
            changeClusterCoordinator();
         }
     }
@@ -218,14 +215,14 @@ public class RMReplicationManager extends ReceiverAdapter {
     @SuppressWarnings("Duplicates")
     private void changeClusterCoordinator() {
         View view = channel.getView();
-        Address local_addr = channel.getAddress();
-        Address coord = view.getMembersRaw()[0];
+//        Address local_addr = channel.getAddress();
+//        Address coord = view.getMembersRaw()[0];
 //        if (!local_addr.equals(coord)) {
-//            System.err.println(replicaType + "-View can only be changed on coordinator");
+//            System.err.println(clusterName + "-View can only be changed on coordinator");
 //            return false;
 //        }
         if (view.size() == 1) {
-            System.err.println(replicaType + "-Coordinator cannot change as view only has a single member");
+            System.err.println(clusterName + "-Coordinator cannot change as view only has a single member");
             return;
         }
 

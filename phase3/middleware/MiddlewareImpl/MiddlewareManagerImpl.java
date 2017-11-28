@@ -1,129 +1,100 @@
 package MiddlewareImpl;
 
 import MiddlewareInterface.Middleware;
-import Replication.MWReplicationManager;
+import Replication.ReplicationObject;
 import ResImpl.*;
 import ResInterface.InvalidTransactionException;
-import ResInterface.ResourceManager;
 import ResInterface.TransactionAbortedException;
 import Transaction.ReqStatus;
 import Transaction.TransactionManager;
 import exception.TransactionManagerException;
-import util.MiddlewareConstants;
 import util.RequestType;
-import util.ResourceManagerType;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Vector;
 
 public class MiddlewareManagerImpl implements Middleware {
 
     private RMHashtable m_itemHT = new RMHashtable();
-    private static TransactionManager transactionMan;
-//    static ResourceManager cm = null;
-//    static ResourceManager hm = null;
-//    static ResourceManager fm = null;
+    private TransactionManager transactionMan;
 
-    public MiddlewareManagerImpl() throws RemoteException {
+    public MiddlewareManagerImpl(TransactionManager tManger) {
+        transactionMan = tManger;
     }
 
-    public static void main(String args[]) {
-        // Figure out where server is running
-        String server = "localhost";
-        String carserver = "";
-        String flightserver = "";
-        String hotelserver = "";
-        int port = 1099;
-        int carport = 1100;
-        int hotelport = 1101;
-        int flightport = 1102;
+    public TransactionManager getTransactionMan() {
+        return transactionMan;
+    }
 
-        if (args.length == 1) {
-            server = server + ":" + args[0];
-            port = Integer.parseInt(args[0]);
-        } else if (args.length == 4) {
-            server = args[0];
-            carserver = args[1];
-            flightserver = args[2];
-            hotelserver = args[3];
-        }
+//    public void setTransactionMan(TransactionManager transactionMan) {
+//        this.transactionMan = transactionMan;
+//    }
 
-        String middlewareServerConfig = server + ":" + port;
-        String carServerConfig = carserver + ":" + carport;
-        String flightServerConfig = flightserver + ":" + flightport;
-        String hotelServerConfig = hotelserver + ":" + hotelport;
+    public void setMWState(ReplicationObject replicationObject) {
+        this.transactionMan.updateState(replicationObject);
+    }
 
-        System.out.println("Middleware: " + middlewareServerConfig);
-        System.out.println("Car Manager: " + carServerConfig);
-        System.out.println("Hotel Manager: " + hotelServerConfig);
-        System.out.println("Flight Manager: " + flightServerConfig);
+    public ReplicationObject getMWState() {
+        return transactionMan.getReplicationObject();
+    }
 
-        HashMap<String, String> rmConfigs = new HashMap<>();
-        rmConfigs.put(ResourceManagerType.CUSTOMER.getCodeString(), middlewareServerConfig);
-        rmConfigs.put(ResourceManagerType.CAR.getCodeString(), carServerConfig);
-        rmConfigs.put(ResourceManagerType.FLIGHT.getCodeString(), flightServerConfig);
-        rmConfigs.put(ResourceManagerType.HOTEL.getCodeString(), hotelServerConfig);
-
-        MWReplicationManager mwReplicationManager = new MWReplicationManager(rmConfigs);
-        HashMap<ResourceManagerType, ResourceManager> resourceManagers = mwReplicationManager.initReplicationManager();
-        transactionMan = new TransactionManager(resourceManagers);
-        transactionMan.initTransactionManager();
-
-//        try {
-//            // create a new Server object
-//            MiddlewareManagerImpl obj = new MiddlewareManagerImpl();
-//            // dynamically generate the stub (client proxy)
-//            Middleware rm = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
-//            // Bind the remote object's stub in the registry
-//            Registry registry = LocateRegistry.getRegistry(port);
-//            registry.rebind("ShabirJianMiddleware", rm);
+//    public static void main(String args[]) {
+//        // Figure out where server is running
+//        String server = "localhost";
+//        String carserver = "";
+//        String flightserver = "";
+//        String hotelserver = "";
+//        int port = 1099;
+//        int carport = 1100;
+//        int hotelport = 1101;
+//        int flightport = 1102;
 //
-//            System.err.println("Server ready");
-//            server = "localhost";
-//
-//            Registry carregistry = LocateRegistry.getRegistry(carserver, carport);
-//            cm = (ResourceManager) carregistry.lookup("ShabirJianResourceManager");
-//            if (cm != null) {
-//                System.out.println("Successful");
-//                System.out.println("Connected to CarManager");
-//            } else {
-//                System.out.println("Unsuccessful");
-//            }
-//
-//            Registry hotelregistry = LocateRegistry.getRegistry(hotelserver, hotelport);
-//            hm = (ResourceManager) hotelregistry.lookup("ShabirJianResourceManager");
-//            if (hm != null) {
-//                System.out.println("Successful");
-//                System.out.println("Connected to HotelManager");
-//            } else {
-//                System.out.println("Unsuccessful");
-//            }
-//
-//            Registry flightregistry = LocateRegistry.getRegistry(flightserver, flightport);
-//            fm = (ResourceManager) flightregistry.lookup("ShabirJianResourceManager");
-//            if (fm != null) {
-//                System.out.println("Successful");
-//                System.out.println("Connected to FlightManager");
-//            } else {
-//                System.out.println("Unsuccessful");
-//            }
-//
-//            MWResourceManager mw = new MWResourceManager();
-//            transactionMan = new TransactionManager(cm, hm, fm, mw);
-//            transactionMan.initTransactionManager();
-//
-//        } catch (Exception e) {
-//            System.err.println("Server exception: " + e.toString());
-//            e.printStackTrace();
+//        if (args.length == 1) {
+//            server = server + ":" + args[0];
+//            port = Integer.parseInt(args[0]);
+//        } else if (args.length == 4) {
+//            server = args[0];
+//            carserver = args[1];
+//            flightserver = args[2];
+//            hotelserver = args[3];
 //        }
 //
-//        // Create and install a security manager
-////        if (System.getSecurityManager() == null) {
-////            System.setSecurityManager(new RMISecurityManager());
-////        }
-    }
+//        String middlewareServerConfig = server + ":" + port;
+//        String carServerConfig = carserver + ":" + carport;
+//        String flightServerConfig = flightserver + ":" + flightport;
+//        String hotelServerConfig = hotelserver + ":" + hotelport;
+//
+//        System.out.println("Middleware: " + middlewareServerConfig);
+//        System.out.println("Car Manager: " + carServerConfig);
+//        System.out.println("Hotel Manager: " + hotelServerConfig);
+//        System.out.println("Flight Manager: " + flightServerConfig);
+//
+//        HashMap<String, String> rmConfigs = new HashMap<>();
+//        rmConfigs.put(ResourceManagerType.CUSTOMER.getCodeString(), middlewareServerConfig);
+//        rmConfigs.put(ResourceManagerType.CAR.getCodeString(), carServerConfig);
+//        rmConfigs.put(ResourceManagerType.FLIGHT.getCodeString(), flightServerConfig);
+//        rmConfigs.put(ResourceManagerType.HOTEL.getCodeString(), hotelServerConfig);
+//
+//        final String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+//        System.out.println("MW::Random UUID-" + uuid);
+//        MWReplicationManager mwClusterMember = new MWReplicationManager(uuid, server);
+//        try {
+////            String memberId = mwClusterMember.start();
+//            mwClusterMember.start();
+//            mwClusterMember.connectToReplicationServers(rmConfigs);
+//            transactionMan = rmClusterManager.transactionMan;
+////            rmClusterManager rmClusterManager = new rmClusterManager(rmConfigs, isClusterManager);
+////            HashMap<ResourceManagerType, ResourceManager> resourceManagers = rmClusterManager
+//// .connectToReplicationServers();
+////            transactionMan = new TransactionManager(resourceManagers);
+////            transactionMan.initTransactionManager();
+//
+//        } catch (Exception e) {
+//            //TODO:: Handle this please
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public int start() throws RemoteException {

@@ -3,12 +3,15 @@ package Transaction;
 import ResImpl.RMItem;
 import util.ResourceManagerType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Transaction {
+public class Transaction implements Serializable {
+    private static final long serialVersionUID = 1400956759512286392L;
+
     private static final int TTL = 150000; // 2 minute and 30 seconds
     private int transactionId;
 

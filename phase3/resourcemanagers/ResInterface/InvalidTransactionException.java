@@ -1,6 +1,8 @@
 package ResInterface;
 
-public class InvalidTransactionException extends Exception {
+import java.io.Serializable;
+
+public class InvalidTransactionException extends Exception implements Serializable {
     private static final long serialVersionUID = 1923753363232071239L;
 
     public InvalidTransactionException() {

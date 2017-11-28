@@ -1,7 +1,9 @@
 package ResInterface;
 
 
-public class TransactionAbortedException extends Exception {
+import java.io.Serializable;
+
+public class TransactionAbortedException extends Exception implements Serializable {
     private static final long serialVersionUID = 1997753363232071239L;
 
     public TransactionAbortedException() {

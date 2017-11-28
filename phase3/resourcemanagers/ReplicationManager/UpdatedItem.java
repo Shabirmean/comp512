@@ -10,7 +10,7 @@ import java.util.HashMap;
  * Created by shabirmean on 2017-11-23 with some hope.
  */
 public class UpdatedItem implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1400746759512286101L;
     private int transactionId;
     private String itemKey;
     private RMItem itemVal;

@@ -65,7 +65,8 @@ if [ "$project" = "m" ]; then
   	# pkill -f rmiregistry
   	# sleep(2000)
   	# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1099 &
-	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1
+	# java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ Replication.MWReplicationManager 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1
 fi
 
 
@@ -84,7 +85,7 @@ if [ "$project" = "c" ]; then
     		# port="22000"
 	# fi
 
-	java -Djava.security.policy=java.policy Client 127.0.0.1
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy Client 127.0.0.1
 fi
 
 if [ "$project" = "p" ]; then

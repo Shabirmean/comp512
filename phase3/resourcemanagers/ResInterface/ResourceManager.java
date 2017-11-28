@@ -3,6 +3,7 @@ package ResInterface;
 
 import ResImpl.RMItem;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Vector;
@@ -23,7 +24,8 @@ import java.util.Vector;
  * has succeeded.
  */
 
-public interface ResourceManager extends Remote {
+public interface ResourceManager extends Remote, Serializable {
+    long serialVersionUID = 1400746759512286101L;
     //TODO:: Use these and see
     String MW_OBJECT_REG_ID = "ShabirJianMiddleware";
     String CM_OBJECT_REG_ID = "ShabirJianRMCar";
