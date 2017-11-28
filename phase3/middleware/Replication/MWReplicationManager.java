@@ -267,9 +267,10 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
 
     private void initRMReplicaCluster() {
         for (ResourceManagerType rmType : ResourceManagerType.values()) {
-//            String rmName = rmType.getCodeString();
-            String rmName = ResourceManagerType.CUSTOMER.getCodeString();
-            String rmAddress = rmConfigsMap.get(rmName).split(MiddlewareConstants.SEMICOLON)[0];
+            String rmName = rmType.getCodeString();
+//            String rmAddress = rmConfigsMap.get(rmName).split(MiddlewareConstants.SEMICOLON)[0];
+            String rmAddress = rmConfigsMap.get(ResourceManagerType.CUSTOMER.getCodeString()).
+                    split(MiddlewareConstants.SEMICOLON)[0];
             int rmMCPort = -1;
             switch (rmType) {
                 case CUSTOMER:
