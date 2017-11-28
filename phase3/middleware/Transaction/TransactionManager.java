@@ -872,7 +872,17 @@ public class TransactionManager implements Serializable {
             copyItem = new Hotel((Hotel) itemToCopy);
 
         } else if (itemToCopy instanceof Customer) {
-            copyItem = new Customer((Customer) itemToCopy);
+//            copyItem = new Customer((Customer) itemToCopy);
+            int cusId = ((Customer) itemToCopy).getID();
+            copyItem = new Customer(cusId);
+            RMHashtable cusTable = ((Customer) itemToCopy).getReservations();
+            RMHashtable newCusTable = ((Customer) copyItem).getReservations();
+
+            for (Object key: cusTable.keySet()){
+                RMItem resItem = (RMItem) cusTable.get(key);
+                RMItem cItem = getCopyOfItem(resItem);
+                newCusTable.put(key, cItem);
+            }
         }
         return copyItem;
     }
