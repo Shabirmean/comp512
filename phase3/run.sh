@@ -35,7 +35,7 @@ if [ "$project" = "s" ]; then
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1100 &
 				# java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1100 car
-				java -Djgroups.bind_addr=cs-25.cs.mcgill.ca -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1100 car
+				java -Djgroups.bind_addr=cs-25.cs.mcgill.ca -Djgroups.udp.mcast_port=10999 -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1100 car
 	           	break;;
 
 	   	[Ff]* ) 
@@ -43,7 +43,7 @@ if [ "$project" = "s" ]; then
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1101 &
 				# java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1102 flight
-				java -Djgroups.bind_addr=cs-28.cs.mcgill.ca -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1102 flight
+				java -Djgroups.bind_addr=cs-28.cs.mcgill.ca -Djgroups.udp.mcast_port=11000 -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1102 flight
 				break;;
 
 		[Hh]* )	
@@ -51,7 +51,7 @@ if [ "$project" = "s" ]; then
 				# sleep(2000)
 				# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1102 &
 				# java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ResImpl.ResourceManagerImpl 1101 hotel
-				java -Djgroups.bind_addr=cs-27.cs.mcgill.ca -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1101 hotel
+				java -Djgroups.bind_addr=cs-27.cs.mcgill.ca -Djgroups.udp.mcast_port=11001 -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/resourcemanagers/ ReplicationManager.RMReplicationManager 1101 hotel
 				break;;
 
 	   	* )     echo "Dude, just enter Car, Flight or Hotel, please."; continue;;
@@ -65,7 +65,7 @@ if [ "$project" = "m" ]; then
   	# pkill -f rmiregistry
   	# sleep(2000)
   	# rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false 1099 &
-	java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-28.cs.mcgill.ca cs-27.cs.mcgill.ca
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/middleware/ MiddlewareImpl.MiddlewareManagerImpl cs-24.cs.mcgill.ca cs-25.cs.mcgill.ca cs-28.cs.mcgill.ca cs-27.cs.mcgill.ca
 fi
 
 
@@ -84,7 +84,7 @@ if [ "$project" = "c" ]; then
     		# port="22000"
 	# fi
 
-	java -Djava.security.policy=java.policy Client cs-24.cs.mcgill.ca
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy Client cs-24.cs.mcgill.ca
 fi
 
 if [ "$project" = "p" ]; then
