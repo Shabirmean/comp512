@@ -86,7 +86,7 @@ if [ "$project" = "c" ]; then
     		# port="22000"
 	# fi
 
-	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy Client cs-24.cs.mcgill.ca
+	java -Djava.net.preferIPv4Stack=true -Djava.security.policy=java.policy Client cs-19.cs.mcgill.ca cs-24.cs.mcgill.ca 
 fi
 
 if [ "$project" = "p" ]; then

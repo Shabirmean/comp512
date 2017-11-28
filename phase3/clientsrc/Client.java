@@ -32,34 +32,41 @@ public class Client extends ReceiverAdapter {
 
     private Middleware middleware;
     private String clientId = "Client::MW-";
-    private String mwServerAddress;
+    private String clientAddress;
+    private String mwRegistryAdd;
     private int mwRegistryPort;
     private JChannel channel;
     private Address leader;
 
-    private Client(String cId, String mwAdd, int mwPort) {
+    private Client(String cId, String clientAdd, String mwAdd, int mwPort) {
         clientId += cId;
-        mwServerAddress = mwAdd;
+        clientAddress = clientAdd;
+        mwRegistryAdd = mwAdd;
         mwRegistryPort = mwPort;
     }
 
     public static void main(String args[]) {
-        String server = "localhost";
+        String clientServer = "localhost";
+        String middlewareServer = "localhost";
         int port = 1099;
+
         if (args.length > 0) {
-            server = args[0];
+            clientServer = args[0];
         }
         if (args.length > 1) {
-            port = Integer.parseInt(args[1]);
+            middlewareServer = args[1];
         }
         if (args.length > 2) {
+            port = Integer.parseInt(args[1]);
+        }
+        if (args.length > 3) {
             System.out.println("Usage: java ClientRunner [MW-Host [MW-Port]]");
             System.exit(1);
         }
 
         final String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
         System.out.println("Client::Random UUID-" + uuid);
-        Client client = new Client(uuid, server, port);
+        Client client = new Client(uuid, clientServer, middlewareServer, port);
         client.start();
 
         System.out.println("\n\n\tClient Interface");
@@ -73,7 +80,7 @@ public class Client extends ReceiverAdapter {
         try {
             protocolStack = new Protocol[]{
                     new UDP()
-                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(mwServerAddress))
+                            .setValue(MiddlewareConstants.JGRP_BIND_ADDRESS, InetAddress.getByName(clientAddress))
                             .setValue(MiddlewareConstants.JGRP_MC_PORT, MW_CLUSTER_PORT),
                     new PING(),
                     new MERGE3(),
@@ -105,7 +112,7 @@ public class Client extends ReceiverAdapter {
 
     private void fetchMiddlewareProxy() {
         try {
-            Registry registry = LocateRegistry.getRegistry(this.mwServerAddress, this.mwRegistryPort);
+            Registry registry = LocateRegistry.getRegistry(this.mwRegistryAdd, this.mwRegistryPort);
             middleware = (Middleware) registry.lookup("ShabirJianMiddleware");
             if (middleware != null) {
 //                System.out.println("-----------------------------------------------");
