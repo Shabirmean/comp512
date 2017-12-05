@@ -139,6 +139,7 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     Address[] memberAddressess = currentView.getMembersRaw();
                     for (int start = 1; start < currentView.getMembersRaw().length; start++) {
                         if (!memberAddressess[start].toString().contains(clientMemberPrefix)) {
+                            System.out.println("### YESSSSS");
                             if (memberAddressess[start].toString().equals(myReplicaId)) {
                                 changeClusterCoordinator(start);
                             }
@@ -146,7 +147,7 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                         }
                     }
 
-//                    changeClusterCoordinator();
+//                    changeClusterCoordinator(1);
                 }
             }
         } catch (Exception e) {
