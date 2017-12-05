@@ -21,8 +21,14 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
     private static final long serialVersionUID = 1400746759512286105L;
 
     private static final Object REPLICATION_LOCK = new Object();
+    private static final String CAR_OBJECT = "ShabirJianCarRM";
+    private static final String FLIGHT_OBJECT = "ShabirJianFlightRM";
+    private static final String HOTEL_OBJECT = "ShabirJianHotelRM";
+
     private static ReplicaUpdate resourceManager;
+    private static String registryIp;
     private static int registryPort;
+    private static String registryObjectId;
     private static String myReplicaId;
     private static String clusterName = "RM";
     private static String mwMemberPrefix = "MW:RM::";
@@ -33,10 +39,24 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
         if (args.length == 1) {
             registryPort = Integer.parseInt(args[0]);
             clusterName += "ALL";
-        } else if (args.length == 2) {
-            registryPort = Integer.parseInt(args[0]);
-            clusterName += args[1];
-            mwMemberPrefix += args[1];
+        } else if (args.length == 3) {
+            registryIp = args[0];
+            registryPort = Integer.parseInt(args[1]);
+            clusterName += args[2];
+            mwMemberPrefix += args[2];
+
+            switch(clusterName) {
+                case "car":
+                    registryObjectId = CAR_OBJECT;
+                    break;
+                case "flight":
+                    registryObjectId = FLIGHT_OBJECT;
+                    break;
+                case "hotel":
+                    registryObjectId = HOTEL_OBJECT;
+                    break;
+            }
+
         } else if (args.length != 0) {
             System.err.println("Wrong usage");
             System.out.println("Usage: java ReplicationManager.RMReplicationManager [port]");
@@ -82,10 +102,12 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
     private boolean registerResourceManager() {
         boolean registered = false;
         try {
-            ResourceManager rm = (
-                    ResourceManager) UnicastRemoteObject.exportObject((ResourceManagerImpl) resourceManager, 0);
-            Registry registry = LocateRegistry.getRegistry(registryPort);
-            registry.rebind("ShabirJianResourceManager", rm);
+            ResourceManager rm = (ResourceManager)
+                    UnicastRemoteObject.exportObject((ResourceManagerImpl) resourceManager, 0);
+            Registry registry = LocateRegistry.getRegistry(registryIp, registryPort);
+//            Registry registry = LocateRegistry.getRegistry(registryPort);
+//            registry.rebind("ShabirJianResourceManager", rm);
+            registry.rebind(registryObjectId, rm);
             System.err.println("RM::Server ready");
             registered = true;
         } catch (Exception e) {

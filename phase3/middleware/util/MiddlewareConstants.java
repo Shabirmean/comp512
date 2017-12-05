@@ -10,9 +10,9 @@ public class MiddlewareConstants {
 //    public static final String HOTEL_RM_SERVR = "HOTEL_RM";
     public static final String SEMICOLON = ":";
     public static final String MW_OBJECT_REG_ID = "ShabirJianMiddleware";
-    public static final String CM_OBJECT_REG_ID = "ShabirJianResourceManager";
-    public static final String FM_OBJECT_REG_ID = "ShabirJianResourceManager";
-    public static final String HM_OBJECT_REG_ID = "ShabirJianResourceManager";
+    public static final String CM_OBJECT_REG_ID = "ShabirJianCarRM";
+    public static final String FM_OBJECT_REG_ID = "ShabirJianFlightRM";
+    public static final String HM_OBJECT_REG_ID = "ShabirJianHotelRM";
 
     public static final int MW_CLUSTER_PORT = 10998;
     public static final int CAR_CLUSTER_PORT = 10999;
