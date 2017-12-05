@@ -309,6 +309,8 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
         String[] cmParams = rmConfigsMap.get(CAR.getCodeString()).split(MiddlewareConstants.SEMICOLON);
         String[] fmParams = rmConfigsMap.get(FLIGHT.getCodeString()).split(MiddlewareConstants.SEMICOLON);
         String[] hmParams = rmConfigsMap.get(HOTEL.getCodeString()).split(MiddlewareConstants.SEMICOLON);
+        HashMap<ResourceManagerType, ResourceManager> resourceManagers =
+                middlewareManager.getTransactionMan().getResourceManagers();
 
         try {
             Registry carRegistry = LocateRegistry.getRegistry(cmParams[0], Integer.parseInt(cmParams[1]));
@@ -334,19 +336,20 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
             } else {
                 System.out.println("Connecting to FLightManager Unsuccessful");
             }
-            mw = new MWResourceManager();
 
-            HashMap<ResourceManagerType, ResourceManager> resourceManagers =
-                    middlewareManager.getTransactionMan().getResourceManagers();
+            mw = (MWResourceManager) resourceManagers.get(CUSTOMER);
+            if (mw == null) {
+                mw = new MWResourceManager();
+                resourceManagers.put(CUSTOMER, mw);
+            }
             resourceManagers.put(CAR, cm);
             resourceManagers.put(FLIGHT, fm);
             resourceManagers.put(HOTEL, hm);
-            resourceManagers.put(CUSTOMER, mw);
             System.out.println("Successful");
 
-            Middleware rm = (Middleware) UnicastRemoteObject.exportObject(middlewareManager, 0);
+            Middleware mwRM = (Middleware) UnicastRemoteObject.exportObject(middlewareManager, 0);
             Registry registry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
-            registry.rebind(MiddlewareConstants.MW_OBJECT_REG_ID, rm);
+            registry.rebind(MiddlewareConstants.MW_OBJECT_REG_ID, mwRM);
             System.err.println("Server ready");
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
