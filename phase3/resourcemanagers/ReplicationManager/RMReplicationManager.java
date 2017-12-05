@@ -104,8 +104,8 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
         try {
             ResourceManager rm = (ResourceManager)
                     UnicastRemoteObject.exportObject((ResourceManagerImpl) resourceManager, 0);
-            Registry registry = LocateRegistry.getRegistry(registryIp, registryPort);
-//            Registry registry = LocateRegistry.getRegistry(registryPort);
+//            Registry registry = LocateRegistry.getRegistry(registryIp, registryPort);
+            Registry registry = LocateRegistry.getRegistry(registryPort);
 //            registry.rebind("ShabirJianResourceManager", rm);
             registry.rebind(registryObjectId, rm);
             System.err.println("RM::Server ready");
