@@ -312,7 +312,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
 
         try {
             Registry carRegistry = LocateRegistry.getRegistry(cmParams[0], Integer.parseInt(cmParams[1]));
-//            Registry carRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
             cm = (ResourceManager) carRegistry.lookup(MiddlewareConstants.CM_OBJECT_REG_ID);
             if (cm != null) {
                 System.out.println("Connected to CarManager");
@@ -321,7 +320,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
             }
 
             Registry hotelRegistry = LocateRegistry.getRegistry(hmParams[0], Integer.parseInt(hmParams[1]));
-//            Registry hotelRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
             hm = (ResourceManager) hotelRegistry.lookup(MiddlewareConstants.HM_OBJECT_REG_ID);
             if (hm != null) {
                 System.out.println("Connected to HotelManager");
@@ -330,7 +328,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
             }
 
             Registry flightRegistry = LocateRegistry.getRegistry(fmParams[0], Integer.parseInt(fmParams[1]));
-//            Registry flightRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
             fm = (ResourceManager) flightRegistry.lookup(MiddlewareConstants.FM_OBJECT_REG_ID);
             if (fm != null) {
                 System.out.println("Connected to FlightManager");
@@ -363,13 +360,11 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
 
     static void reRegisterWithRegistry(String rmType) {
         try {
-            String[] mwParams = rmConfigsMap.get(CUSTOMER.getCodeString()).split(MiddlewareConstants.SEMICOLON);
             if (rmType.equals(ResourceManagerType.CUSTOMER.getCodeString())) {
                 //TODO:: Need to handle
             } else if (rmType.equals(ResourceManagerType.CAR.getCodeString())) {
                 String[] cmParams = rmConfigsMap.get(CAR.getCodeString()).split(MiddlewareConstants.SEMICOLON);
                 Registry carRegistry = LocateRegistry.getRegistry(cmParams[0], Integer.parseInt(cmParams[1]));
-//                Registry carRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
                 ResourceManager cm = (ResourceManager) carRegistry.lookup(MiddlewareConstants.CM_OBJECT_REG_ID);
                 if (cm != null) {
                     System.out.println("MW:: Re-Connected to CarManager");
@@ -381,7 +376,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
             } else if (rmType.equals(ResourceManagerType.FLIGHT.getCodeString())) {
                 String[] fmParams = rmConfigsMap.get(FLIGHT.getCodeString()).split(MiddlewareConstants.SEMICOLON);
                 Registry flightRegistry = LocateRegistry.getRegistry(fmParams[0], Integer.parseInt(fmParams[1]));
-//                Registry flightRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
                 ResourceManager fm = (ResourceManager) flightRegistry.lookup(MiddlewareConstants.FM_OBJECT_REG_ID);
                 if (fm != null) {
                     System.out.println("MW:: Re-Connected to FlightManager");
@@ -393,7 +387,6 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
             } else if (rmType.equals(ResourceManagerType.HOTEL.getCodeString())) {
                 String[] hmParams = rmConfigsMap.get(HOTEL.getCodeString()).split(MiddlewareConstants.SEMICOLON);
                 Registry hotelRegistry = LocateRegistry.getRegistry(hmParams[0], Integer.parseInt(hmParams[1]));
-//                Registry hotelRegistry = LocateRegistry.getRegistry(Integer.parseInt(mwParams[1]));
                 ResourceManager hm = (ResourceManager) hotelRegistry.lookup(MiddlewareConstants.HM_OBJECT_REG_ID);
                 if (hm != null) {
                     System.out.println("MW:: Re-Connected to HotelManager");
