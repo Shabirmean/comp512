@@ -29,6 +29,7 @@ import java.util.Vector;
 public class Client extends ReceiverAdapter {
     private static final int MW_CLUSTER_PORT = 10998;
     private static final String CLUSTER_NAME = "MWCluster";
+    private static final String MIDDLEWARE_PREFIX = "MW::";
 
     private Middleware middleware;
     private String clientId = "Client::MW-";
@@ -135,6 +136,7 @@ public class Client extends ReceiverAdapter {
 //        System.out.println("MW::ViewChange " + CLUSTER_NAME + "-" + newView);
         Address previousHead = leader;
         leader = newView.getCoord();
+        Address[] memberAddresses = newView.getMembersRaw();
         if (newView.size() > 1) {
             if (previousHead != null &&
                     (!newView.containsMember(previousHead) || previousHead.toString().equals(clientId))) {
@@ -142,6 +144,19 @@ public class Client extends ReceiverAdapter {
 //                System.out.println("Client::New leader for cluster-" + CLUSTER_NAME + " is " + leader.toString());
                 fetchMiddlewareProxy();
             }
+
+            boolean noMW = true;
+            for (Address addr : memberAddresses) {
+                if (addr.toString().contains(MIDDLEWARE_PREFIX)){
+                    noMW = false;
+                }
+            }
+
+            if (noMW) {
+                System.out.println("Quitting client...");
+                System.exit(-1);
+            }
+
         } else {
             System.out.println(clientId + "- is the only participant in the cluster-" + CLUSTER_NAME);
             System.out.println("Quitting client...");

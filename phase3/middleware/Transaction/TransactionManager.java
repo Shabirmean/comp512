@@ -106,6 +106,7 @@ public class TransactionManager implements Serializable {
                 }
 
                 //TODO:: Ordering of writes and deletes is important
+                //TODO:: Handle crash in the middle
                 rmTId = rm.start();
                 for (String itemKey : writeList) {
                     RMItem thisItem = tAccessedItemSet.get(itemKey);
