@@ -136,9 +136,12 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     channel.getState(null, 10000);
                 } else {
                     View currentView = channel.getView();
+                    Address[] memberAddressess = currentView.getMembersRaw();
                     for (int start = 1; start < currentView.getMembersRaw().length; start++) {
-                        if (!currentView.getMembersRaw()[start].toString().contains(clientMemberPrefix)) {
-                            changeClusterCoordinator(start);
+                        if (!memberAddressess[start].toString().contains(clientMemberPrefix)) {
+                            if (memberAddressess[start].toString().equals(myReplicaId)) {
+                                changeClusterCoordinator(start);
+                            }
                             break;
                         }
                     }
@@ -181,7 +184,7 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     public void viewAccepted(View newView) {
         System.out.println("RM::View-" + newView);
         String coordinatorId = newView.getCoord().toString();
-        System.out.println("########### " + coordinatorId);
+//        System.out.println("########### " + coordinatorId);
         if (coordinatorId.equals(myReplicaId) && !iAmMWMaster) {
             System.out.println("RM::I am now the MW Leader!");
             System.out.println("RM::Switching MW Leader mode.....");
@@ -191,9 +194,12 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                 }
             }
         } else if (coordinatorId.contains(clientMemberPrefix)) {
+            Address[] clusterMembers = newView.getMembersRaw();
             for (int start = 1; start < newView.getMembersRaw().length; start++) {
-                if (newView.getMembersRaw()[start].toString().equals(myReplicaId)) {
-                    changeClusterCoordinator(start);
+                if (!clusterMembers[start].toString().contains(clientMemberPrefix)) {
+                    if (clusterMembers[start].toString().equals(myReplicaId)) {
+                        changeClusterCoordinator(start);
+                    }
                     break;
                 }
             }
