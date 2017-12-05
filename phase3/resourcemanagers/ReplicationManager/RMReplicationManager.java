@@ -28,7 +28,6 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
     private static String mwMemberPrefix = "MW:RM::";
     private static JChannel channel;
     private static boolean iAmMaster = false;
-    private static boolean crash = false;
 
     public static void main(String[] args) throws Exception {
         if (args.length == 1) {
@@ -38,11 +37,6 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
             registryPort = Integer.parseInt(args[0]);
             clusterName += args[1];
             mwMemberPrefix += args[1];
-        } else if (args.length == 3) {
-            registryPort = Integer.parseInt(args[0]);
-            clusterName += args[1];
-            mwMemberPrefix += args[1];
-            crash = Boolean.parseBoolean(args[2]);
         } else if (args.length != 0) {
             System.err.println("Wrong usage");
             System.out.println("Usage: java ReplicationManager.RMReplicationManager [port]");
@@ -52,7 +46,7 @@ public class RMReplicationManager extends ReceiverAdapter implements Serializabl
     }
 
     private void start() throws Exception {
-        resourceManager = new ResourceManagerImpl(this, crash);
+        resourceManager = new ResourceManagerImpl(this);
         channel = new JChannel().setReceiver(this);
         channel.connect(clusterName);
         myReplicaId = channel.getAddressAsString();

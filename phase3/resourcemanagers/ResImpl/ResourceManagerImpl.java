@@ -27,12 +27,10 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
     private static boolean SHUTDOWN = false;
     private static final Timer shutdownTimer = new Timer();
     private static RMReplicationManager replicationManager;
-    private boolean crash = false;
     private int crashCount = 2;
 
-    public ResourceManagerImpl(RMReplicationManager repManager, boolean crashThis) throws RemoteException {
+    public ResourceManagerImpl(RMReplicationManager repManager) throws RemoteException {
         replicationManager = repManager;
-        crash = crashThis;
         initResourceManager();
     }
 
@@ -112,14 +110,6 @@ public class ResourceManagerImpl implements ResourceManager, ReplicaUpdate, Seri
             System.out.println("Invalide Transaction Id = " + transactionId);
             return false;
         }
-
-        if (crash) {
-            crashCount--;
-            if (crashCount < 0) {
-                System.exit(0);
-            }
-        }
-
         transactionList.remove(transactionList.indexOf(transactionId));
         replicationManager.updateReplicas(new UpdatedItem(transactionId, null, null, true));
 //        boolean updated = replicationManager.updateReplicas(transactionUpdateMap.get(transactionId));
