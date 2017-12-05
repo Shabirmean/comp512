@@ -925,7 +925,9 @@ public class TransactionManager implements Serializable {
         lockMan = repObject.getLockMan();
         transactionIdCount = repObject.getTransactionIdCount();
         transMap = repObject.getTransMap();
-        resourceManagers.put(ResourceManagerType.CUSTOMER, repObject.getCustomerManager());
+        MWResourceManager customerMan = (MWResourceManager) resourceManagers.get(ResourceManagerType.CUSTOMER);
+        customerMan.setRMState(repObject.getCustomerManager().getRMState());
+//        resourceManagers.put(ResourceManagerType.CUSTOMER, repObject.getCustomerManager());
     }
 
     private void printMsg(String msg) {

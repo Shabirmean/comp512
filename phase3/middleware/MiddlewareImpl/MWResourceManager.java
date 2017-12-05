@@ -30,6 +30,14 @@ public class MWResourceManager implements ResourceManager {
         return newTId;
     }
 
+    public void setRMState(RMHashtable rmHashtable) {
+        this.m_itemHT = rmHashtable;
+    }
+
+    public RMHashtable getRMState() {
+        return m_itemHT;
+    }
+
     @Override
     public boolean commit(int transactionId) throws RemoteException, TransactionAbortedException {
         if (!transactionList.contains(transactionId)) {
