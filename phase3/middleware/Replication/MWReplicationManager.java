@@ -135,7 +135,15 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                 if (!coordinator.toString().contains(clientMemberPrefix)) {
                     channel.getState(null, 10000);
                 } else {
-                    changeClusterCoordinator();
+                    View currentView = channel.getView();
+                    for (int start = 1; start < currentView.getMembersRaw().length; start++) {
+                        if (!currentView.getMembersRaw()[start].toString().contains(clientMemberPrefix)) {
+                            changeClusterCoordinator(start);
+                            break;
+                        }
+                    }
+
+//                    changeClusterCoordinator();
                 }
             }
         } catch (Exception e) {
@@ -173,6 +181,7 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     public void viewAccepted(View newView) {
         System.out.println("RM::View-" + newView);
         String coordinatorId = newView.getCoord().toString();
+        System.out.println("########### " + coordinatorId);
         if (coordinatorId.equals(myReplicaId) && !iAmMWMaster) {
             System.out.println("RM::I am now the MW Leader!");
             System.out.println("RM::Switching MW Leader mode.....");
@@ -181,9 +190,13 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
                     iAmMWMaster = switchToCoordinatorMode();
                 }
             }
-        } else if (coordinatorId.contains(clientMemberPrefix) &&
-                newView.getMembersRaw()[1].toString().equals(myReplicaId)) {
-            changeClusterCoordinator();
+        } else if (coordinatorId.contains(clientMemberPrefix)) {
+            for (int start = 1; start < newView.getMembersRaw().length; start++) {
+                if (newView.getMembersRaw()[start].toString().equals(myReplicaId)) {
+                    changeClusterCoordinator(start);
+                    break;
+                }
+            }
         }
     }
 
@@ -249,7 +262,7 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
     }
 
     @SuppressWarnings("Duplicates")
-    private void changeClusterCoordinator() {
+    private void changeClusterCoordinator(int newCoordinatorIndex) {
         View view = channel.getView();
         if (view.size() == 1) {
             System.err.println(CLUSTER_NAME + "-Coordinator cannot change as view only has a single member");
@@ -258,8 +271,11 @@ public class MWReplicationManager extends ReceiverAdapter implements Serializabl
 
         List<Address> mbrs = new ArrayList<>(view.getMembers());
         long new_id = view.getViewId().getId() + 1;
-        Address tmp_coord = mbrs.remove(0);
-        mbrs.add(tmp_coord);
+
+        for (int begin = 0; begin < newCoordinatorIndex; begin++){
+            Address tmp_coord = mbrs.remove(begin);
+            mbrs.add(tmp_coord);
+        }
         View new_view = new View(mbrs.get(0), new_id, mbrs);
         GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
         gms.castViewChangeAndSendJoinRsps(new_view, null, mbrs, mbrs, null);
